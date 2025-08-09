@@ -1,0 +1,26 @@
+# Node
+node_modules/
+dist/
+.cache/
+.nyc_output/
+coverage/
+*.log
+pnpm-lock.yaml
+
+# TypeScript
+*.tsbuildinfo
+
+# macOS
+.DS_Store
+
+# Env & local
+.env
+.env.*
+
+# Prisma / SQLite
+prisma/dev.db
+prisma/dev.db-journal
+
+# Editor
+.vscode/
+.idea/

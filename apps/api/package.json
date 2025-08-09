@@ -1,0 +1,30 @@
+{
+  "name": "@orenna/api",
+  "version": "0.1.0",
+  "type": "module",
+  "scripts": {
+    "dev": "tsx src/server.ts",
+    "build": "tsc -p tsconfig.json",
+    "typecheck": "tsc -p tsconfig.json --noEmit",
+    "test": "vitest run"
+  },
+  "dependencies": {
+    "@fastify/cors": "^8.5.0",
+    "@fastify/swagger": "^8.14.0",
+    "@fastify/swagger-ui": "^3.0.0",
+    "@orenna/db": "workspace:*",
+    "@orenna/shared": "workspace:*",
+    "dotenv": "^17.2.1",
+    "fastify": "^4.28.1",
+    "fastify-plugin": "^5.0.1",
+    "pino": "^9.4.0",
+    "zod": "^3.23.8"
+  },
+  "devDependencies": {
+    "@types/node": "^20.12.12",
+    "supertest": "^7.0.0",
+    "tsx": "^4.16.2",
+    "typescript": "^5.5.4",
+    "vitest": "^2.0.5"
+  }
+}
