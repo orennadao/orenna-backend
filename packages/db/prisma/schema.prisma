@@ -7,10 +7,37 @@ datasource db {
   url      = env("DATABASE_URL")
 }
 
-model User {
-  id          String   @id @default(cuid())
-  address     String   @unique
-  email       String?  @unique
+model LiftUnit {
+  id           Int      @id @default(autoincrement())
+  externalId   String?  @unique
+  status       String   @default("DRAFT") // was enum LiftUnitStatus
+  quantity     Decimal?
+  unit         String?  // e.g. "LU"
+  meta         String?  // was Json; store stringified JSON
+  issuedAt     DateTime?
+  retiredAt    DateTime?
+
+  events       LiftUnitEvent[]
+
+  createdAt    DateTime @default(now())
+  updatedAt    DateTime @updatedAt
+
+  @@index([status])
+}
+
+model LiftUnitEvent {
+  id          Int      @id @default(autoincrement())
+  liftUnitId  Int
+  type        String   // was enum LiftUnitEventType
+  txId        String?
+  payload     String?  // was Json; store stringified JSON
+  meta        String?  // was Json; store stringified JSON
+  eventAt     DateTime @default(now())
+
+  liftUnit    LiftUnit @relation(fields: [liftUnitId], references: [id], onDelete: Cascade)
+
   createdAt   DateTime @default(now())
-  lastLoginAt DateTime?
+
+  @@unique([liftUnitId, type, txId])
+  @@index([liftUnitId, type])
 }

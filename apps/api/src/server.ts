@@ -1,4 +1,5 @@
 import 'dotenv/config';
+import liftUnitRoutes from './routes/lift-units.ts'; // or './routes/lift-units.js' depending on your setup
 import Fastify from 'fastify';
 import cors from '@fastify/cors';
 import swagger from './plugins/swagger.js';
@@ -25,6 +26,11 @@ await app.register(swagger);
 await app.register(readiness);
 await app.register(healthRoutes);
 await app.register(exampleRoutes);
+await app.register(liftUnitRoutes, { prefix: '/lift-units' });
+
+// Debug helpers (AFTER all register calls)
+app.get('/__routes', async () => app.printRoutes());
+app.ready().then(() => console.log('\n' + app.printRoutes()));
 
 const closeSignals: NodeJS.Signals[] = ['SIGINT', 'SIGTERM'];
 for (const sig of closeSignals) {
@@ -49,5 +55,10 @@ const start = async () => {
     process.exit(1);
   }
 };
+
+// print the full route tree once everything is registered
+app.ready().then(() => {
+  console.log('\n' + app.printRoutes());
+});
 
 start();

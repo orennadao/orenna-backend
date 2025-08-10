@@ -14,11 +14,12 @@
     "@fastify/swagger-ui": "^3.0.0",
     "@orenna/db": "workspace:*",
     "@orenna/shared": "workspace:*",
+    "@prisma/client": "5.22.0",
     "dotenv": "^17.2.1",
     "fastify": "^4.28.1",
     "fastify-plugin": "^5.0.1",
     "pino": "^9.4.0",
-    "zod": "^3.23.8"
+    "zod": "^3.25.76"
   },
   "devDependencies": {
     "@types/node": "^20.12.12",
