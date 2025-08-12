@@ -1,0 +1,45 @@
+name: CI
+on: [push, pull_request]
+jobs:
+  build:
+    runs-on: ubuntu-latest
+    services:
+      postgres:
+        image: postgres:16
+        env:
+          POSTGRES_USER: postgres
+          POSTGRES_PASSWORD: postgres
+          POSTGRES_DB: app
+        ports: ["5432:5432"]
+        options: >-
+          --health-cmd="pg_isready -U postgres"
+          --health-interval=10s
+          --health-timeout=5s
+          --health-retries=10
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-node@v4
+        with: { node-version: 20 }
+      - uses: pnpm/action-setup@v4
+        with: { version: 9 }
+      - name: Get pnpm store dir
+        run: echo "STORE_PATH=$(pnpm store path)" >> $GITHUB_ENV
+      - uses: actions/cache@v4
+        with:
+          path: ${{ env.STORE_PATH }}
+          key: ${{ runner.os }}-pnpm-${{ hashFiles('**/pnpm-lock.yaml') }}
+          restore-keys: ${{ runner.os }}-pnpm-
+      - name: Install deps
+        run: pnpm install --no-frozen-lockfile
+      - name: Prepare DB
+        env:
+          DATABASE_URL: postgresql://postgres:postgres@localhost:5432/app?schema=public
+        run: |
+          pnpm prisma migrate deploy
+          pnpm prisma db seed --if-present
+      - name: Typecheck
+        run: pnpm typecheck
+      - name: Test
+        env:
+          DATABASE_URL: postgresql://postgres:postgres@localhost:5432/app?schema=public
+        run: pnpm test

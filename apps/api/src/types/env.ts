@@ -14,6 +14,7 @@ export function getEnv() {
     NODE_ENV: process.env.NODE_ENV ?? 'development',
     API_PORT: Number(process.env.API_PORT ?? 3000),
     API_HOST: process.env.API_HOST ?? '0.0.0.0',
-    API_CORS_ORIGIN: process.env.API_CORS_ORIGIN ?? '*'
+    API_CORS_ORIGIN: process.env.API_CORS_ORIGIN ?? '*',
+    DOMAIN: process.env.DOMAIN ?? 'localhost'
   };
 }

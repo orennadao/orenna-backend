@@ -1,19 +1,24 @@
 import { describe, it, expect } from 'vitest';
 import Fastify from 'fastify';
-import cors from '@fastify/cors';
-import swagger from '../src/plugins/swagger.js';
+import prismaPlugin from '../src/plugins/prisma.js';
 import healthRoutes from '../src/routes/health.js';
 
 describe('health', () => {
-  it('GET /health returns ok without DB', async () => {
+  it('liveness and readiness', async () => {
+    process.env.DATABASE_URL = 'file:./dev.db';
     const app = Fastify();
-    await app.register(cors);
-    await app.register(swagger);
+    await app.register(prismaPlugin);
     await app.register(healthRoutes);
 
-    const res = await app.inject({ method: 'GET', url: '/health' });
-    expect(res.statusCode).toBe(200);
-    const body = res.json();
-    expect(body.ok).toBe(true);
+    const live = await app.inject({ method: 'GET', url: '/health/liveness' });
+    expect(live.statusCode).toBe(200);
+
+    let ready;
+    for (let i = 0; i < 5; i++) {
+      ready = await app.inject({ method: 'GET', url: '/health/readiness' });
+      if (ready.statusCode === 200) break;
+      await new Promise((r) => setTimeout(r, 100));
+    }
+    expect(ready.statusCode).toBe(200);
   });
 });

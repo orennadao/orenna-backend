@@ -2,11 +2,13 @@
 import "dotenv/config";
 import Fastify from "fastify";
 import cors from "@fastify/cors";
+import cookie from "@fastify/cookie";
+import jwt from "@fastify/jwt";
 import swagger from "./plugins/swagger.ts";
 import prismaPlugin from "./plugins/prisma.ts";
-import readiness from "./plugins/readiness.ts";
 import healthRoutes from "./routes/health.ts";
-// import exampleRoutes from "./routes/example.ts"; // keep commented for now
+import echoRoutes from "./routes/echo.ts";
+import authRoutes from "./routes/auth.ts";
 import projectsRoutes from "./routes/projects.ts";
 import { getEnv } from "./types/env.ts";
 import { ZodTypeProvider, validatorCompiler, serializerCompiler } from "fastify-type-provider-zod";
@@ -22,8 +24,6 @@ app.setSerializerCompiler(serializerCompiler);
 const env = getEnv();
 app.log.info({ DATABASE_URL: process.env.DATABASE_URL, cwd: process.cwd() }, "Booting API");
 
-
-
 // Global error handler (great for surfacing Prisma/Zod issues)
 app.setErrorHandler((err, _req, reply) => {
   app.log.error({ err }, "Unhandled error");
@@ -37,16 +37,15 @@ app.setErrorHandler((err, _req, reply) => {
 
 // Core plugins
 await app.register(cors, { origin: env.API_CORS_ORIGIN, credentials: true });
+await app.register(cookie);
+await app.register(jwt, { secret: "supersecret", cookie: { cookieName: "token", signed: false } });
 await app.register(prismaPlugin);
 await app.register(swagger);
 
 // Routes/plugins
-await app.register(readiness);
 await app.register(healthRoutes);
-// if (process.env.NODE_ENV !== "production") {
-//   await app.register(exampleRoutes, { prefix: "/example" });
-// }
-// await app.register(liftUnitRoutes, { prefix: "/lift-units" }); // re-enable later
+await app.register(echoRoutes);
+await app.register(authRoutes);
 await app.register(projectsRoutes);
 
 // TEMP: DB introspection (hidden from docs) – BigInt-safe
@@ -71,15 +70,12 @@ app.get(
   }
 );
 
-
 // Debug helpers (hidden in prod)
 app.get(
   "/__routes",
   { schema: { hide: process.env.NODE_ENV === "production" } },
   async () => app.printRoutes()
 );
-
-
 
 // Print routes once fully ready
 app.ready().then(() => app.log.info("\n" + app.printRoutes()));

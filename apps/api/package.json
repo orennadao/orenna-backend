@@ -9,22 +9,27 @@
     "test": "vitest run"
   },
   "dependencies": {
+    "@fastify/cookie": "^10.0.1",
     "@fastify/cors": "^8.5.0",
+    "@fastify/jwt": "^9.3.1",
     "@fastify/swagger": "^8.14.0",
     "@fastify/swagger-ui": "^3.0.0",
     "@orenna/db": "workspace:*",
     "@orenna/shared": "workspace:*",
     "@prisma/client": "5.22.0",
     "dotenv": "^17.2.1",
+    "ethers": "^6.11.1",
     "fastify": "^4.28.1",
     "fastify-plugin": "^5.0.1",
     "fastify-type-provider-zod": "^5.0.3",
     "pino": "^9.4.0",
+    "siwe": "^2.1.6",
     "zod": "^3.25.76"
   },
   "devDependencies": {
     "@types/node": "^20.12.12",
     "@types/supertest": "^6.0.3",
+    "@vitest/ui": "^2.1.9",
     "prisma": "^5.22.0",
     "supertest": "^7.1.4",
     "tsx": "^4.16.2",
