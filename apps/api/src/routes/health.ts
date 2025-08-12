@@ -1,5 +1,5 @@
 import { FastifyInstance } from "fastify";
 
 export default async function healthRoutes(app: FastifyInstance) {
-  app.get("/health", async () => ({ ok: true, service: "api" }));
+  app.get("/health/liveness", async () => ({ ok: true, service: "api" }));
 }

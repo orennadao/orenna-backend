@@ -3,7 +3,7 @@ generator client {
 }
 
 datasource db {
-  provider = "sqlite"
+  provider = "postgresql"
   url      = env("DATABASE_URL")
 }
 
@@ -52,4 +52,12 @@ model Project {
   meta         String?   // must be String for SQLite
   createdAt    DateTime  @default(now())
   updatedAt    DateTime  @updatedAt
+}
+
+model User {
+  id        Int      @id @default(autoincrement())
+  address   String   @unique
+  username  String?
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
 }
