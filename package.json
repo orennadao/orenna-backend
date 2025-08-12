@@ -5,7 +5,8 @@
   "scripts": {
     "build": "pnpm -r --filter ./packages/* --filter ./apps/* run build",
     "dev": "pnpm --filter @orenna/api dev",
-    "test": "pnpm -r --filter ./apps/* --filter ./packages/* test",
+    "test": "vitest run --reporter=dot --passWithNoTests",
+    "test:workspace": "pnpm -r --filter ./apps/* --filter ./packages/* test",
     "typecheck": "pnpm -r --filter ./apps/* --filter ./packages/* typecheck",
     "lint": "echo \"(eslint to be added later)\"",
     "db:generate": "pnpm --filter @orenna/db prisma:generate",
@@ -13,6 +14,7 @@
     "db:seed": "pnpm --filter @orenna/db prisma:seed"
   },
   "devDependencies": {
+    "@types/node": "^20",
     "typescript": "^5.5.4"
   }
 }
