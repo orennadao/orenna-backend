@@ -8,6 +8,7 @@ import readiness from "./plugins/readiness.ts";
 import healthRoutes from "./routes/health.ts";
 // import exampleRoutes from "./routes/example.ts"; // keep commented for now
 import projectsRoutes from "./routes/projects.ts";
+import devToolsRoutes from "./routes/dev-tools.ts";
 import { getEnv } from "./types/env.ts";
 import { ZodTypeProvider, validatorCompiler, serializerCompiler } from "fastify-type-provider-zod";
 
@@ -49,35 +50,10 @@ await app.register(healthRoutes);
 // await app.register(liftUnitRoutes, { prefix: "/lift-units" }); // re-enable later
 await app.register(projectsRoutes);
 
-// TEMP: DB introspection (hidden from docs) – BigInt-safe
-app.get(
-  "/__db",
-  { schema: { hide: true } },
-  async () => {
-    const coerce = (row: Record<string, unknown>) =>
-      Object.fromEntries(
-        Object.entries(row).map(([k, v]) => [k, typeof v === "bigint" ? v.toString() : v])
-      );
-
-    const dbs = await app.prisma.$queryRaw<
-      Array<Record<string, unknown>>
-    >`PRAGMA database_list;`;
-
-    const tables = await app.prisma.$queryRaw<
-      Array<Record<string, unknown>>
-    >`SELECT name FROM sqlite_master WHERE type='table' ORDER BY name`;
-
-    return { dbs: dbs.map(coerce), tables: tables.map(coerce) };
-  }
-);
-
-
-// Debug helpers (hidden in prod)
-app.get(
-  "/__routes",
-  { schema: { hide: process.env.NODE_ENV === "production" } },
-  async () => app.printRoutes()
-);
+// Register dev/diagnostic routes only in non-production environments
+if (process.env.NODE_ENV !== "production") {
+  await app.register(devToolsRoutes);
+}
 
 
 
