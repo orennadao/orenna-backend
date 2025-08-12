@@ -1,36 +1,20 @@
 name: CI
-on: [push, pull_request]
-
-jobs:
-  test:
-    runs-on: ubuntu-latest
-
-    steps:
-      - uses: actions/checkout@v4
-
-      - uses: actions/setup-node@v4
-        with:
-          node-version: 20
-          cache: pnpm
-
-      - uses: pnpm/action-setup@v4
-        with:
-          version: 9
-          run_install: false
-
-      - name: Install deps
-        run: pnpm -v && pnpm -w install --frozen-lockfile
-
-      # add your other steps below (DB migrate/seed, typecheck, tests, etc.)
-
 on:
   push:
-    branches: [main]
+    branches: ['**']   # run on all branches; tweak if you only want main
   pull_request:
+
+permissions:
+  contents: read
+
+concurrency:
+  group: ci-${{ github.ref }}
+  cancel-in-progress: true
 
 jobs:
   test:
     runs-on: ubuntu-latest
+    timeout-minutes: 20
 
     services:
       postgres:
@@ -44,6 +28,9 @@ jobs:
           --health-cmd="pg_isready -U postgres -d orenna"
           --health-interval=5s --health-timeout=5s --health-retries=20
 
+    env:
+      DATABASE_URL: postgres://postgres:postgres@localhost:5432/orenna
+
     steps:
       - uses: actions/checkout@v4
 
@@ -51,6 +38,7 @@ jobs:
         with:
           node-version: 20
           cache: pnpm
+          cache-dependency-path: pnpm-lock.yaml
 
       - uses: pnpm/action-setup@v4
         with:
@@ -61,8 +49,6 @@ jobs:
         run: pnpm -w install --frozen-lockfile
 
       - name: DB migrate + seed
-        env:
-          DATABASE_URL: postgres://postgres:postgres@localhost:5432/orenna
         run: |
           pnpm -w db:deploy
           pnpm -w db:seed || true
@@ -71,13 +57,12 @@ jobs:
         run: pnpm -w typecheck
 
       - name: Test
-        env:
-          DATABASE_URL: postgres://postgres:postgres@localhost:5432/orenna
         run: pnpm -w test
 
       - name: Upload coverage (optional)
-        if: success()
+        if: always()
         uses: actions/upload-artifact@v4
         with:
           name: coverage
           path: coverage/**
+          if-no-files-found: ignore
