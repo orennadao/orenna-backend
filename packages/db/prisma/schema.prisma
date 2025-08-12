@@ -41,3 +41,15 @@ model LiftUnitEvent {
   @@unique([liftUnitId, type, txId])
   @@index([liftUnitId, type])
 }
+
+model Project {
+  id           Int       @id @default(autoincrement())
+  name         String
+  slug         String    @unique
+  description  String?
+  ownerAddress String?
+  chainId      Int?
+  meta         String?   // must be String for SQLite
+  createdAt    DateTime  @default(now())
+  updatedAt    DateTime  @updatedAt
+}
