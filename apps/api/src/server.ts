@@ -8,8 +8,14 @@ import readiness from "./plugins/readiness.ts";
 import healthRoutes from "./routes/health.ts";
 // import exampleRoutes from "./routes/example.ts"; // keep commented for now
 import projectsRoutes from "./routes/projects.ts";
+import auth from "./plugins/auth.ts";
+import mintRequestRoutes from "./routes/mint-requests.ts";
 import { getEnv } from "./types/env.ts";
-import { ZodTypeProvider, validatorCompiler, serializerCompiler } from "fastify-type-provider-zod";
+import {
+  ZodTypeProvider,
+  validatorCompiler,
+  serializerCompiler,
+} from "fastify-type-provider-zod";
 
 const app = Fastify({
   logger: { level: "info", redact: ["req.headers.authorization"] },
@@ -20,9 +26,10 @@ app.setValidatorCompiler(validatorCompiler);
 app.setSerializerCompiler(serializerCompiler);
 
 const env = getEnv();
-app.log.info({ DATABASE_URL: process.env.DATABASE_URL, cwd: process.cwd() }, "Booting API");
-
-
+app.log.info(
+  { DATABASE_URL: process.env.DATABASE_URL, cwd: process.cwd() },
+  "Booting API",
+);
 
 // Global error handler (great for surfacing Prisma/Zod issues)
 app.setErrorHandler((err, _req, reply) => {
@@ -39,6 +46,7 @@ app.setErrorHandler((err, _req, reply) => {
 await app.register(cors, { origin: env.API_CORS_ORIGIN, credentials: true });
 await app.register(prismaPlugin);
 await app.register(swagger);
+await app.register(auth);
 
 // Routes/plugins
 await app.register(readiness);
@@ -48,38 +56,35 @@ await app.register(healthRoutes);
 // }
 // await app.register(liftUnitRoutes, { prefix: "/lift-units" }); // re-enable later
 await app.register(projectsRoutes);
+await app.register(mintRequestRoutes);
 
 // TEMP: DB introspection (hidden from docs) – BigInt-safe
-app.get(
-  "/__db",
-  { schema: { hide: true } },
-  async () => {
-    const coerce = (row: Record<string, unknown>) =>
-      Object.fromEntries(
-        Object.entries(row).map(([k, v]) => [k, typeof v === "bigint" ? v.toString() : v])
-      );
+app.get("/__db", { schema: { hide: true } }, async () => {
+  const coerce = (row: Record<string, unknown>) =>
+    Object.fromEntries(
+      Object.entries(row).map(([k, v]) => [
+        k,
+        typeof v === "bigint" ? v.toString() : v,
+      ]),
+    );
 
-    const dbs = await app.prisma.$queryRaw<
-      Array<Record<string, unknown>>
-    >`PRAGMA database_list;`;
+  const dbs = await app.prisma.$queryRaw<
+    Array<Record<string, unknown>>
+  >`PRAGMA database_list;`;
 
-    const tables = await app.prisma.$queryRaw<
-      Array<Record<string, unknown>>
-    >`SELECT name FROM sqlite_master WHERE type='table' ORDER BY name`;
+  const tables = await app.prisma.$queryRaw<
+    Array<Record<string, unknown>>
+  >`SELECT name FROM sqlite_master WHERE type='table' ORDER BY name`;
 
-    return { dbs: dbs.map(coerce), tables: tables.map(coerce) };
-  }
-);
-
+  return { dbs: dbs.map(coerce), tables: tables.map(coerce) };
+});
 
 // Debug helpers (hidden in prod)
 app.get(
   "/__routes",
   { schema: { hide: process.env.NODE_ENV === "production" } },
-  async () => app.printRoutes()
+  async () => app.printRoutes(),
 );
-
-
 
 // Print routes once fully ready
 app.ready().then(() => app.log.info("\n" + app.printRoutes()));

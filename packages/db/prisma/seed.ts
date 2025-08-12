@@ -1,10 +1,14 @@
-import { prisma } from '../src/index';
+import { prisma } from "../src/index";
 
 async function main() {
   await prisma.user.upsert({
-    where: { address: '0x0000000000000000000000000000000000000000' },
-    update: {},
-    create: { address: '0x0000000000000000000000000000000000000000', email: 'seed@example.com' }
+    where: { address: "0x0000000000000000000000000000000000000000" },
+    update: { isAdmin: true },
+    create: {
+      address: "0x0000000000000000000000000000000000000000",
+      email: "seed@example.com",
+      isAdmin: true,
+    },
   });
 }
 
