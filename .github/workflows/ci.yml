@@ -1,15 +1,11 @@
 name: CI
 on:
   push:
-    branches: ['**']   # run on all branches; tweak if you only want main
+    branches: ['**']
   pull_request:
 
 permissions:
   contents: read
-
-concurrency:
-  group: ci-${{ github.ref }}
-  cancel-in-progress: true
 
 jobs:
   test:
@@ -40,10 +36,26 @@ jobs:
           cache: pnpm
           cache-dependency-path: pnpm-lock.yaml
 
-      - uses: pnpm/action-setup@v4
+      # Try official pnpm action (fastest)
+      - name: Setup pnpm (action)
+        id: setup_pnpm
+        continue-on-error: true
+        uses: pnpm/action-setup@v4
         with:
           version: 9
           run_install: false
+
+      # Fallback if the action is blocked
+      - name: Enable pnpm via Corepack (fallback)
+        if: steps.setup_pnpm.outcome == 'failure'
+        run: |
+          corepack enable
+          corepack prepare pnpm@9 --activate
+
+      - name: Show versions
+        run: |
+          node -v
+          pnpm -v
 
       - name: Install deps
         run: pnpm -w install --frozen-lockfile
@@ -58,11 +70,3 @@ jobs:
 
       - name: Test
         run: pnpm -w test
-
-      - name: Upload coverage (optional)
-        if: always()
-        uses: actions/upload-artifact@v4
-        with:
-          name: coverage
-          path: coverage/**
-          if-no-files-found: ignore
