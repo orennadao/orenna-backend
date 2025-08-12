@@ -16,6 +16,7 @@ pnpm-lock.yaml
 # Env & local
 .env
 .env.*
+!.env.sample
 
 # Prisma / SQLite
 prisma/dev.db

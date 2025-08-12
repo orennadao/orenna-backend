@@ -10,7 +10,10 @@
     "lint": "echo \"(eslint to be added later)\"",
     "db:generate": "pnpm --filter @orenna/db prisma:generate",
     "db:migrate": "pnpm --filter @orenna/db prisma:migrate",
-    "db:seed": "pnpm --filter @orenna/db prisma:seed"
+    "db:seed": "pnpm --filter @orenna/db prisma:seed",
+    "dev:up": "docker compose up -d",
+    "dev:down": "docker compose down --remove-orphans",
+    "dev:smoke": "pnpm --filter @orenna/api test"
   },
   "devDependencies": {
     "typescript": "^5.5.4"

@@ -1,15 +1,11 @@
-# Orenna Backend (Monorepo) — SQLite (No Docker)
+# Orenna Backend (Monorepo)
 
-This variant runs **entirely without Docker**. Prisma uses SQLite so you can develop anywhere.
+## Getting Started (Dev)
 
-## Quickstart (macOS / no Docker)
-1. Copy `.env.sample` → `.env` (the default `DATABASE_URL` points to `packages/db/prisma/dev.db`).
-2. Install deps: `pnpm i`
-3. Generate Prisma client: `pnpm db:generate`
-4. Create schema & seed: `pnpm db:migrate && pnpm db:seed`
-5. Run API: `pnpm dev` → http://localhost:3000/health (docs at /docs)
-6. Run tests: `pnpm test`
+1. Install deps: `pnpm i`
+2. Start services: `pnpm dev:up`
+3. Apply DB migrations: `pnpm db:migrate`
+4. Run API: `pnpm --filter @orenna/api dev`
+5. Run smoke tests: `pnpm dev:smoke`
 
-## Switching to Postgres later
-- Change `packages/db/prisma/schema.prisma` datasource to `postgresql` and set `DATABASE_URL` accordingly.
-- Re-run `pnpm db:generate && pnpm db:migrate`.
+Docs available at [`/docs`](http://localhost:3000/docs) once the API is running.

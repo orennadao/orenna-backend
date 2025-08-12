@@ -1,10 +1,10 @@
-import { prisma } from '../src/index';
+import { prisma } from "../src/index";
 
 async function main() {
-  await prisma.user.upsert({
-    where: { address: '0x0000000000000000000000000000000000000000' },
+  await prisma.project.upsert({
+    where: { slug: "demo" },
     update: {},
-    create: { address: '0x0000000000000000000000000000000000000000', email: 'seed@example.com' }
+    create: { name: "Demo Project", slug: "demo" },
   });
 }
 
