@@ -3,53 +3,317 @@ generator client {
 }
 
 datasource db {
-  provider = "sqlite"
+  provider = "postgresql"
   url      = env("DATABASE_URL")
 }
 
-model LiftUnit {
-  id           Int      @id @default(autoincrement())
-  externalId   String?  @unique
-  status       String   @default("DRAFT") // was enum LiftUnitStatus
-  quantity     Decimal?
-  unit         String?  // e.g. "LU"
-  meta         String?  // was Json; store stringified JSON
-  issuedAt     DateTime?
-  retiredAt    DateTime?
-
-  events       LiftUnitEvent[]
-
-  createdAt    DateTime @default(now())
-  updatedAt    DateTime @updatedAt
-
-  @@index([status])
+// Enums for better type safety
+enum LiftUnitStatus {
+  DRAFT
+  PENDING_VERIFICATION
+  VERIFIED
+  MINTED
+  RETIRED
+  CANCELLED
 }
 
-model LiftUnitEvent {
-  id          Int      @id @default(autoincrement())
-  liftUnitId  Int
-  type        String   // was enum LiftUnitEventType
-  txId        String?
-  payload     String?  // was Json; store stringified JSON
-  meta        String?  // was Json; store stringified JSON
-  eventAt     DateTime @default(now())
+enum LiftUnitEventType {
+  CREATED
+  VERIFICATION_REQUESTED
+  VERIFIED
+  REJECTED
+  MINTED
+  TRANSFERRED
+  RETIRED
+  CANCELLED
+}
 
-  liftUnit    LiftUnit @relation(fields: [liftUnitId], references: [id], onDelete: Cascade)
+enum MintRequestStatus {
+  PENDING
+  APPROVED
+  REJECTED
+  MINTED
+  FAILED
+}
 
-  createdAt   DateTime @default(now())
+enum PaymentStatus {
+  PENDING
+  PROCESSING
+  COMPLETED
+  FAILED
+  REFUNDED
+}
 
-  @@unique([liftUnitId, type, txId])
-  @@index([liftUnitId, type])
+enum PaymentProvider {
+  STRIPE
+  COINBASE_COMMERCE
+}
+
+// Core Models
+model User {
+  id           String    @id @default(cuid())
+  address      String    @unique @db.VarChar(42) // Ethereum address
+  ensName      String?
+  email        String?   @unique
+  createdAt    DateTime  @default(now())
+  updatedAt    DateTime  @updatedAt
+  
+  // Relationships
+  sessions     Session[]
+  ownedProjects Project[] @relation("ProjectOwner")
+  mintRequests MintRequest[]
+  payments     Payment[]
+  
+  @@index([address])
+  @@map("users")
+}
+
+model Session {
+  id        String   @id @default(cuid())
+  userId    String
+  token     String   @unique
+  expiresAt DateTime
+  metadata  Json?    // Store additional session data
+  createdAt DateTime @default(now())
+  
+  user      User     @relation(fields: [userId], references: [id], onDelete: Cascade)
+  
+  @@index([token])
+  @@index([expiresAt])
+  @@map("sessions")
 }
 
 model Project {
-  id           Int       @id @default(autoincrement())
+  id           Int        @id @default(autoincrement())
   name         String
-  slug         String    @unique
+  slug         String     @unique
   description  String?
-  ownerAddress String?
-  chainId      Int?
-  meta         String?   // must be String for SQLite
-  createdAt    DateTime  @default(now())
-  updatedAt    DateTime  @updatedAt
+  ownerAddress String     @db.VarChar(42)
+  chainId      Int        @default(1) // Default to Ethereum mainnet
+  
+  // Location data for ecosystem tracking
+  latitude     Decimal?   @db.Decimal(10, 8)
+  longitude    Decimal?   @db.Decimal(11, 8)
+  region       String?    // e.g., "Pacific Northwest", "Great Plains"
+  ecosystem    String?    // e.g., "Wetland", "Forest", "Grassland"
+  
+  // Project metrics and metadata
+  totalArea    Decimal?   @db.Decimal(12, 4) // in hectares or acres
+  baselineData Json?      // Initial ecosystem measurements
+  targetMetrics Json?     // Target improvement goals
+  
+  meta         Json?      // Additional project metadata
+  isActive     Boolean    @default(true)
+  
+  createdAt    DateTime   @default(now())
+  updatedAt    DateTime   @updatedAt
+  
+  // Relationships
+  owner        User       @relation("ProjectOwner", fields: [ownerAddress], references: [address])
+  liftUnits    LiftUnit[]
+  verifications VerificationEvent[]
+  
+  @@index([ownerAddress])
+  @@index([chainId])
+  @@index([slug])
+  @@index([isActive])
+  @@map("projects")
+}
+
+model LiftUnit {
+  id           Int             @id @default(autoincrement())
+  externalId   String?         @unique // On-chain token ID when minted
+  status       LiftUnitStatus  @default(DRAFT)
+  quantity     Decimal         @db.Decimal(18, 6) // High precision for ecosystem units
+  unit         String          @default("LU") // "LU" = Lift Unit
+  
+  // Project relationship
+  projectId    Int
+  project      Project         @relation(fields: [projectId], references: [id])
+  
+  // Ecosystem impact data
+  ecosystemType String?        // e.g., "carbon", "biodiversity", "water_quality"
+  measurement  Json?           // Structured measurement data
+  verificationData Json?       // Third-party verification details
+  
+  // Blockchain integration
+  tokenId      String?         @unique // ERC-1155 token ID
+  contractAddress String?      @db.VarChar(42)
+  mintTxHash   String?         @db.VarChar(66)
+  retireTxHash String?         @db.VarChar(66)
+  
+  // Timestamps
+  issuedAt     DateTime?
+  retiredAt    DateTime?
+  createdAt    DateTime        @default(now())
+  updatedAt    DateTime        @updatedAt
+  
+  // Relationships
+  events       LiftUnitEvent[]
+  mintRequests MintRequest[]
+  payments     Payment[]
+  
+  @@index([status])
+  @@index([projectId])
+  @@index([tokenId])
+  @@index([ecosystemType])
+  @@map("lift_units")
+}
+
+model LiftUnitEvent {
+  id          Int                @id @default(autoincrement())
+  liftUnitId  Int
+  type        LiftUnitEventType
+  
+  // Blockchain data
+  txHash      String?            @db.VarChar(66)
+  blockNumber BigInt?
+  gasUsed     BigInt?
+  
+  // Event data
+  payload     Json?              // Event-specific data
+  metadata    Json?              // Additional context
+  performedBy String?            @db.VarChar(42) // Address of actor
+  
+  eventAt     DateTime           @default(now())
+  createdAt   DateTime           @default(now())
+  
+  // Relationships
+  liftUnit    LiftUnit          @relation(fields: [liftUnitId], references: [id], onDelete: Cascade)
+  
+  @@unique([liftUnitId, type, txHash])
+  @@index([liftUnitId, type])
+  @@index([txHash])
+  @@index([eventAt])
+  @@map("lift_unit_events")
+}
+
+model MintRequest {
+  id          String             @id @default(cuid())
+  liftUnitId  Int
+  requesterId String
+  
+  quantity    Decimal            @db.Decimal(18, 6)
+  recipientAddress String        @db.VarChar(42)
+  
+  status      MintRequestStatus  @default(PENDING)
+  
+  // Approval workflow
+  approvedBy  String?            @db.VarChar(42)
+  approvedAt  DateTime?
+  rejectionReason String?
+  
+  // Execution data
+  txHash      String?            @db.VarChar(66)
+  mintedAt    DateTime?
+  
+  notes       String?
+  metadata    Json?
+  
+  createdAt   DateTime           @default(now())
+  updatedAt   DateTime           @updatedAt
+  
+  // Relationships
+  liftUnit    LiftUnit          @relation(fields: [liftUnitId], references: [id])
+  requester   User              @relation(fields: [requesterId], references: [id])
+  
+  @@index([status])
+  @@index([requesterId])
+  @@index([liftUnitId])
+  @@index([createdAt])
+  @@map("mint_requests")
+}
+
+model Payment {
+  id          String         @id @default(cuid())
+  userId      String
+  liftUnitId  Int?           // Optional - might be set after payment
+  
+  // Payment details
+  provider    PaymentProvider
+  externalId  String         // Stripe session ID or Coinbase charge code
+  
+  amount      Decimal        @db.Decimal(18, 6) // Payment amount
+  currency    String         @db.VarChar(10) // "USD", "USDC", etc.
+  
+  quantity    Decimal        @db.Decimal(18, 6) // Lift units to mint
+  pricePerUnit Decimal       @db.Decimal(18, 6) // Price per lift unit
+  
+  status      PaymentStatus  @default(PENDING)
+  
+  // Provider-specific data
+  providerData Json?         // Webhook payload, etc.
+  
+  // Completion data
+  completedAt DateTime?
+  mintTxHash  String?        @db.VarChar(66)
+  
+  createdAt   DateTime       @default(now())
+  updatedAt   DateTime       @updatedAt
+  
+  // Relationships
+  user        User           @relation(fields: [userId], references: [id])
+  liftUnit    LiftUnit?      @relation(fields: [liftUnitId], references: [id])
+  
+  @@unique([provider, externalId])
+  @@index([status])
+  @@index([userId])
+  @@index([createdAt])
+  @@map("payments")
+}
+
+model VerificationEvent {
+  id          Int      @id @default(autoincrement())
+  projectId   Int
+  
+  // Verification details
+  verifierAddress String? @db.VarChar(42)
+  verificationDate DateTime
+  
+  // Measurement data
+  measurementType String  // e.g., "soil_carbon", "water_quality", "biodiversity"
+  beforeValue    Decimal? @db.Decimal(18, 6)
+  afterValue     Decimal  @db.Decimal(18, 6)
+  improvement    Decimal  @db.Decimal(18, 6) // calculated lift
+  
+  unit           String   // measurement unit
+  methodology    String?  // verification methodology used
+  
+  // Supporting documentation
+  reportUrl      String?  // S3 URL to verification report
+  mediaUrls      Json?    // Array of S3 URLs to photos/videos
+  
+  // Verification metadata
+  certificationBody String?
+  certificateNumber String?
+  
+  notes          String?
+  metadata       Json?    // Additional structured data
+  
+  createdAt      DateTime @default(now())
+  updatedAt      DateTime @updatedAt
+  
+  // Relationships
+  project        Project  @relation(fields: [projectId], references: [id])
+  
+  @@index([projectId])
+  @@index([verificationDate])
+  @@index([measurementType])
+  @@map("verification_events")
+}
+
+// Configuration and system tables
+model SystemConfig {
+  id        Int      @id @default(autoincrement())
+  key       String   @unique
+  value     String
+  dataType  String   @default("string") // "string", "number", "boolean", "json"
+  
+  description String?
+  isActive    Boolean  @default(true)
+  
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+  
+  @@map("system_config")
 }
