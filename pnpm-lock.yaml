@@ -100,7 +100,7 @@ importers:
         specifier: ^5.5.4
         version: 5.9.2
       viem:
-        specifier: ^2.13.7
+        specifier: ^2.33.3
         version: 2.33.3(typescript@5.9.2)(zod@3.25.76)
       vitest:
         specifier: ^1.6.1
