@@ -54,8 +54,17 @@ jobs:
 
       # 4) Install + run
           
+      - name: Debug lockfile and package.json
+        run: |
+          echo "=== Root package.json ==="
+          cat package.json
+          echo "=== Lockfile devDependencies ==="
+          head -50 pnpm-lock.yaml
+          echo "=== Workspace packages ==="
+          find . -name "package.json" -not -path "./node_modules/*"
+
       - name: Install dependencies
-        run: pnpm install --frozen-lockfile
+        run: pnpm install --no-frozen-lockfile
         
       - name: Verify vitest installation
         run: pnpm vitest --version
