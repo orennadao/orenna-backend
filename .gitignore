@@ -5,7 +5,6 @@ dist/
 .nyc_output/
 coverage/
 *.log
-pnpm-lock.yaml
 
 # TypeScript
 *.tsbuildinfo

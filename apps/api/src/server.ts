@@ -2,11 +2,14 @@
 import "dotenv/config";
 import Fastify from "fastify";
 import cors from "@fastify/cors";
+import cookie from "@fastify/cookie";
+import jwt from "@fastify/jwt";
 import swagger from "./plugins/swagger.ts";
 import prismaPlugin from "./plugins/prisma.ts";
 import readiness from "./plugins/readiness.ts";
 import healthRoutes from "./routes/health.ts";
-// import exampleRoutes from "./routes/example.ts"; // keep commented for now
+import echoRoutes from "./routes/echo.ts";
+import authRoutes from "./routes/auth.ts";
 import projectsRoutes from "./routes/projects.ts";
 import { getEnv } from "./types/env.ts";
 import { ZodTypeProvider, validatorCompiler, serializerCompiler } from "fastify-type-provider-zod";
@@ -37,40 +40,27 @@ app.setErrorHandler((err, _req, reply) => {
 
 // Core plugins
 await app.register(cors, { origin: env.API_CORS_ORIGIN, credentials: true });
+await app.register(cookie);
+await app.register(jwt, {
+  secret: env.JWT_SECRET,
+  cookie: { cookieName: "session", signed: false },
+});
+app.decorate("authenticate", async function (req, reply) {
+  try {
+    await req.jwtVerify();
+  } catch (err) {
+    return reply.send(err);
+  }
+});
 await app.register(prismaPlugin);
 await app.register(swagger);
 
 // Routes/plugins
 await app.register(readiness);
 await app.register(healthRoutes);
-// if (process.env.NODE_ENV !== "production") {
-//   await app.register(exampleRoutes, { prefix: "/example" });
-// }
-// await app.register(liftUnitRoutes, { prefix: "/lift-units" }); // re-enable later
+await app.register(echoRoutes);
+await app.register(authRoutes);
 await app.register(projectsRoutes);
-
-// TEMP: DB introspection (hidden from docs) – BigInt-safe
-app.get(
-  "/__db",
-  { schema: { hide: true } },
-  async () => {
-    const coerce = (row: Record<string, unknown>) =>
-      Object.fromEntries(
-        Object.entries(row).map(([k, v]) => [k, typeof v === "bigint" ? v.toString() : v])
-      );
-
-    const dbs = await app.prisma.$queryRaw<
-      Array<Record<string, unknown>>
-    >`PRAGMA database_list;`;
-
-    const tables = await app.prisma.$queryRaw<
-      Array<Record<string, unknown>>
-    >`SELECT name FROM sqlite_master WHERE type='table' ORDER BY name`;
-
-    return { dbs: dbs.map(coerce), tables: tables.map(coerce) };
-  }
-);
-
 
 // Debug helpers (hidden in prod)
 app.get(
