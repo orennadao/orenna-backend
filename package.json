@@ -6,14 +6,27 @@
     "build": "pnpm -r --filter ./packages/* --filter ./apps/* run build",
     "dev": "pnpm --filter @orenna/api dev",
     "test": "vitest run --reporter=dot --passWithNoTests && pnpm -r --filter ./apps/* --filter ./packages/* test -- --reporter=dot --passWithNoTests",
+    "test:watch": "vitest",
     "typecheck": "pnpm -r --filter ./apps/* --filter ./packages/* typecheck",
     "lint": "echo \"(eslint to be added later)\"",
     "db:generate": "pnpm --filter @orenna/db prisma:generate",
     "db:migrate": "pnpm --filter @orenna/db prisma:migrate",
-    "db:seed": "pnpm --filter @orenna/db prisma:seed"
+    "db:seed": "pnpm --filter @orenna/db prisma:seed",
+    "db:studio": "pnpm --filter @orenna/db prisma:studio",
+    "db:reset": "pnpm --filter @orenna/db prisma:reset",
+    "clean": "pnpm -r --filter ./packages/* --filter ./apps/* run clean",
+    "clean:deps": "find . -name 'node_modules' -type d -prune -exec rm -rf '{}' + && find . -name '.pnpm-store' -type d -prune -exec rm -rf '{}' +"
   },
   "devDependencies": {
     "typescript": "^5.5.4",
-    "@types/node": "^20"
+    "@types/node": "^20",
+    "vitest": "^1.6.0",
+    "@vitest/ui": "^1.6.0",
+    "prisma": "^5.22.0",
+    "@prisma/client": "^5.22.0"
+  },
+  "engines": {
+    "node": ">=18.0.0",
+    "pnpm": ">=9.0.0"
   }
 }
