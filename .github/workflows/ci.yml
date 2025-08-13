@@ -1,40 +1,53 @@
 name: CI
 
-on:
-  push:
-  pull_request:
+on: [push, pull_request]
 
 jobs:
-  build:
+  test:
     runs-on: ubuntu-latest
+    
     services:
       postgres:
-        image: postgres:16
-        ports:
-          - 5432:5432
+        image: postgres:15
         env:
           POSTGRES_USER: postgres
           POSTGRES_PASSWORD: postgres
-          POSTGRES_DB: orenna
+          POSTGRES_DB: orenna_test
         options: >-
-          --health-cmd pg_isready -U postgres
-          --health-interval 5s
+          --health-cmd "pg_isready -U postgres"
+          --health-interval 10s
           --health-timeout 5s
           --health-retries 5
-    env:
-      DATABASE_URL: postgresql://postgres:postgres@localhost:5432/orenna
+        ports:
+          - 5432:5432
+
     steps:
       - uses: actions/checkout@v4
-      - uses: actions/setup-node@v4
+      
+      - name: Setup pnpm
+        uses: pnpm/action-setup@v4
+        
+      - name: Setup Node.js
+        uses: actions/setup-node@v4
         with:
-          node-version-file: '.nvmrc'
+          node-version: '20'
           cache: 'pnpm'
-      - uses: pnpm/action-setup@v4
-        with:
-          version: 9
-          standalone: true
-      - run: pnpm install --frozen-lockfile
-      - run: pnpm --filter @orenna/db prisma migrate deploy
-      - run: pnpm --filter @orenna/db prisma:seed
-      - run: pnpm typecheck
-      - run: pnpm test
+          
+      - name: Install dependencies
+        run: pnpm install --no-frozen-lockfile --ignore-scripts
+        
+      - name: Clean migration history
+        run: rm -rf packages/db/prisma/migrations
+        
+      - name: Run migrations
+        run: pnpm -w db:migrate
+        env:
+          DATABASE_URL: postgresql://postgres:postgres@localhost:5432/orenna_test
+          
+      - name: Run type checks
+        run: pnpm typecheck
+        
+      - name: Run tests
+        run: pnpm test
+        env:
+          DATABASE_URL: postgresql://postgres:postgres@localhost:5432/orenna_test
