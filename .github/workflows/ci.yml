@@ -14,14 +14,17 @@ jobs:
 
     services:
       postgres:
-        image: postgres:16
+        image: postgres:15
         env:
-          POSTGRES_USER: postgres
           POSTGRES_PASSWORD: postgres
-          POSTGRES_DB: orenna
+          POSTGRES_DB: orenna_test
         options: >-
-          --health-cmd="pg_isready -U postgres -d orenna"
-          --health-interval=5s --health-timeout=5s --health-retries=20
+          --health-cmd pg_isready
+          --health-interval 10s
+          --health-timeout 5s
+          --health-retries 5
+        ports:
+          - 5432:5432
 
     env:
       DATABASE_URL: postgres://postgres:postgres@localhost:5432/orenna
@@ -50,15 +53,18 @@ jobs:
           restore-keys: ${{ runner.os }}-pnpm-store-
 
       # 4) Install + run
-      - name: Install deps
+      - name: Install dependencies
+        run: pnpm install
+        
+      - name: Run migrations
+        run: pnpm -w db:migrate
         env:
-          PNPM_CONFIG_FROZEN_LOCKFILE: "false"
-        run: pnpm -w install --no-frozen-lockfile
-
-      - name: DB migrate + seed
-        run: |
-          pnpm -w db:migrate
-          pnpm -w db:seed || true
+          DATABASE_URL: postgresql://postgres:postgres@localhost:5432/orenna_test
+          
+      - name: Run tests
+        run: pnpm test
+        env:
+          DATABASE_URL: postgresql://postgres:postgres@localhost:5432/orenna_test
 
       - name: Typecheck
         run: pnpm -w typecheck
