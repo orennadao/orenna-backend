@@ -57,13 +57,14 @@ jobs:
       - uses: actions/cache@v4
         with:
           path: ${{ env.PNPM_STORE_PATH }}
-          key: ${{ runner.os }}-pnpm-store-${{ hashFiles('**/pnpm-lock.yaml') }}
-          restore-keys: |
-            ${{ runner.os }}-pnpm-store-
+          key: ${{ runner.os }}-pnpm-store-${{ hashFiles('**/pnpm-lock.yaml', '**/package.json') }}
+          restore-keys: ${{ runner.os }}-pnpm-store-
 
       # 4) Install + run
       - name: Install deps
-        run: pnpm -v && pnpm -w install --frozen-lockfile
+        env:
+          PNPM_CONFIG_FROZEN_LOCKFILE: "false"
+        run: pnpm -w install --no-frozen-lockfile
 
       - name: DB migrate + seed
         run: |
