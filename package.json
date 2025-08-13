@@ -14,7 +14,11 @@
   },
   "devDependencies": {
     "typescript": "^5.5.4",
-    "vitest": "^2.1.9",
-    "@types/node": "^20.12.12"
+    "@types/node": "^20",
+    "vitest": "^1.6.0",
+    "@vitest/ui": "^1.6.0",
+    "prisma": "^5.22.0",
+    "@prisma/client": "^5.22.0",
+    "esbuild": "^0.21.5"
   }
 }
