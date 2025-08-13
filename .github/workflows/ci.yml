@@ -41,8 +41,7 @@ jobs:
         continue-on-error: true
         uses: pnpm/action-setup@v4
         with:
-          version: 9
-          run_install: false
+          run_install: false    # action will use package.json's "packageManager": "pnpm@9.0.0"
 
       - name: Enable pnpm via Corepack (fallback)
         if: steps.setup_pnpm.outcome == 'failure'
