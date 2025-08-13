@@ -1,11 +1,16 @@
 {
   "extends": "../../tsconfig.base.json",
   "compilerOptions": {
-    "outDir": "dist",
-    "rootDir": "src"
+    "outDir": "./dist",
+    "rootDir": "./src",
+    "types": ["node", "vitest/globals"]
   },
   "include": [
-    "src",
-    "tests"
+    "src/**/*",
+    "tests/**/*"  // Add this to include test files
+  ],
+  "exclude": [
+    "node_modules",
+    "dist"
   ]
 }
