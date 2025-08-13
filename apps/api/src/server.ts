@@ -12,22 +12,16 @@ import echoRoutes from "./routes/echo.ts";
 import authRoutes from "./routes/auth.ts";
 import projectsRoutes from "./routes/projects.ts";
 import { getEnv } from "./types/env.ts";
-import { ZodTypeProvider, validatorCompiler, serializerCompiler } from "fastify-type-provider-zod";
 
+// Simple Fastify instance without Zod type provider
 const app = Fastify({
   logger: { level: "info", redact: ["req.headers.authorization"] },
-}).withTypeProvider<ZodTypeProvider>();
-
-// Zod compilers first
-app.setValidatorCompiler(validatorCompiler);
-app.setSerializerCompiler(serializerCompiler);
+});
 
 const env = getEnv();
 app.log.info({ DATABASE_URL: process.env.DATABASE_URL, cwd: process.cwd() }, "Booting API");
 
-
-
-// Global error handler (great for surfacing Prisma/Zod issues)
+// Global error handler
 app.setErrorHandler((err, _req, reply) => {
   app.log.error({ err }, "Unhandled error");
   const status = (err as any).statusCode ?? 500;
@@ -45,6 +39,7 @@ await app.register(jwt, {
   secret: env.JWT_SECRET,
   cookie: { cookieName: "session", signed: false },
 });
+
 app.decorate("authenticate", async function (req, reply) {
   try {
     await req.jwtVerify();
@@ -52,26 +47,27 @@ app.decorate("authenticate", async function (req, reply) {
     return reply.send(err);
   }
 });
+
 await app.register(prismaPlugin);
+
+// Use minimal swagger without Zod transform
 await app.register(swagger);
 
-// Routes/plugins
+// Routes
 await app.register(readiness);
 await app.register(healthRoutes);
-await app.register(echoRoutes);
+//await app.register(echoRoutes);
 await app.register(authRoutes);
-await app.register(projectsRoutes);
+//await app.register(projectsRoutes);
 
-// Debug helpers (hidden in prod)
+// Debug helpers
 app.get(
   "/__routes",
   { schema: { hide: process.env.NODE_ENV === "production" } },
   async () => app.printRoutes()
 );
 
-
-
-// Print routes once fully ready
+// Print routes once ready
 app.ready().then(() => app.log.info("\n" + app.printRoutes()));
 
 // Graceful shutdown
@@ -85,6 +81,7 @@ const close = async (sig?: NodeJS.Signals) => {
     process.exit(1);
   }
 };
+
 process.on("SIGINT", () => close("SIGINT"));
 process.on("SIGTERM", () => close("SIGTERM"));
 
