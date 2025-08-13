@@ -36,18 +36,8 @@ jobs:
           check-latest: true
 
       # 2) Install pnpm (action) with Corepack fallback
-      - name: Setup pnpm (action)
-        id: setup_pnpm
-        continue-on-error: true
+      - name: Setup pnpm
         uses: pnpm/action-setup@v4
-        with:
-          run_install: false    # action will use package.json's "packageManager": "pnpm@9.0.0"
-
-      - name: Enable pnpm via Corepack (fallback)
-        if: steps.setup_pnpm.outcome == 'failure'
-        run: |
-          corepack enable
-          corepack prepare pnpm@9 --activate
 
       # 3) Cache the pnpm store
       - name: Get pnpm store path
