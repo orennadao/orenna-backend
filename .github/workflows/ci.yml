@@ -57,7 +57,7 @@ jobs:
 
       - name: DB migrate + seed
         run: |
-          pnpm -w db:deploy
+          pnpm -w db:migrate
           pnpm -w db:seed || true
 
       - name: Typecheck
