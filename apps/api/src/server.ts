@@ -11,6 +11,8 @@ import healthRoutes from "./routes/health.ts";
 import echoRoutes from "./routes/echo.ts";
 import authRoutes from "./routes/auth.ts";
 import projectsRoutes from "./routes/projects.ts";
+import liftUnitRoutes from "./routes/lift-units.ts";
+import blockchainRoutes from "./routes/blockchain.ts";
 import { getEnv } from "./types/env.ts";
 
 // Simple Fastify instance without Zod type provider
@@ -59,6 +61,8 @@ await app.register(healthRoutes);
 //await app.register(echoRoutes);
 await app.register(authRoutes);
 //await app.register(projectsRoutes);
+await app.register(liftUnitRoutes, { prefix: '/api' });
+await app.register(blockchainRoutes, { prefix: '/api' });
 
 // Debug helpers
 app.get(
