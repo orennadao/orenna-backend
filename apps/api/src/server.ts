@@ -4,16 +4,18 @@ import Fastify from "fastify";
 import cors from "@fastify/cors";
 import cookie from "@fastify/cookie";
 import jwt from "@fastify/jwt";
-import swagger from "./plugins/swagger.ts";
-import prismaPlugin from "./plugins/prisma.ts";
-import readiness from "./plugins/readiness.ts";
-import healthRoutes from "./routes/health.ts";
-import echoRoutes from "./routes/echo.ts";
-import authRoutes from "./routes/auth.ts";
-import projectsRoutes from "./routes/projects.ts";
-import liftUnitRoutes from "./routes/lift-units.ts";
-import blockchainRoutes from "./routes/blockchain.ts";
-import { getEnv } from "./types/env.ts";
+import swagger from "./plugins/swagger";
+import prismaPlugin from "./plugins/prisma";
+import readiness from "./plugins/readiness";
+import healthRoutes from "./routes/health";
+import echoRoutes from "./routes/echo";
+import authRoutes from "./routes/auth";
+import projectsRoutes from "./routes/projects";
+import liftUnitRoutes from "./routes/lift-units";
+import blockchainRoutes from "./routes/blockchain";
+import { getEnv } from "./types/env";
+import mintRequestRoutes from './routes/mint-requests';
+
 
 // Simple Fastify instance without Zod type provider
 const app = Fastify({
@@ -63,6 +65,7 @@ await app.register(authRoutes);
 //await app.register(projectsRoutes);
 await app.register(liftUnitRoutes, { prefix: '/api' });
 await app.register(blockchainRoutes, { prefix: '/api' });
+await app.register(mintRequestRoutes, { prefix: '/api' });
 
 // Debug helpers
 app.get(

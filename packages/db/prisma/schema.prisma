@@ -43,8 +43,10 @@ model Project {
   meta            Json?
   createdAt       DateTime @default(now())
   updatedAt       DateTime @updatedAt
-
-  liftUnits LiftUnit[]
+  
+  // Relations
+  mintRequests MintRequest[]
+  liftUnits    LiftUnit[]
 }
 
 model LiftUnit {
@@ -54,10 +56,15 @@ model LiftUnit {
   contractAddress String?
   chainId         Int?
 
+  // Mint request relation (one-to-one)
+  mintRequestId String? @unique
+  mintRequest   MintRequest? @relation(fields: [mintRequestId], references: [id])
+
   status   String   @default("DRAFT")
   quantity Decimal?
   unit     String?
 
+  // Project relation
   projectId Int?
   project   Project? @relation(fields: [projectId], references: [id])
 
@@ -65,6 +72,7 @@ model LiftUnit {
   issuedAt  DateTime?
   retiredAt DateTime?
 
+  // Events relation
   events LiftUnitEvent[]
 
   createdAt DateTime @default(now())
@@ -113,4 +121,101 @@ model Contract {
 
   @@unique([address, chainId])
   @@index([chainId, type])
+}
+
+// Mint Request - tracks the approval workflow
+model MintRequest {
+  id          String   @id @default(cuid())
+  
+  // Request details
+  projectId   Int
+  project     Project  @relation(fields: [projectId], references: [id])
+  
+  tokenId     String   // ERC-1155 token ID to mint
+  amount      String   // Amount to mint (as string for large numbers)
+  recipient   String   // Ethereum address to receive tokens
+  
+  // Verification data
+  verificationData Json? // Ecosystem function measurements, photos, reports
+  verificationHash String? // IPFS hash or content hash for verification artifacts
+  
+  // Request metadata
+  title       String
+  description String?
+  requestedBy String   // Ethereum address of requester
+  
+  // Approval workflow
+  status      MintRequestStatus @default(PENDING)
+  
+  // Admin actions
+  reviewedBy  String?  // Admin who reviewed
+  reviewedAt  DateTime?
+  approvalNotes String? // Admin comments
+  
+  // Blockchain execution
+  txHash      String?  // Transaction hash when minted
+  blockNumber Int?     // Block number of mint transaction
+  executedAt  DateTime?
+  
+  // Timestamps
+  createdAt   DateTime @default(now())
+  updatedAt   DateTime @updatedAt
+  
+  // Relations
+  events      MintRequestEvent[]
+  liftUnit    LiftUnit? // One-to-one: mint request can create one lift unit
+  
+  @@index([status])
+  @@index([projectId])
+  @@index([requestedBy])
+  @@index([createdAt])
+}
+
+// Mint Request Status enum
+enum MintRequestStatus {
+  PENDING     // Awaiting admin review
+  APPROVED    // Approved, ready for minting
+  MINTING     // Currently being minted on blockchain
+  COMPLETED   // Successfully minted
+  REJECTED    // Rejected by admin
+  FAILED      // Blockchain minting failed
+  CANCELLED   // Cancelled by requester
+}
+
+// Mint Request Events - audit trail
+model MintRequestEvent {
+  id            String     @id @default(cuid())
+  
+  mintRequestId String
+  mintRequest   MintRequest @relation(fields: [mintRequestId], references: [id], onDelete: Cascade)
+  
+  type          MintRequestEventType
+  
+  // Event details
+  performedBy   String     // Address of who performed the action
+  notes         String?    // Additional notes/comments
+  metadata      Json?      // Additional event-specific data
+  
+  // Blockchain data (for minting events)
+  txHash        String?
+  blockNumber   Int?
+  gasUsed       String?
+  
+  createdAt     DateTime   @default(now())
+  
+  @@index([mintRequestId])
+  @@index([type])
+  @@index([createdAt])
+}
+
+// Mint Request Event Types
+enum MintRequestEventType {
+  SUBMITTED   // Request submitted
+  REVIEWED    // Admin reviewed (could be approved or rejected)
+  APPROVED    // Admin approved
+  REJECTED    // Admin rejected
+  CANCELLED   // Requester cancelled
+  MINT_STARTED // Blockchain minting started
+  MINT_COMPLETED // Blockchain minting completed
+  MINT_FAILED // Blockchain minting failed
 }
