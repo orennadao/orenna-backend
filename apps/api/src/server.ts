@@ -15,6 +15,8 @@ import liftUnitRoutes from "./routes/lift-units";
 import blockchainRoutes from "./routes/blockchain";
 import { getEnv } from "./types/env";
 import mintRequestRoutes from './routes/mint-requests';
+import paymentRoutes from './routes/payments';
+import indexerRoutes from './routes/indexer';
 
 
 // Simple Fastify instance without Zod type provider
@@ -66,6 +68,8 @@ await app.register(authRoutes);
 await app.register(liftUnitRoutes, { prefix: '/api' });
 await app.register(blockchainRoutes, { prefix: '/api' });
 await app.register(mintRequestRoutes, { prefix: '/api' });
+await app.register(paymentRoutes, { prefix: '/api' });
+await app.register(indexerRoutes, { prefix: '/api' });
 
 // Debug helpers
 app.get(

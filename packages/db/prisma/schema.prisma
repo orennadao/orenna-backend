@@ -47,6 +47,8 @@ model Project {
   // Relations
   mintRequests MintRequest[]
   liftUnits    LiftUnit[]
+  payments     Payment[]
+  paymentConfig ProjectPaymentConfig?
 }
 
 model LiftUnit {
@@ -218,4 +220,231 @@ enum MintRequestEventType {
   MINT_STARTED // Blockchain minting started
   MINT_COMPLETED // Blockchain minting completed
   MINT_FAILED // Blockchain minting failed
+}
+
+// Payment processing and escrow management
+model Payment {
+  id               String          @id @default(cuid())
+  
+  // Payment identification
+  paymentType      PaymentType
+  status           PaymentStatus   @default(PENDING)
+  
+  // Related entities
+  projectId        Int?
+  project          Project?        @relation(fields: [projectId], references: [id])
+  
+  // Payment details
+  amount           String          // Amount in payment token (string for precision)
+  paymentToken     String          // Contract address of payment token
+  chainId          Int
+  
+  // Payer information
+  payerAddress     String          // Address making payment
+  payerEmail       String?         // Optional email for notifications
+  
+  // Recipient information
+  recipientAddress String          // Address receiving payment
+  
+  // Escrow contract information
+  escrowContract   String?         // Address of escrow contract
+  escrowConfig     Json?           // Repayment configuration data
+  
+  // Transaction tracking
+  txHash           String?         // Transaction hash of payment
+  blockNumber      Int?            // Block number where payment was confirmed
+  blockTimestamp   DateTime?       // Timestamp from blockchain
+  
+  // Payment flow tracking
+  proceedsNotified Boolean         @default(false) // Whether RepaymentEscrow was notified
+  distributionComplete Boolean     @default(false) // Whether funds were distributed
+  
+  // Metadata
+  description      String?
+  metadata         Json?           // Additional payment-specific data
+  
+  // Timestamps
+  createdAt        DateTime        @default(now())
+  updatedAt        DateTime        @updatedAt
+  confirmedAt      DateTime?       // When payment was confirmed on-chain
+  
+  // Relations
+  events           PaymentEvent[]
+  indexedEvents    IndexedEvent[] @relation("PaymentEvents")
+  
+  @@index([status])
+  @@index([projectId])
+  @@index([payerAddress])
+  @@index([txHash])
+  @@index([chainId])
+  @@index([createdAt])
+}
+
+enum PaymentType {
+  LIFT_UNIT_PURCHASE    // Direct purchase of lift units
+  PROJECT_FUNDING       // Upfront funding for project
+  REPAYMENT            // Repayment to funders
+  PLATFORM_FEE         // Platform fees
+  STEWARD_PAYMENT      // Payment to project stewards
+}
+
+enum PaymentStatus {
+  PENDING              // Payment initiated but not confirmed
+  CONFIRMED            // Payment confirmed on blockchain
+  IN_ESCROW           // Payment held in escrow contract
+  DISTRIBUTED         // Payment distributed per escrow rules
+  FAILED              // Payment failed
+  CANCELLED           // Payment cancelled
+  REFUNDED            // Payment refunded
+}
+
+// Payment events for audit trail
+model PaymentEvent {
+  id            String       @id @default(cuid())
+  
+  paymentId     String
+  payment       Payment      @relation(fields: [paymentId], references: [id], onDelete: Cascade)
+  
+  type          PaymentEventType
+  
+  // Event details
+  performedBy   String?      // Address that triggered the event
+  amount        String?      // Amount involved in this event
+  fromAddress   String?      // Source address (for transfers)
+  toAddress     String?      // Destination address (for transfers)
+  
+  // Blockchain data
+  txHash        String?
+  blockNumber   Int?
+  logIndex      Int?         // Position in transaction logs
+  gasUsed       String?
+  
+  // Event metadata
+  notes         String?
+  metadata      Json?
+  
+  createdAt     DateTime     @default(now())
+  
+  @@index([paymentId])
+  @@index([type])
+  @@index([txHash])
+  @@index([createdAt])
+}
+
+enum PaymentEventType {
+  PAYMENT_INITIATED       // Payment process started
+  PAYMENT_CONFIRMED       // Payment confirmed on blockchain
+  ESCROW_DEPOSITED       // Funds deposited to escrow contract
+  PROCEEDS_NOTIFIED      // RepaymentEscrow notified of proceeds
+  FUNDS_DISTRIBUTED      // Funds distributed from escrow
+  PAYMENT_FAILED         // Payment processing failed
+  PAYMENT_REFUNDED       // Payment was refunded
+}
+
+// Blockchain event indexing
+model IndexedEvent {
+  id              String      @id @default(cuid())
+  
+  // Blockchain identification
+  chainId         Int
+  contractAddress String
+  
+  // Event identification
+  eventName       String      // e.g., "ProceedsReceived", "UnitsSold"
+  eventSignature  String      // Event signature hash
+  
+  // Block information
+  blockNumber     Int
+  blockHash       String
+  blockTimestamp  DateTime
+  
+  // Transaction information
+  txHash          String
+  txIndex         Int
+  logIndex        Int
+  
+  // Event data
+  topics          Json        // Array of event topics
+  data            String      // Raw event data
+  decodedArgs     Json        // Decoded event arguments
+  
+  // Processing status
+  processed       Boolean     @default(false)
+  processedAt     DateTime?
+  
+  // Error handling
+  processingError String?
+  retryCount      Int         @default(0)
+  maxRetries      Int         @default(3)
+  
+  // Relations and metadata
+  relatedPaymentId String?    // Link to payment if applicable
+  relatedPayment   Payment?   @relation("PaymentEvents", fields: [relatedPaymentId], references: [id])
+  
+  metadata        Json?
+  createdAt       DateTime    @default(now())
+  
+  @@unique([chainId, txHash, logIndex])
+  @@index([chainId, contractAddress])
+  @@index([eventName])
+  @@index([blockNumber])
+  @@index([processed])
+  @@index([txHash])
+  @@index([createdAt])
+}
+
+// Indexer state tracking
+model IndexerState {
+  id              String      @id @default(cuid())
+  
+  // Indexer identification
+  chainId         Int
+  contractAddress String
+  indexerType     String      // e.g., "RepaymentEscrow", "AllocationEscrow"
+  
+  // State tracking
+  lastBlockNumber Int         @default(0)
+  lastBlockHash   String?
+  lastSyncAt      DateTime?
+  
+  // Configuration
+  startBlock      Int         @default(0)
+  confirmations   Int         @default(12) // Number of confirmations required
+  isActive        Boolean     @default(true)
+  
+  // Error handling
+  errorCount      Int         @default(0)
+  lastError       String?
+  lastErrorAt     DateTime?
+  
+  createdAt       DateTime    @default(now())
+  updatedAt       DateTime    @updatedAt
+  
+  @@unique([chainId, contractAddress, indexerType])
+  @@index([chainId])
+  @@index([isActive])
+  @@index([lastSyncAt])
+}
+
+// Add payment relation to Project
+model ProjectPaymentConfig {
+  id                String    @id @default(cuid())
+  
+  projectId         Int       @unique
+  project           Project   @relation(fields: [projectId], references: [id], onDelete: Cascade)
+  
+  // Escrow contract addresses
+  allocationEscrow  String?   // AllocationEscrow contract address
+  repaymentEscrow   String?   // RepaymentEscrow contract address
+  
+  // Payment configuration
+  acceptsPayments   Boolean   @default(false)
+  paymentTokens     Json?     // Array of accepted payment tokens
+  
+  // Default payment settings
+  platformFeeBps    Int?      // Platform fee in basis points
+  platformFeeCap    String?   // Maximum platform fee
+  
+  createdAt         DateTime  @default(now())
+  updatedAt         DateTime  @updatedAt
 }
