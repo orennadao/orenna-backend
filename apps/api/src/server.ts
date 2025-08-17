@@ -4,16 +4,34 @@ import Fastify from "fastify";
 import cors from "@fastify/cors";
 import cookie from "@fastify/cookie";
 import jwt from "@fastify/jwt";
-import swagger from "./plugins/swagger.ts";
-import prismaPlugin from "./plugins/prisma.ts";
-import readiness from "./plugins/readiness.ts";
-import healthRoutes from "./routes/health.ts";
-import echoRoutes from "./routes/echo.ts";
-import authRoutes from "./routes/auth.ts";
-import projectsRoutes from "./routes/projects.ts";
-import liftUnitRoutes from "./routes/lift-units.ts";
-import blockchainRoutes from "./routes/blockchain.ts";
-import { getEnv } from "./types/env.ts";
+import websocket from "@fastify/websocket";
+import swagger from "./plugins/swagger";
+import prismaPlugin from "./plugins/prisma";
+import readiness from "./plugins/readiness";
+import securityPlugin from "./plugins/security";
+import validationPlugin from "./plugins/validation";
+import healthRoutes from "./routes/health";
+import echoRoutes from "./routes/echo";
+import authRoutes from "./routes/auth";
+import projectsRoutes from "./routes/projects";
+import liftTokenRoutes from "./routes/lift-tokens";
+import blockchainRoutes from "./routes/blockchain";
+import { getEnv } from "./types/env";
+import mintRequestRoutes from './routes/mint-requests';
+import paymentRoutes from './routes/payments';
+import indexerRoutes from './routes/indexer';
+import websocketRoutes from './routes/websocket';
+import analyticsRoutes from './routes/analytics';
+import rolesRoutes from './routes/roles';
+import { vendorRoutes } from './routes/vendors';
+import { contractRoutes } from './routes/contracts';
+import { invoiceRoutes } from './routes/invoices';
+import { financePaymentRoutes } from './routes/finance-payments';
+import { reconciliationRoutes } from './routes/reconciliation';
+import { governanceRoutes } from './routes/governance';
+import { financeLoopRoutes } from './routes/finance-loop';
+import { financeIntegrityRoutes } from './routes/finance-integrity';
+
 
 // Simple Fastify instance without Zod type provider
 const app = Fastify({
@@ -34,6 +52,10 @@ app.setErrorHandler((err, _req, reply) => {
   });
 });
 
+// Security plugins (register first)
+await app.register(securityPlugin);
+await app.register(validationPlugin);
+
 // Core plugins
 await app.register(cors, { origin: env.API_CORS_ORIGIN, credentials: true });
 await app.register(cookie);
@@ -41,6 +63,7 @@ await app.register(jwt, {
   secret: env.JWT_SECRET,
   cookie: { cookieName: "session", signed: false },
 });
+await app.register(websocket);
 
 app.decorate("authenticate", async function (req, reply) {
   try {
@@ -60,9 +83,27 @@ await app.register(readiness);
 await app.register(healthRoutes);
 //await app.register(echoRoutes);
 await app.register(authRoutes);
-//await app.register(projectsRoutes);
-await app.register(liftUnitRoutes, { prefix: '/api' });
+await app.register(projectsRoutes, { prefix: '/api' });
+await app.register(liftTokenRoutes, { prefix: '/api' });
 await app.register(blockchainRoutes, { prefix: '/api' });
+await app.register(mintRequestRoutes, { prefix: '/api' });
+await app.register(paymentRoutes, { prefix: '/api' });
+await app.register(indexerRoutes, { prefix: '/api' });
+await app.register(websocketRoutes, { prefix: '/api' });
+await app.register(analyticsRoutes, { prefix: '/api' });
+await app.register(rolesRoutes, { prefix: '/api' });
+await app.register(vendorRoutes, { prefix: '/api/vendors' });
+await app.register(contractRoutes, { prefix: '/api/contracts' });
+await app.register(invoiceRoutes, { prefix: '/api/invoices' });
+await app.register(financePaymentRoutes, { prefix: '/api/finance' });
+await app.register(reconciliationRoutes, { prefix: '/api/reconciliation' });
+await app.register(governanceRoutes, { prefix: '/api' });
+await app.register(financeLoopRoutes, { prefix: '/api/finance' });
+await app.register(financeIntegrityRoutes, { prefix: '/api/finance' });
+
+// Cost tracking routes
+import costTrackingRoutes from './routes/cost-tracking.js';
+await app.register(costTrackingRoutes, { prefix: '/api' });
 
 // Debug helpers
 app.get(

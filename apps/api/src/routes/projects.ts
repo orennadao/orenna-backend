@@ -45,8 +45,40 @@ export default async function routes(app: FastifyInstance) {
     {
       schema: {
         tags: ["Projects"],
-        querystring: ListQuery,
-        response: { 200: z.array(ProjectOut) },
+        querystring: {
+          type: 'object',
+          properties: {
+            limit: { type: 'number', minimum: 1, maximum: 100, default: 20 },
+            offset: { type: 'number', minimum: 0, default: 0 },
+            search: { type: 'string', maxLength: 100 },
+            sort: { type: 'string', enum: ["createdAt:desc", "createdAt:asc"], default: "createdAt:desc" }
+          }
+        },
+        response: { 
+          200: { 
+            type: 'object',
+            properties: {
+              data: {
+                type: 'object',
+                properties: {
+                  data: {
+                    type: 'array',
+                    items: { type: 'object' }
+                  },
+                  pagination: {
+                    type: 'object',
+                    properties: {
+                      page: { type: 'number' },
+                      limit: { type: 'number' },
+                      total: { type: 'number' },
+                      totalPages: { type: 'number' }
+                    }
+                  }
+                }
+              }
+            }
+          } 
+        },
       },
     },
     async (req, reply) => {
@@ -65,8 +97,24 @@ export default async function routes(app: FastifyInstance) {
           }
         : undefined;
 
-      const rows = await app.prisma.project.findMany({ where, orderBy, take: limit, skip: offset });
-      return rows.map(r => ({ ...r, meta: parseMaybeJSON(r.meta) }));
+      const [rows, total] = await Promise.all([
+        app.prisma.project.findMany({ where, orderBy, take: limit, skip: offset }),
+        app.prisma.project.count({ where })
+      ]);
+      
+      const projects = rows.map(r => ({ ...r, meta: parseMaybeJSON(r.meta) }));
+      
+      return {
+        data: {
+          data: projects,
+          pagination: {
+            page: Math.floor(offset / limit) + 1,
+            limit,
+            total,
+            totalPages: Math.ceil(total / limit)
+          }
+        }
+      };
     }
   );
 
@@ -76,11 +124,11 @@ export default async function routes(app: FastifyInstance) {
     {
       schema: {
         tags: ["Projects"],
-        body: ProjectCreate,
+        body: { type: 'object' },
         response: {
-          201: ProjectOut,
-          400: z.any(), // Zod flatten error
-          409: z.object({ error: z.string() }),
+          201: { type: 'object' },
+          400: { type: 'object' },
+          409: { type: 'object', properties: { error: { type: 'string' } } },
         },
       },
     },
@@ -112,8 +160,12 @@ export default async function routes(app: FastifyInstance) {
     {
       schema: {
         tags: ["Projects"],
-        params: IdParams,
-        response: { 200: ProjectOut, 400: z.object({ error: z.string() }), 404: NotFound },
+        params: { type: 'object', properties: { id: { type: 'number' } }, required: ['id'] },
+        response: { 
+          200: { type: 'object' }, 
+          400: { type: 'object', properties: { error: { type: 'string' } } }, 
+          404: { type: 'object', properties: { error: { type: 'string' } } }
+        },
       },
     },
     async (req, reply) => {
@@ -132,9 +184,13 @@ export default async function routes(app: FastifyInstance) {
     {
       schema: {
         tags: ["Projects"],
-        params: IdParams,
-        body: ProjectUpdate,
-        response: { 200: ProjectOut, 400: z.any(), 404: NotFound },
+        params: { type: 'object', properties: { id: { type: 'number' } }, required: ['id'] },
+        body: { type: 'object' },
+        response: { 
+          200: { type: 'object' }, 
+          400: { type: 'object' }, 
+          404: { type: 'object', properties: { error: { type: 'string' } } }
+        },
       },
     },
     async (req, reply) => {
@@ -170,8 +226,11 @@ export default async function routes(app: FastifyInstance) {
     {
       schema: {
         tags: ["Projects"],
-        params: IdParams,
-        response: { 200: Ok, 404: NotFound },
+        params: { type: 'object', properties: { id: { type: 'number' } }, required: ['id'] },
+        response: { 
+          200: { type: 'object', properties: { ok: { type: 'boolean' } } }, 
+          404: { type: 'object', properties: { error: { type: 'string' } } }
+        },
       },
     },
     async (req, reply) => {

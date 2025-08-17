@@ -17,6 +17,9 @@ importers:
       '@vitest/ui':
         specifier: ^1.6.0
         version: 1.6.1(vitest@1.6.1)
+      dotenv-cli:
+        specifier: ^10.0.0
+        version: 10.0.0
       esbuild:
         specifier: ^0.21.5
         version: 0.21.5
@@ -77,6 +80,9 @@ importers:
       siwe:
         specifier: ^2.1.7
         version: 2.3.2(ethers@6.15.0)
+      viem:
+        specifier: ^2.33.3
+        version: 2.33.3(typescript@5.9.2)(zod@3.25.76)
       zod:
         specifier: ^3.25.76
         version: 3.25.76
@@ -87,6 +93,9 @@ importers:
       '@types/supertest':
         specifier: ^6.0.3
         version: 6.0.3
+      dotenv-cli:
+        specifier: ^10.0.0
+        version: 10.0.0
       prisma:
         specifier: ^5.22.0
         version: 5.22.0
@@ -99,9 +108,6 @@ importers:
       typescript:
         specifier: ^5.5.4
         version: 5.9.2
-      viem:
-        specifier: ^2.33.3
-        version: 2.33.3(typescript@5.9.2)(zod@3.25.76)
       vitest:
         specifier: ^1.6.1
         version: 1.6.1(@types/node@20.19.10)(@vitest/ui@1.6.1)
@@ -112,6 +118,9 @@ importers:
         specifier: ^5.22.0
         version: 5.22.0(prisma@5.22.0)
     devDependencies:
+      dotenv-cli:
+        specifier: ^7.4.2
+        version: 7.4.4
       prisma:
         specifier: ^5.22.0
         version: 5.22.0
@@ -907,6 +916,26 @@ packages:
     resolution: {integrity: sha512-EjePK1srD3P08o2j4f0ExnylqRs5B9tJjcp9t1krH2qRi8CCdsYfwe9JgSLurFBWwq4uOlipzfk5fHNvwFKr8Q==}
     engines: {node: ^14.15.0 || ^16.10.0 || >=18.0.0}
 
+  dotenv-cli@10.0.0:
+    resolution: {integrity: sha512-lnOnttzfrzkRx2echxJHQRB6vOAMSCzzZg79IxpC00tU42wZPuZkQxNNrrwVAxaQZIIh001l4PxVlCrBxngBzA==}
+    hasBin: true
+
+  dotenv-cli@7.4.4:
+    resolution: {integrity: sha512-XkBYCG0tPIes+YZr4SpfFv76SQrV/LeCE8CI7JSEMi3VR9MvTihCGTOtbIexD6i2mXF+6px7trb1imVCXSNMDw==}
+    hasBin: true
+
+  dotenv-expand@10.0.0:
+    resolution: {integrity: sha512-GopVGCpVS1UKH75VKHGuQFqS1Gusej0z4FyQkPdwjil2gNIv+LNsqBlboOzpJFZKVT95GkCyWJbBSdFEFUWI2A==}
+    engines: {node: '>=12'}
+
+  dotenv-expand@11.0.7:
+    resolution: {integrity: sha512-zIHwmZPRshsCdpMDyVsqGmgyP0yT8GAgXUnkdAoJisxvf33k7yO6OuoKmcTGuXPWSsm8Oh88nZicRLA9Y0rUeA==}
+    engines: {node: '>=12'}
+
+  dotenv@16.6.1:
+    resolution: {integrity: sha512-uBq4egWHTcTt33a72vpSG0z3HnPuIl6NqYcTrKEg2azoEyl2hpW0zqlxysq2pK9HlDIHyHyakeYaYnSAwd8bow==}
+    engines: {node: '>=12'}
+
   dotenv@17.2.1:
     resolution: {integrity: sha512-kQhDYKZecqnM0fCnzI5eIv5L4cAe/iRI+HqMbO/hbRdTAeXDG+M9FjipUxNfbARuEg4iHIbhnhs78BCHNbSxEQ==}
     engines: {node: '>=12'}
@@ -1228,6 +1257,9 @@ packages:
   minimatch@10.0.3:
     resolution: {integrity: sha512-IPZ167aShDZZUMdRk66cyQAW3qr0WzbHkPdMYa8bzZhlHhO3jALbKdxcaak7W9FfT2rZNpQuUu4Od7ILEpXSaw==}
     engines: {node: 20 || >=22}
+
+  minimist@1.2.8:
+    resolution: {integrity: sha512-2yyAR8qBkN3YuheJanUpWC5U3bb5osDywNB8RzDVlDwDHbocAJveqqj1u8+SVD7jkWT4yvsHCpWqqWqAxb0zCA==}
 
   minipass@7.1.2:
     resolution: {integrity: sha512-qOOzS1cBTWYF4BH8fVePDBOO9iptMnGUEZwNc/cMWnTV2nVLZ7VoNWEPHkYczZA0pdoA7dl6e7FL659nX9S2aw==}
@@ -2330,6 +2362,28 @@ snapshots:
 
   diff-sequences@29.6.3: {}
 
+  dotenv-cli@10.0.0:
+    dependencies:
+      cross-spawn: 7.0.6
+      dotenv: 17.2.1
+      dotenv-expand: 11.0.7
+      minimist: 1.2.8
+
+  dotenv-cli@7.4.4:
+    dependencies:
+      cross-spawn: 7.0.6
+      dotenv: 16.6.1
+      dotenv-expand: 10.0.0
+      minimist: 1.2.8
+
+  dotenv-expand@10.0.0: {}
+
+  dotenv-expand@11.0.7:
+    dependencies:
+      dotenv: 16.6.1
+
+  dotenv@16.6.1: {}
+
   dotenv@17.2.1: {}
 
   dunder-proto@1.0.1:
@@ -2727,6 +2781,8 @@ snapshots:
   minimatch@10.0.3:
     dependencies:
       '@isaacs/brace-expansion': 5.0.0
+
+  minimist@1.2.8: {}
 
   minipass@7.1.2: {}
 

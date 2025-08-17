@@ -9,6 +9,10 @@ coverage/
 # TypeScript
 *.tsbuildinfo
 
+# Next.js
+.next/
+out/
+
 # macOS
 .DS_Store
 

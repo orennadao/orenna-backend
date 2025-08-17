@@ -13,17 +13,18 @@
   "scripts": {
     "build": "tsc -p tsconfig.json",
     "typecheck": "tsc -p tsconfig.json --noEmit",
-    "prisma:generate": "prisma generate",
-    "prisma:push": "prisma db push",
-    "prisma:migrate": "prisma migrate dev --name init",
-    "prisma:seed": "tsx prisma/seed.ts",
-    "prisma:studio": "prisma studio --schema=./prisma/schema.prisma",
+    "prisma:generate": "dotenv -e ../../.env -- prisma generate",
+    "prisma:push": "dotenv -e ../../.env -- prisma db push",
+    "prisma:migrate": "dotenv -e ../../.env -- prisma migrate dev --name init",
+    "prisma:seed": "dotenv -e ../../.env -- tsx prisma/seed.ts",
+    "prisma:studio": "dotenv -e ../../.env -- prisma studio --schema=./prisma/schema.prisma",
     "test": "vitest run"
   },
   "dependencies": {
     "@prisma/client": "^5.22.0"
   },
   "devDependencies": {
+    "dotenv-cli": "^7.4.2",
     "prisma": "^5.22.0",
     "tsx": "^4.16.2",
     "typescript": "^5.5.4",
