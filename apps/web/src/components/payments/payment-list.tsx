@@ -1,6 +1,6 @@
 'use client'
 
-import { useState, useEffect } from 'react'
+import { useState, useEffect, useCallback, useMemo } from 'react'
 import { usePayments } from '@/hooks/use-payments'
 import { usePaymentEvents } from '@/components/providers/websocket-provider'
 import type { PaymentStatus, PaymentType } from '@/types/api'
@@ -28,51 +28,64 @@ export function PaymentList({ projectId, payerAddress }: PaymentListProps) {
 
   const paymentEvents = usePaymentEvents()
 
+  // Memoized event handlers to prevent infinite loops
+  const handlePaymentInitiated = useCallback((data: any) => {
+    if (!projectId || data.projectId === projectId) {
+      setRealtimeUpdates(prev => [`Payment ${data.paymentId} initiated`, ...prev].slice(0, 5))
+      refetch()
+    }
+  }, [projectId, refetch])
+
+  const handlePaymentConfirmed = useCallback((data: any) => {
+    if (!projectId || data.projectId === projectId) {
+      setRealtimeUpdates(prev => [`Payment ${data.paymentId} confirmed`, ...prev].slice(0, 5))
+      refetch()
+    }
+  }, [projectId, refetch])
+
+  const handlePaymentFailed = useCallback((data: any) => {
+    if (!projectId || data.projectId === projectId) {
+      setRealtimeUpdates(prev => [`Payment ${data.paymentId} failed`, ...prev].slice(0, 5))
+      refetch()
+    }
+  }, [projectId, refetch])
+
+  const handleProceedsNotified = useCallback((data: any) => {
+    if (!projectId || data.projectId === projectId) {
+      setRealtimeUpdates(prev => [`Proceeds notified for payment ${data.paymentId}`, ...prev].slice(0, 5))
+      refetch()
+    }
+  }, [projectId, refetch])
+
+  const handleProceedsConfirmed = useCallback((data: any) => {
+    if (!projectId || data.projectId === projectId) {
+      setRealtimeUpdates(prev => [`Proceeds confirmed for payment ${data.paymentId}`, ...prev].slice(0, 5))
+      refetch()
+    }
+  }, [projectId, refetch])
+
+  const handleUnitsPurchased = useCallback((data: any) => {
+    if (!projectId || data.projectId === projectId) {
+      setRealtimeUpdates(prev => [`Units purchased in payment ${data.paymentId}`, ...prev].slice(0, 5))
+      refetch()
+    }
+  }, [projectId, refetch])
+
   // Subscribe to real-time payment events
   useEffect(() => {
     const unsubscribers = [
-      paymentEvents.onPaymentInitiated((data) => {
-        if (!projectId || data.projectId === projectId) {
-          setRealtimeUpdates(prev => [`Payment ${data.paymentId} initiated`, ...prev].slice(0, 5))
-          refetch()
-        }
-      }),
-      paymentEvents.onPaymentConfirmed((data) => {
-        if (!projectId || data.projectId === projectId) {
-          setRealtimeUpdates(prev => [`Payment ${data.paymentId} confirmed`, ...prev].slice(0, 5))
-          refetch()
-        }
-      }),
-      paymentEvents.onPaymentFailed((data) => {
-        if (!projectId || data.projectId === projectId) {
-          setRealtimeUpdates(prev => [`Payment ${data.paymentId} failed`, ...prev].slice(0, 5))
-          refetch()
-        }
-      }),
-      paymentEvents.onProceedsNotified((data) => {
-        if (!projectId || data.projectId === projectId) {
-          setRealtimeUpdates(prev => [`Proceeds notified for payment ${data.paymentId}`, ...prev].slice(0, 5))
-          refetch()
-        }
-      }),
-      paymentEvents.onProceedsConfirmed((data) => {
-        if (!projectId || data.projectId === projectId) {
-          setRealtimeUpdates(prev => [`Proceeds confirmed for payment ${data.paymentId}`, ...prev].slice(0, 5))
-          refetch()
-        }
-      }),
-      paymentEvents.onUnitsPurchased((data) => {
-        if (!projectId || data.projectId === projectId) {
-          setRealtimeUpdates(prev => [`Units purchased in payment ${data.paymentId}`, ...prev].slice(0, 5))
-          refetch()
-        }
-      })
+      paymentEvents.onPaymentInitiated(handlePaymentInitiated),
+      paymentEvents.onPaymentConfirmed(handlePaymentConfirmed),
+      paymentEvents.onPaymentFailed(handlePaymentFailed),
+      paymentEvents.onProceedsNotified(handleProceedsNotified),
+      paymentEvents.onProceedsConfirmed(handleProceedsConfirmed),
+      paymentEvents.onUnitsPurchased(handleUnitsPurchased)
     ]
 
     return () => {
       unsubscribers.forEach(unsub => unsub())
     }
-  }, [projectId, refetch, paymentEvents])
+  }, [handlePaymentInitiated, handlePaymentConfirmed, handlePaymentFailed, handleProceedsNotified, handleProceedsConfirmed, handleUnitsPurchased, paymentEvents])
 
   // Clear realtime updates after a delay
   useEffect(() => {
@@ -189,7 +202,7 @@ export function PaymentList({ projectId, payerAddress }: PaymentListProps) {
               className="w-full p-2 border border-gray-300 rounded-md focus:ring-primary-500 focus:border-primary-500"
             >
               <option value="">All Types</option>
-              <option value="LIFT_UNIT_PURCHASE">Lift Unit Purchase</option>
+              <option value="LIFT_TOKEN_PURCHASE">Lift Token Purchase</option>
               <option value="PROJECT_FUNDING">Project Funding</option>
               <option value="REPAYMENT">Repayment</option>
               <option value="PLATFORM_FEE">Platform Fee</option>

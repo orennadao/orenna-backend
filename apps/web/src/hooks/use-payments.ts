@@ -1,6 +1,6 @@
 'use client'
 
-import { useState, useEffect } from 'react'
+import { useState, useEffect, useCallback } from 'react'
 import { apiClient } from '@/lib/api'
 import type { Payment, CreatePaymentRequest } from '@/types/api'
 
@@ -17,7 +17,7 @@ export function usePayments(params?: {
   const [isLoading, setIsLoading] = useState(true)
   const [error, setError] = useState<string | null>(null)
 
-  const fetchPayments = async () => {
+  const fetchPayments = useCallback(async () => {
     try {
       setIsLoading(true)
       setError(null)
@@ -29,11 +29,11 @@ export function usePayments(params?: {
     } finally {
       setIsLoading(false)
     }
-  }
+  }, [params?.status, params?.paymentType, params?.chainId, params?.payerAddress, params?.limit, params?.offset])
 
   useEffect(() => {
     fetchPayments()
-  }, [params?.status, params?.paymentType, params?.chainId, params?.payerAddress, params?.limit, params?.offset])
+  }, [fetchPayments])
 
   return {
     payments,
@@ -49,7 +49,7 @@ export function usePayment(paymentId: string) {
   const [isLoading, setIsLoading] = useState(true)
   const [error, setError] = useState<string | null>(null)
 
-  const fetchPayment = async () => {
+  const fetchPayment = useCallback(async () => {
     if (!paymentId) return
 
     try {
@@ -62,11 +62,11 @@ export function usePayment(paymentId: string) {
     } finally {
       setIsLoading(false)
     }
-  }
+  }, [paymentId])
 
   useEffect(() => {
     fetchPayment()
-  }, [paymentId])
+  }, [fetchPayment])
 
   return {
     payment,

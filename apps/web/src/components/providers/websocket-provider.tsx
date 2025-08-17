@@ -31,7 +31,7 @@ export function WebSocketProvider({ children, wsUrl }: WebSocketProviderProps) {
   const [indexerEventHandlers, setIndexerEventHandlers] = useState<Set<(event: string, data: IndexerEvent) => void>>(new Set());
   const [recentMessages, setRecentMessages] = useState<WebSocketMessage[]>([]);
 
-  const url = wsUrl || process.env.NEXT_PUBLIC_WS_URL || 'ws://localhost:3000/api/ws';
+  const url = wsUrl || process.env.NEXT_PUBLIC_WS_URL || 'ws://localhost:3001/api/ws';
 
   const handleMessage = useCallback((message: WebSocketMessage) => {
     // Add to recent messages (keep last 50)
@@ -127,7 +127,7 @@ export function useWebSocketContext(): WebSocketContextValue {
 export function usePaymentEvents() {
   const { onPaymentEvent } = useWebSocketContext();
   
-  return {
+  return React.useMemo(() => ({
     onPaymentInitiated: (handler: (data: PaymentEvent) => void) => 
       onPaymentEvent((event, data) => {
         if (event === 'payment_initiated') handler(data);
@@ -152,13 +152,13 @@ export function usePaymentEvents() {
       onPaymentEvent((event, data) => {
         if (event === 'units_purchased') handler(data);
       })
-  };
+  }), [onPaymentEvent]);
 }
 
 export function useIndexerEvents() {
   const { onIndexerEvent } = useWebSocketContext();
   
-  return {
+  return React.useMemo(() => ({
     onEventIndexed: (handler: (data: IndexerEvent) => void) => 
       onIndexerEvent((event, data) => {
         if (event === 'event_indexed') handler(data);
@@ -179,5 +179,5 @@ export function useIndexerEvents() {
       onIndexerEvent((event, data) => {
         if (event === 'units_sold') handler(data);
       })
-  };
+  }), [onIndexerEvent]);
 }

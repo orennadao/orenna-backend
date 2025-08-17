@@ -6,13 +6,23 @@ import type { Config } from 'wagmi'
 // Define the chains your app will work with
 export const chains = [mainnet, sepolia] as const
 
-// Lazy config creation function that only runs on client side
-export function getConfig(): Config | null {
-  // Only create config on client side
-  if (typeof window === 'undefined') {
-    return null
-  }
+// Server-safe basic config for SSR
+function createServerConfig(): Config {
+  return createConfig({
+    chains,
+    transports: {
+      [mainnet.id]: http(),
+      [sepolia.id]: http(),
+    },
+    connectors: [
+      injected({ shimDisconnect: true }),
+    ],
+    ssr: true,
+  })
+}
 
+// Client config with full wallet support
+function createClientConfig(): Config {
   try {
     // Get environment variables
     const projectId = process.env.NEXT_PUBLIC_WALLET_CONNECT_PROJECT_ID
@@ -38,33 +48,47 @@ export function getConfig(): Config | null {
         [mainnet.id]: http(),
         [sepolia.id]: http(),
       },
-      connectors: [
-        walletConnect({
-          projectId,
-          metadata: {
-            name: 'Orenna DAO',
-            description: 'Regenerative finance platform',
-            url: 'https://orenna.org',
-            icons: ['https://orenna.org/logo.png'],
-          },
-        }),
-        injected({ shimDisconnect: true }),
-        coinbaseWallet({
-          appName: 'Orenna DAO',
-          appLogoUrl: 'https://orenna.org/logo.png',
-        }),
-      ],
+      connectors: process.env.NODE_ENV === 'development' 
+        ? [
+            // Development mode - only basic wallet connections to avoid third-party auth errors
+            injected({ shimDisconnect: true }),
+          ]
+        : [
+            // Production mode - full wallet support
+            walletConnect({
+              projectId,
+              metadata: {
+                name: 'Orenna DAO',
+                description: 'Regenerative finance platform',
+                url: 'https://orenna.org',
+                icons: ['https://orenna.org/logo.png'],
+              },
+            }),
+            injected({ shimDisconnect: true }),
+            coinbaseWallet({
+              appName: 'Orenna DAO',
+              appLogoUrl: 'https://orenna.org/logo.png',
+            }),
+          ],
     })
   } catch (error) {
     console.error('Failed to create wagmi config:', error)
-    return null
+    return createServerConfig()
   }
+}
+
+// Create the appropriate config based on environment
+export function getConfig(): Config {
+  if (typeof window === 'undefined') {
+    return createServerConfig()
+  }
+  return createClientConfig()
 }
 
 // Create the config lazily
 let config: Config | null = null
 
-export function getOrCreateConfig(): Config | null {
+export function getOrCreateConfig(): Config {
   if (!config) {
     config = getConfig()
   }
