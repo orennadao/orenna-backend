@@ -1,18 +1,26 @@
-import dynamic from 'next/dynamic'
+'use client'
+
 import { Header } from "@/components/layout/header";
 import { Footer } from "@/components/layout/footer";
-
-const ProtectedRoute = dynamic(
-  () => import("@/components/auth/protected-route").then(mod => ({ default: mod.ProtectedRoute })),
-  { ssr: false }
-)
-
-const ProjectList = dynamic(
-  () => import("@/components/projects/project-list").then(mod => ({ default: mod.ProjectList })),
-  { ssr: false }
-)
+import { ProtectedRoute } from "@/components/auth/protected-route";
+import { ProjectDashboard } from "@/components/projects/project-dashboard";
+import { useRouter } from 'next/navigation';
 
 export default function ProjectsPage() {
+  const router = useRouter();
+
+  const handleCreateProject = () => {
+    router.push('/projects/create');
+  };
+
+  const handleViewProject = (projectId: number) => {
+    router.push(`/projects/${projectId}`);
+  };
+
+  const handleEditProject = (projectId: number) => {
+    router.push(`/projects/${projectId}/edit`);
+  };
+
   return (
     <ProtectedRoute>
       <div className="min-h-screen flex flex-col">
@@ -21,7 +29,11 @@ export default function ProjectsPage() {
         <main className="flex-1 bg-gray-50">
           <div className="container mx-auto px-4 py-8">
             <div className="max-w-7xl mx-auto">
-              <ProjectList />
+              <ProjectDashboard 
+                onCreateProject={handleCreateProject}
+                onViewProject={handleViewProject}
+                onEditProject={handleEditProject}
+              />
             </div>
           </div>
         </main>

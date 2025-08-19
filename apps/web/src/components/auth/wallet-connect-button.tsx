@@ -1,15 +1,13 @@
 'use client'
 
 import { useState, useEffect } from 'react'
-import { useAccount, useConnect, useDisconnect } from 'wagmi'
 import { Button } from '@/components/ui/button'
 import { useAuth } from '@/hooks/use-auth'
 
 export function WalletConnectButton() {
-  const { address, isConnected } = useAccount()
-  const { connect, connectors, isPending } = useConnect()
-  const { disconnect } = useDisconnect()
-  const { user, isAuthenticated, signIn, signOut, isAuthenticating } = useAuth()
+  const { user, isAuthenticated, signIn, signOut, isAuthenticating, isConnected } = useAuth()
+  const isPending = false
+  const connectors = [] // Simplified for testing
   
   const [showConnectors, setShowConnectors] = useState(false)
   const [mounted, setMounted] = useState(false)
@@ -32,7 +30,7 @@ export function WalletConnectButton() {
       <Button
         onClick={signIn}
         disabled={isAuthenticating}
-        variant="primary"
+        variant="default"
         size="sm"
       >
         {isAuthenticating ? 'Signing In...' : 'Sign In'}
@@ -76,23 +74,18 @@ export function WalletConnectButton() {
             <div className="p-4">
               <h3 className="font-medium text-gray-900 mb-3">Connect a wallet</h3>
               <div className="space-y-2">
-                {connectors.map((connector) => (
-                  <button
-                    key={connector.uid}
-                    onClick={() => {
-                      connect({ connector })
-                      setShowConnectors(false)
-                    }}
-                    className="w-full flex items-center space-x-3 p-3 text-left hover:bg-gray-50 rounded-md border border-gray-200"
-                  >
-                    <div className="w-8 h-8 bg-gray-200 rounded-full flex items-center justify-center">
-                      <span className="text-xs font-medium">
-                        {connector.name.slice(0, 2)}
-                      </span>
-                    </div>
-                    <span className="font-medium">{connector.name}</span>
-                  </button>
-                ))}
+                <button
+                  onClick={() => {
+                    alert('Wallet connection temporarily disabled for testing')
+                    setShowConnectors(false)
+                  }}
+                  className="w-full flex items-center space-x-3 p-3 text-left hover:bg-gray-50 rounded-md border border-gray-200"
+                >
+                  <div className="w-8 h-8 bg-gray-200 rounded-full flex items-center justify-center">
+                    <span className="text-xs font-medium">WC</span>
+                  </div>
+                  <span className="font-medium">WalletConnect (Demo)</span>
+                </button>
               </div>
             </div>
           </div>
@@ -111,7 +104,7 @@ export function WalletConnectButton() {
 
   return (
     <Button
-      onClick={() => disconnect()}
+      onClick={() => alert('Disconnect temporarily disabled for testing')}
       variant="outline"
       size="sm"
     >

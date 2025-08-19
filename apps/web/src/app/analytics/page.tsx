@@ -1,20 +1,19 @@
 'use client';
 
-import React, { useState, lazy, Suspense } from 'react';
+import React, { useState } from 'react';
 import { Header } from '@/components/layout/header';
 import { Footer } from '@/components/layout/footer';
-import { useDashboardAnalytics, usePaymentAnalytics, useBlockchainAnalytics, useLiftUnitAnalytics } from '@/hooks/use-analytics';
+import { useDashboardAnalytics, usePaymentAnalytics, useBlockchainAnalytics, useLiftTokenAnalytics } from '@/hooks/use-analytics';
 import { ChartContainer } from '@/components/analytics/chart-container';
 import { RealtimeAnalyticsWrapper, LiveMetric } from '@/components/analytics/real-time-analytics';
 import { ComponentLoading } from '@/components/ui/loading';
 
-// Lazy load heavy chart components
-const PaymentChartsSection = lazy(() => import('@/components/analytics/payment-charts-section'));
-const BlockchainChartsSection = lazy(() => import('@/components/analytics/blockchain-charts-section'));
+// Static imports - no lazy loading
+import PaymentChartsSection from '@/components/analytics/payment-charts-section';
+import BlockchainChartsSection from '@/components/analytics/blockchain-charts-section';
+import { BulkExportActions } from '@/components/analytics/bulk-export-actions';
 
-const BulkExportActions = lazy(() => import('@/components/analytics/bulk-export-actions').then(mod => ({ default: mod.BulkExportActions })));
-
-type TabType = 'overview' | 'payments' | 'blockchain' | 'lift-units';
+type TabType = 'overview' | 'payments' | 'blockchain' | 'lift-tokens';
 
 export default function AnalyticsPage() {
   const [activeTab, setActiveTab] = useState<TabType>('overview');
@@ -29,7 +28,7 @@ export default function AnalyticsPage() {
     endDate: dateRange.endDate || undefined
   });
   const { data: blockchainData, isLoading: blockchainLoading, error: blockchainError, refetch: refetchBlockchain } = useBlockchainAnalytics();
-  const { data: liftUnitData, isLoading: liftUnitLoading, error: liftUnitError, refetch: refetchLiftUnits } = useLiftUnitAnalytics();
+  const { data: liftTokenData, isLoading: liftTokenLoading, error: liftTokenError, refetch: refetchLiftTokens } = useLiftTokenAnalytics();
 
   const formatCurrency = (value: string) => {
     const ethValue = parseFloat(value) / 1e18;
@@ -90,14 +89,12 @@ export default function AnalyticsPage() {
           </div>
 
           {/* Bulk Export Actions */}
-          <Suspense fallback={<ComponentLoading text="Loading export actions..." />}>
-            <BulkExportActions
-              paymentData={paymentData}
-              blockchainData={blockchainData}
-              liftUnitData={liftUnitData}
-              dashboardData={dashboardData}
-            />
-          </Suspense>
+          <BulkExportActions
+            paymentData={paymentData}
+            blockchainData={blockchainData}
+            liftTokenData={liftTokenData}
+            dashboardData={dashboardData}
+          />
         </div>
 
         {/* Tab Navigation */}
@@ -107,7 +104,7 @@ export default function AnalyticsPage() {
               { id: 'overview', label: 'Overview' },
               { id: 'payments', label: 'Payments' },
               { id: 'blockchain', label: 'Blockchain' },
-              { id: 'lift-units', label: 'Lift Units' }
+              { id: 'lift-tokens', label: 'Lift Tokens' }
             ].map((tab) => (
               <button
                 key={tab.id}
@@ -150,8 +147,8 @@ export default function AnalyticsPage() {
                     type="currency"
                   />
                   <LiveMetric
-                    title="Lift Units"
-                    value={dashboardData.overview.totalLiftUnits}
+                    title="Lift Tokens"
+                    value={dashboardData.overview.totalLiftTokens}
                     type="number"
                   />
                   <LiveMetric
@@ -213,61 +210,57 @@ export default function AnalyticsPage() {
 
         {activeTab === 'payments' && (
           <RealtimeAnalyticsWrapper onPaymentUpdate={refetchPayments}>
-            <Suspense fallback={<ComponentLoading text="Loading payment charts..." />}>
-              <PaymentChartsSection 
-                data={paymentData} 
-                isLoading={paymentLoading} 
-                error={paymentError} 
-              />
-            </Suspense>
+            <PaymentChartsSection 
+              data={paymentData} 
+              isLoading={paymentLoading} 
+              error={paymentError} 
+            />
           </RealtimeAnalyticsWrapper>
         )}
 
         {activeTab === 'blockchain' && (
           <RealtimeAnalyticsWrapper onIndexerUpdate={refetchBlockchain}>
-            <Suspense fallback={<ComponentLoading text="Loading blockchain charts..." />}>
-              <BlockchainChartsSection 
-                data={blockchainData} 
-                isLoading={blockchainLoading} 
-                error={blockchainError} 
-              />
-            </Suspense>
+            <BlockchainChartsSection 
+              data={blockchainData} 
+              isLoading={blockchainLoading} 
+              error={blockchainError} 
+            />
           </RealtimeAnalyticsWrapper>
         )}
 
-        {activeTab === 'lift-units' && liftUnitData && (
+        {activeTab === 'lift-tokens' && liftTokenData && (
           <div className="space-y-6">
-            {/* Lift Unit Overview */}
+            {/* Lift Token Overview */}
             <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-4">
               <div className="bg-white rounded-lg border border-gray-200 p-6">
                 <h3 className="text-sm font-medium text-gray-500 mb-2">Total Supply</h3>
                 <p className="text-2xl font-bold text-gray-900">
-                  {(parseFloat(liftUnitData.totalSupply) / 1e18).toFixed(2)}
+                  {(parseFloat(liftTokenData.totalSupply) / 1e18).toFixed(2)}
                 </p>
               </div>
               <div className="bg-white rounded-lg border border-gray-200 p-6">
-                <h3 className="text-sm font-medium text-gray-500 mb-2">Active Units</h3>
+                <h3 className="text-sm font-medium text-gray-500 mb-2">Active Tokens</h3>
                 <p className="text-2xl font-bold text-green-600">
-                  {formatNumber(liftUnitData.activeUnits)}
+                  {formatNumber(liftTokenData.activeTokens)}
                 </p>
               </div>
               <div className="bg-white rounded-lg border border-gray-200 p-6">
-                <h3 className="text-sm font-medium text-gray-500 mb-2">Retired Units</h3>
+                <h3 className="text-sm font-medium text-gray-500 mb-2">Retired Tokens</h3>
                 <p className="text-2xl font-bold text-red-600">
-                  {formatNumber(liftUnitData.retiredUnits)}
+                  {formatNumber(liftTokenData.retiredTokens)}
                 </p>
               </div>
             </div>
 
-            {/* Placeholder for lift unit charts - would implement similar to payment charts */}
+            {/* Placeholder for lift token charts - would implement similar to payment charts */}
             <ChartContainer
-              title="Lift Unit Status Distribution"
-              description="Distribution of lift units by status"
-              isLoading={liftUnitLoading}
-              error={liftUnitError}
+              title="Lift Token Status Distribution"
+              description="Distribution of lift tokens by status"
+              isLoading={liftTokenLoading}
+              error={liftTokenError}
             >
               <div className="space-y-2">
-                {liftUnitData?.statusDistribution?.map((status, index) => (
+                {liftTokenData?.statusDistribution?.map((status, index) => (
                   <div key={index} className="flex items-center justify-between py-2 border-b border-gray-100 last:border-0">
                     <span className="text-sm font-medium">{status.status}</span>
                     <div className="flex items-center">

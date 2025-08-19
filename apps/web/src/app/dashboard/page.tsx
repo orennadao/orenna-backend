@@ -1,11 +1,10 @@
-import dynamic from 'next/dynamic'
 import { Header } from "@/components/layout/header";
 import { Footer } from "@/components/layout/footer";
-
-const ProtectedRoute = dynamic(
-  () => import("@/components/auth/protected-route").then(mod => ({ default: mod.ProtectedRoute })),
-  { ssr: false }
-)
+import { ProtectedRoute } from "@/components/auth/protected-route";
+import { Button } from "@/components/ui/button";
+import { Card } from "@/components/ui/card";
+import Link from 'next/link';
+import { Coins, BarChart3, Plus } from 'lucide-react';
 
 export default function DashboardPage() {
   return (
@@ -39,7 +38,7 @@ export default function DashboardPage() {
                 
                 <div className="bg-white rounded-lg p-6 shadow-sm border border-gray-200">
                   <h3 className="text-sm font-medium text-gray-500 uppercase tracking-wide mb-2">
-                    Lift Units
+                    Lift Tokens
                   </h3>
                   <p className="text-2xl font-bold text-gray-900">156</p>
                   <p className="text-sm text-purple-600 mt-1">24 minted today</p>
@@ -51,6 +50,54 @@ export default function DashboardPage() {
                   </h3>
                   <p className="text-2xl font-bold text-gray-900">2,340</p>
                   <p className="text-sm text-green-600 mt-1">+12.1% this week</p>
+                </div>
+              </div>
+
+              {/* Quick Actions */}
+              <div className="mb-8">
+                <h2 className="text-xl font-semibold text-gray-900 mb-4">Quick Actions</h2>
+                <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
+                  <Link href="/projects/create">
+                    <Card className="p-4 hover:shadow-md transition-shadow cursor-pointer">
+                      <div className="flex items-center space-x-3">
+                        <div className="p-2 bg-blue-100 rounded-lg">
+                          <Plus className="h-5 w-5 text-blue-600" />
+                        </div>
+                        <div>
+                          <h3 className="font-medium text-gray-900">Create Project</h3>
+                          <p className="text-sm text-gray-600">Start a new regenerative project</p>
+                        </div>
+                      </div>
+                    </Card>
+                  </Link>
+
+                  <Link href="/blockchain">
+                    <Card className="p-4 hover:shadow-md transition-shadow cursor-pointer">
+                      <div className="flex items-center space-x-3">
+                        <div className="p-2 bg-purple-100 rounded-lg">
+                          <Coins className="h-5 w-5 text-purple-600" />
+                        </div>
+                        <div>
+                          <h3 className="font-medium text-gray-900">Blockchain Tools</h3>
+                          <p className="text-sm text-gray-600">Check ORNA balance & voting power</p>
+                        </div>
+                      </div>
+                    </Card>
+                  </Link>
+
+                  <Link href="/analytics">
+                    <Card className="p-4 hover:shadow-md transition-shadow cursor-pointer">
+                      <div className="flex items-center space-x-3">
+                        <div className="p-2 bg-green-100 rounded-lg">
+                          <BarChart3 className="h-5 w-5 text-green-600" />
+                        </div>
+                        <div>
+                          <h3 className="font-medium text-gray-900">View Analytics</h3>
+                          <p className="text-sm text-gray-600">Analyze platform metrics</p>
+                        </div>
+                      </div>
+                    </Card>
+                  </Link>
                 </div>
               </div>
               

@@ -2,11 +2,9 @@
 
 import { useState, useEffect } from 'react'
 import { useAuth } from '@/hooks/use-auth'
-import { useAccount } from 'wagmi'
 
 export function AuthStatus() {
-  const { user, isLoading, isAuthenticated } = useAuth()
-  const { isConnected, address } = useAccount()
+  const { user, isLoading, isAuthenticated, isConnected } = useAuth()
   const [mounted, setMounted] = useState(false)
 
   useEffect(() => {

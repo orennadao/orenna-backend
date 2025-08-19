@@ -2,19 +2,19 @@
 
 import React, { useState } from 'react';
 import { downloadDataAsCSV, preparePaymentDataForExport, prepareBlockchainDataForExport } from '@/utils/chart-export';
-import type { PaymentAnalytics, BlockchainAnalytics, LiftUnitAnalytics } from '@/hooks/use-analytics';
+import type { PaymentAnalytics, BlockchainAnalytics, LiftTokenAnalytics } from '@/hooks/use-analytics';
 
 interface BulkExportActionsProps {
   paymentData?: PaymentAnalytics | null;
   blockchainData?: BlockchainAnalytics | null;
-  liftUnitData?: LiftUnitAnalytics | null;
+  liftTokenData?: LiftTokenAnalytics | null;
   dashboardData?: any;
 }
 
 export function BulkExportActions({ 
   paymentData, 
   blockchainData, 
-  liftUnitData,
+  liftTokenData,
   dashboardData 
 }: BulkExportActionsProps) {
   const [isExporting, setIsExporting] = useState(false);
@@ -36,29 +36,29 @@ export function BulkExportActions({
         downloadDataAsCSV(blockchainExportData, `blockchain_analytics_${timestamp}`);
       }
 
-      // Export lift unit data
-      if (liftUnitData) {
-        const liftUnitExportData = [
+      // Export lift token data
+      if (liftTokenData) {
+        const liftTokenExportData = [
           {
             metric: 'Total Supply',
-            value: liftUnitData.totalSupply,
-            value_eth: (parseFloat(liftUnitData.totalSupply) / 1e18).toFixed(6)
+            value: liftTokenData.totalSupply,
+            value_eth: (parseFloat(liftTokenData.totalSupply) / 1e18).toFixed(6)
           },
           {
-            metric: 'Active Units',
-            value: liftUnitData.activeUnits
+            metric: 'Active Tokens',
+            value: liftTokenData.activeTokens
           },
           {
-            metric: 'Retired Units',
-            value: liftUnitData.retiredUnits
+            metric: 'Retired Tokens',
+            value: liftTokenData.retiredTokens
           },
-          ...(liftUnitData.statusDistribution?.map(status => ({
+          ...(liftTokenData.statusDistribution?.map(status => ({
             metric: `Status Distribution - ${status.status}`,
             count: status.count,
             percentage: status.percentage
           })) || [])
         ];
-        downloadDataAsCSV(liftUnitExportData, `lift_unit_analytics_${timestamp}`);
+        downloadDataAsCSV(liftTokenExportData, `lift_token_analytics_${timestamp}`);
       }
 
       // Export dashboard overview data
@@ -68,7 +68,7 @@ export function BulkExportActions({
           { metric: 'Total Payments', value: dashboardData.overview?.totalPayments || 0 },
           { metric: 'Total Volume (Wei)', value: dashboardData.overview?.totalVolume || '0' },
           { metric: 'Total Volume (ETH)', value: (parseFloat(dashboardData.overview?.totalVolume || '0') / 1e18).toFixed(6) },
-          { metric: 'Total Lift Units', value: dashboardData.overview?.totalLiftUnits || 0 },
+          { metric: 'Total Lift Tokens', value: dashboardData.overview?.totalLiftTokens || 0 },
           { metric: 'Active Indexers', value: dashboardData.overview?.activeIndexers || 0 }
         ];
         downloadDataAsCSV(overviewData, `dashboard_overview_${timestamp}`);

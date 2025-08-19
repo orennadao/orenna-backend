@@ -2,74 +2,74 @@
 
 import { useState, useEffect } from 'react'
 import { apiClient } from '@/lib/api'
-import type { LiftUnit } from '@/types/api'
+import type { LiftToken } from '@/types/api'
 
-export function useLiftUnits(params?: {
+export function useLiftTokens(params?: {
   status?: string;
   projectId?: number;
   limit?: number;
   offset?: number;
 }) {
-  const [liftUnits, setLiftUnits] = useState<LiftUnit[]>([])
+  const [liftTokens, setLiftTokens] = useState<LiftToken[]>([])
   const [total, setTotal] = useState(0)
   const [isLoading, setIsLoading] = useState(true)
   const [error, setError] = useState<string | null>(null)
 
-  const fetchLiftUnits = async () => {
+  const fetchLiftTokens = async () => {
     try {
       setIsLoading(true)
       setError(null)
-      const response = await apiClient.getLiftUnits(params) as any
-      setLiftUnits(response.liftUnits || response.items || [])
+      const response = await apiClient.getLiftTokens(params) as any
+      setLiftTokens(response.liftTokens || response.items || [])
       setTotal(response.total || 0)
     } catch (err) {
-      setError(err instanceof Error ? err.message : 'Failed to fetch lift units')
+      setError(err instanceof Error ? err.message : 'Failed to fetch lift tokens')
     } finally {
       setIsLoading(false)
     }
   }
 
   useEffect(() => {
-    fetchLiftUnits()
+    fetchLiftTokens()
   }, [params?.status, params?.projectId, params?.limit, params?.offset])
 
   return {
-    liftUnits,
+    liftTokens,
     total,
     isLoading,
     error,
-    refetch: fetchLiftUnits
+    refetch: fetchLiftTokens
   }
 }
 
-export function useLiftUnit(liftUnitId: number) {
-  const [liftUnit, setLiftUnit] = useState<LiftUnit | null>(null)
+export function useLiftToken(liftTokenId: number) {
+  const [liftToken, setLiftToken] = useState<LiftToken | null>(null)
   const [isLoading, setIsLoading] = useState(true)
   const [error, setError] = useState<string | null>(null)
 
-  const fetchLiftUnit = async () => {
-    if (!liftUnitId) return
+  const fetchLiftToken = async () => {
+    if (!liftTokenId) return
 
     try {
       setIsLoading(true)
       setError(null)
-      const response = await apiClient.getLiftUnit(liftUnitId) as LiftUnit
-      setLiftUnit(response)
+      const response = await apiClient.getLiftToken(liftTokenId) as LiftToken
+      setLiftToken(response)
     } catch (err) {
-      setError(err instanceof Error ? err.message : 'Failed to fetch lift unit')
+      setError(err instanceof Error ? err.message : 'Failed to fetch lift token')
     } finally {
       setIsLoading(false)
     }
   }
 
   useEffect(() => {
-    fetchLiftUnit()
-  }, [liftUnitId])
+    fetchLiftToken()
+  }, [liftTokenId])
 
   return {
-    liftUnit,
+    liftToken,
     isLoading,
     error,
-    refetch: fetchLiftUnit
+    refetch: fetchLiftToken
   }
 }
