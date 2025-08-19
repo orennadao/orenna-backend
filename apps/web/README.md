@@ -120,3 +120,4 @@ The web app connects to the Orenna API backend at `/api` endpoints:
 2. Use Tailwind CSS for styling
 3. Ensure components are accessible and responsive
 4. Run type checking before committing: `pnpm typecheck`# Trigger deployment
+# Force fresh deployment Tue Aug 19 15:22:25 PDT 2025
