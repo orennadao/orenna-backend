@@ -1,0 +1,131 @@
+{
+  "dashboard": {
+    "id": null,
+    "title": "Verification System Overview",
+    "tags": ["verification", "orenna"],
+    "timezone": "browser",
+    "panels": [
+      {
+        "id": 1,
+        "title": "Verification Requests Rate",
+        "type": "stat",
+        "targets": [
+          {
+            "expr": "rate(verification_requests_total[5m])",
+            "legendFormat": "Requests/sec"
+          }
+        ],
+        "gridPos": {"h": 8, "w": 6, "x": 0, "y": 0}
+      },
+      {
+        "id": 2,
+        "title": "Verification Success Rate",
+        "type": "stat",
+        "targets": [
+          {
+            "expr": "rate(verification_requests_success_total[5m]) / rate(verification_requests_total[5m]) * 100",
+            "legendFormat": "Success %"
+          }
+        ],
+        "gridPos": {"h": 8, "w": 6, "x": 6, "y": 0}
+      },
+      {
+        "id": 3,
+        "title": "Average Processing Time",
+        "type": "stat",
+        "targets": [
+          {
+            "expr": "avg(verification_processing_duration_seconds)",
+            "legendFormat": "Avg Time (s)"
+          }
+        ],
+        "gridPos": {"h": 8, "w": 6, "x": 12, "y": 0}
+      },
+      {
+        "id": 4,
+        "title": "Queue Size",
+        "type": "stat",
+        "targets": [
+          {
+            "expr": "verification_queue_size",
+            "legendFormat": "Queued Jobs"
+          }
+        ],
+        "gridPos": {"h": 8, "w": 6, "x": 18, "y": 0}
+      },
+      {
+        "id": 5,
+        "title": "Verification Trends",
+        "type": "graph",
+        "targets": [
+          {
+            "expr": "rate(verification_requests_total[5m])",
+            "legendFormat": "Total Requests"
+          },
+          {
+            "expr": "rate(verification_requests_success_total[5m])",
+            "legendFormat": "Successful"
+          },
+          {
+            "expr": "rate(verification_requests_failed_total[5m])",
+            "legendFormat": "Failed"
+          }
+        ],
+        "gridPos": {"h": 10, "w": 12, "x": 0, "y": 8}
+      },
+      {
+        "id": 6,
+        "title": "VWBA Confidence Scores",
+        "type": "graph",
+        "targets": [
+          {
+            "expr": "avg_over_time(vwba_confidence_score[10m])",
+            "legendFormat": "Avg Confidence"
+          },
+          {
+            "expr": "quantile_over_time(0.95, vwba_confidence_score[10m])",
+            "legendFormat": "95th Percentile"
+          }
+        ],
+        "gridPos": {"h": 10, "w": 12, "x": 12, "y": 8}
+      },
+      {
+        "id": 7,
+        "title": "Evidence Processing",
+        "type": "graph",
+        "targets": [
+          {
+            "expr": "rate(evidence_files_processed_total[5m])",
+            "legendFormat": "Files Processed/sec"
+          },
+          {
+            "expr": "rate(evidence_storage_failures_total[5m])",
+            "legendFormat": "Storage Failures/sec"
+          }
+        ],
+        "gridPos": {"h": 10, "w": 12, "x": 0, "y": 18}
+      },
+      {
+        "id": 8,
+        "title": "System Resources",
+        "type": "graph",
+        "targets": [
+          {
+            "expr": "db_connections_active / db_connections_max * 100",
+            "legendFormat": "DB Connections %"
+          },
+          {
+            "expr": "redis_memory_used_bytes / redis_memory_max_bytes * 100",
+            "legendFormat": "Redis Memory %"
+          }
+        ],
+        "gridPos": {"h": 10, "w": 12, "x": 12, "y": 18}
+      }
+    ],
+    "time": {
+      "from": "now-1h",
+      "to": "now"
+    },
+    "refresh": "10s"
+  }
+}

@@ -1,0 +1,162 @@
+version: '3.8'
+
+services:
+  # Main API service (current version)
+  orenna-api-main:
+    build:
+      context: .
+      dockerfile: Dockerfile
+    container_name: orenna-api-main
+    ports:
+      - "3001:3001"
+    environment:
+      - NODE_ENV=production
+    env_file:
+      - .env.production
+    networks:
+      - orenna-network
+    depends_on:
+      - db-prod
+      - redis-prod
+    restart: unless-stopped
+    labels:
+      - "traefik.enable=true"
+      - "traefik.http.routers.orenna-main.rule=Host(`api.orenna.com`)"
+      - "traefik.http.routers.orenna-main.service=orenna-main-service"
+      - "traefik.http.services.orenna-main-service.loadbalancer.server.port=3001"
+      - "traefik.http.services.orenna-main-service.loadbalancer.server.weight=90"
+      - "traefik.http.routers.orenna-main.tls=true"
+      - "traefik.http.routers.orenna-main.tls.certresolver=letsencrypt"
+
+  # Canary API service (new version - 10% traffic)
+  orenna-api-canary:
+    build:
+      context: .
+      dockerfile: Dockerfile
+      target: runner
+    container_name: orenna-api-canary
+    ports:
+      - "3002:3001"
+    environment:
+      - NODE_ENV=production
+      - INDEXER_ENABLED=false  # 🚨 INDEXERS DISABLED FOR CANARY
+    env_file:
+      - .env.production
+    networks:
+      - orenna-network
+    depends_on:
+      - db-prod
+      - redis-prod
+    restart: unless-stopped
+    labels:
+      - "traefik.enable=true"
+      - "traefik.http.routers.orenna-canary.rule=Host(`api.orenna.com`)"
+      - "traefik.http.routers.orenna-canary.service=orenna-canary-service"
+      - "traefik.http.services.orenna-canary-service.loadbalancer.server.port=3001"
+      - "traefik.http.services.orenna-canary-service.loadbalancer.server.weight=10"
+      - "traefik.http.routers.orenna-canary.tls=true"
+      - "traefik.http.routers.orenna-canary.tls.certresolver=letsencrypt"
+
+  # Load Balancer with Traffic Splitting
+  traefik:
+    image: traefik:v3.0
+    container_name: traefik
+    ports:
+      - "80:80"
+      - "443:443"
+      - "8080:8080"  # Dashboard
+    volumes:
+      - /var/run/docker.sock:/var/run/docker.sock:ro
+      - ./traefik:/etc/traefik
+      - ./ssl:/ssl
+    networks:
+      - orenna-network
+    restart: unless-stopped
+    command:
+      - "--api.dashboard=true"
+      - "--providers.docker=true"
+      - "--providers.docker.exposedbydefault=false"
+      - "--entrypoints.web.address=:80"
+      - "--entrypoints.websecure.address=:443"
+      - "--certificatesresolvers.letsencrypt.acme.tlschallenge=true"
+      - "--certificatesresolvers.letsencrypt.acme.email=admin@orenna.com"
+      - "--certificatesresolvers.letsencrypt.acme.storage=/ssl/acme.json"
+      - "--log.level=INFO"
+      - "--accesslog=true"
+
+  # Production Database
+  db-prod:
+    image: postgres:16
+    container_name: orenna-db-prod
+    environment:
+      POSTGRES_USER: ${POSTGRES_USER:-orenna_prod}
+      POSTGRES_PASSWORD: ${POSTGRES_PASSWORD:-REPLACE_WITH_SECURE_PASSWORD}
+      POSTGRES_DB: ${POSTGRES_DB:-orenna_prod}
+    volumes:
+      - postgres_data_prod:/var/lib/postgresql/data
+      - ./init-scripts:/docker-entrypoint-initdb.d
+    ports:
+      - "5432:5432"
+    networks:
+      - orenna-network
+    restart: unless-stopped
+    healthcheck:
+      test: ['CMD-SHELL', 'pg_isready -U $${POSTGRES_USER} -d $${POSTGRES_DB}']
+      interval: 30s
+      timeout: 10s
+      retries: 5
+
+  # Production Redis
+  redis-prod:
+    image: redis:7-alpine
+    container_name: orenna-redis-prod
+    ports:
+      - "6379:6379"
+    volumes:
+      - redis_data_prod:/data
+    networks:
+      - orenna-network
+    restart: unless-stopped
+    healthcheck:
+      test: ['CMD', 'redis-cli', 'ping']
+      interval: 30s
+      timeout: 10s
+      retries: 3
+
+  # Monitoring - Prometheus
+  prometheus:
+    image: prom/prometheus:latest
+    container_name: prometheus
+    ports:
+      - "9090:9090"
+    volumes:
+      - ./monitoring/prometheus.yml:/etc/prometheus/prometheus.yml
+      - prometheus_data:/prometheus
+    networks:
+      - orenna-network
+    restart: unless-stopped
+
+  # Monitoring - Grafana
+  grafana:
+    image: grafana/grafana:latest
+    container_name: grafana
+    ports:
+      - "3000:3000"
+    environment:
+      - GF_SECURITY_ADMIN_PASSWORD=REPLACE_WITH_GRAFANA_PASSWORD
+    volumes:
+      - grafana_data:/var/lib/grafana
+      - ./monitoring/grafana/provisioning:/etc/grafana/provisioning
+    networks:
+      - orenna-network
+    restart: unless-stopped
+
+networks:
+  orenna-network:
+    driver: bridge
+
+volumes:
+  postgres_data_prod:
+  redis_data_prod:
+  prometheus_data:
+  grafana_data:

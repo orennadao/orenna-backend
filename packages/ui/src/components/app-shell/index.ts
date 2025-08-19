@@ -1,0 +1,1 @@
+export { AppShell, AppShellContent } from './app-shell';

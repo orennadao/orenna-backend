@@ -1,0 +1,17 @@
+/* Button utilities as mentioned in the guide */
+.btn { 
+  @apply inline-flex items-center gap-2 rounded-lg px-3 py-2 text-sm font-medium transition;
+  @apply focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring focus-visible:ring-offset-2;
+}
+
+.btn-primary { 
+  @apply bg-primary text-primary-foreground hover:opacity-90; 
+}
+
+.btn-secondary { 
+  @apply bg-secondary text-secondary-foreground hover:opacity-90; 
+}
+
+.btn-ghost { 
+  @apply hover:bg-secondary; 
+}

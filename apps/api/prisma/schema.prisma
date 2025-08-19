@@ -1,0 +1,299 @@
+generator client {
+  provider = "prisma-client-js"
+}
+
+datasource db {
+  provider = "postgresql"
+  url      = env("DATABASE_URL")
+}
+
+model User {
+  id        Int      @id @default(autoincrement())
+  address   String   @unique
+  username  String?
+  ensName   String?
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+
+  sessions Session[]
+}
+
+model Session {
+  id        String   @id
+  userId    Int
+  token     String   @unique
+  expiresAt DateTime
+  metadata  Json?
+  createdAt DateTime @default(now())
+
+  user User @relation(fields: [userId], references: [id], onDelete: Cascade)
+
+  @@index([userId])
+  @@index([expiresAt])
+}
+
+model Project {
+  id              Int      @id @default(autoincrement())
+  name            String
+  slug            String   @unique
+  description     String?
+  ownerAddress    String?
+  chainId         Int?
+  createdAt       DateTime @default(now()) @map("createdAt")
+  updatedAt       DateTime @updatedAt @map("updatedAt")
+  contractAddress String?
+  meta            Json?
+
+  // Relations - match actual database structure
+  LiftUnit              LiftUnit[]
+  MintRequest           MintRequest[]
+  Payment               Payment[]
+  ProjectPaymentConfig  ProjectPaymentConfig?
+
+  @@map("Project")
+}
+
+model LiftUnit {
+  id               Int      @id @default(autoincrement())
+  projectId        Int?
+  tokenId          String
+  currentSupply    String
+  totalMinted      String
+  totalBurned      String
+  contractAddress  String
+  chainId          Int
+  createdAt        DateTime @default(now())
+  updatedAt        DateTime @updatedAt
+
+  project        Project?          @relation(fields: [projectId], references: [id], onDelete: SetNull)
+  LiftUnitEvent  LiftUnitEvent[]
+
+  @@map("LiftUnit")
+}
+
+model LiftUnitEvent {
+  id           Int      @id @default(autoincrement())
+  liftUnitId   Int
+  eventType    String
+  amount       String
+  txHash       String
+  blockNumber  Int
+  logIndex     Int
+  createdAt    DateTime @default(now())
+
+  liftUnit LiftUnit @relation(fields: [liftUnitId], references: [id], onDelete: Cascade)
+
+  @@map("LiftUnitEvent")
+}
+
+model MintRequest {
+  id           Int      @id @default(autoincrement())
+  projectId    Int?
+  requestHash  String   @unique
+  amount       String
+  recipient    String
+  status       String
+  createdAt    DateTime @default(now())
+  updatedAt    DateTime @updatedAt
+
+  project            Project?             @relation(fields: [projectId], references: [id], onDelete: Restrict)
+  MintRequestEvent   MintRequestEvent[]
+
+  @@map("MintRequest")
+}
+
+model MintRequestEvent {
+  id            Int      @id @default(autoincrement())
+  mintRequestId Int
+  eventType     String
+  txHash        String
+  blockNumber   Int
+  logIndex      Int
+  createdAt     DateTime @default(now())
+
+  mintRequest MintRequest @relation(fields: [mintRequestId], references: [id], onDelete: Cascade)
+
+  @@map("MintRequestEvent")
+}
+
+enum PaymentType {
+  PROJECT_FUNDING
+  MILESTONE_PAYMENT
+  VERIFICATION_FEE
+  GOVERNANCE_STAKE
+  @@map("PaymentType")
+}
+
+enum PaymentStatus {
+  PENDING
+  CONFIRMED
+  COMPLETED
+  FAILED
+  CANCELLED
+  @@map("PaymentStatus")
+}
+
+model Payment {
+  id                   String       @id
+  paymentType          PaymentType
+  status               PaymentStatus @default(PENDING)
+  projectId            Int?
+  amount               String
+  paymentToken         String
+  chainId              Int
+  payerAddress         String
+  payerEmail           String?
+  recipientAddress     String
+  escrowContract       String?
+  escrowConfig         Json?
+  txHash               String?
+  blockNumber          Int?
+  blockTimestamp       DateTime?
+  proceedsNotified     Boolean      @default(false)
+  distributionComplete Boolean      @default(false)
+  description          String?
+  metadata             Json?
+  createdAt            DateTime     @default(now())
+  updatedAt            DateTime     @updatedAt
+  confirmedAt          DateTime?
+
+  project      Project?       @relation(fields: [projectId], references: [id], onDelete: SetNull)
+  PaymentEvent PaymentEvent[]
+
+  @@index([chainId])
+  @@index([createdAt])
+  @@index([payerAddress])
+  @@index([projectId])
+  @@index([status])
+  @@index([txHash])
+  @@map("Payment")
+}
+
+enum PaymentEventType {
+  PAYMENT_INITIATED
+  PAYMENT_CONFIRMED
+  PAYMENT_COMPLETED
+  PAYMENT_FAILED
+  PAYMENT_CANCELLED
+  ESCROW_DEPOSITED
+  ESCROW_RELEASED
+  @@map("PaymentEventType")
+}
+
+model PaymentEvent {
+  id          String           @id
+  paymentId   String
+  type        PaymentEventType
+  performedBy String?
+  amount      String?
+  fromAddress String?
+  toAddress   String?
+  txHash      String?
+  blockNumber Int?
+  logIndex    Int?
+  gasUsed     String?
+  notes       String?
+  metadata    Json?
+  createdAt   DateTime         @default(now())
+
+  payment Payment @relation(fields: [paymentId], references: [id], onDelete: Cascade)
+
+  @@index([createdAt])
+  @@index([paymentId])
+  @@index([txHash])
+  @@index([type])
+  @@map("PaymentEvent")
+}
+
+model ProjectPaymentConfig {
+  id                Int      @id @default(autoincrement())
+  projectId         Int      @unique
+  acceptedCurrency  String
+  paymentAddress    String
+  minAmount         String?
+  maxAmount         String?
+  createdAt         DateTime @default(now())
+  updatedAt         DateTime @updatedAt
+
+  project Project @relation(fields: [projectId], references: [id], onDelete: Cascade)
+
+  @@map("ProjectPaymentConfig")
+}
+
+model Contract {
+  id              Int      @id @default(autoincrement())
+  name            String
+  address         String
+  chainId         Int
+  abi             Json
+  deploymentTx    String?
+  deployedAt      DateTime?
+  createdAt       DateTime @default(now())
+  updatedAt       DateTime @updatedAt
+
+  @@unique([address, chainId])
+  @@map("Contract")
+}
+
+model IndexedEvent {
+  id          Int      @id @default(autoincrement())
+  eventType   String
+  contractAddress String
+  chainId     Int
+  blockNumber Int
+  txHash      String
+  logIndex    Int
+  eventData   Json
+  createdAt   DateTime @default(now())
+
+  @@unique([txHash, logIndex])
+  @@index([contractAddress, chainId])
+  @@index([blockNumber])
+  @@map("IndexedEvent")
+}
+
+model IndexerState {
+  id           Int      @id @default(autoincrement())
+  contractAddress String
+  chainId      Int
+  lastBlock    Int
+  updatedAt    DateTime @updatedAt
+
+  @@unique([contractAddress, chainId])
+  @@map("IndexerState")
+}
+
+model VerificationMethod {
+  id          Int      @id @default(autoincrement())
+  name        String
+  description String?
+  schema      Json
+  isActive    Boolean  @default(true)
+  createdAt   DateTime @default(now())
+  updatedAt   DateTime @updatedAt
+
+  @@map("VerificationMethod")
+}
+
+model VerificationResult {
+  id                     Int      @id @default(autoincrement())
+  verificationMethodId   Int
+  data                   Json
+  status                 String
+  createdAt              DateTime @default(now())
+  updatedAt              DateTime @updatedAt
+
+  @@map("VerificationResult")
+}
+
+model EvidenceFile {
+  id         Int      @id @default(autoincrement())
+  filename   String
+  mimeType   String
+  size       Int
+  hash       String
+  uploadedBy String
+  createdAt  DateTime @default(now())
+
+  @@map("EvidenceFile")
+}

@@ -1,0 +1,27 @@
+// Stub UI components for deployment
+export const Button = (props) => null;
+export const Card = (props) => null;
+export const CardContent = (props) => null;
+export const CardHeader = (props) => null;
+export const CardTitle = (props) => null;
+export const CardDescription = (props) => null;
+export const Input = (props) => null;
+export const Label = (props) => null;
+export const Select = (props) => null;
+export const SelectContent = (props) => null;
+export const SelectItem = (props) => null;
+export const SelectTrigger = (props) => null;
+export const SelectValue = (props) => null;
+export const Dialog = (props) => null;
+export const DialogContent = (props) => null;
+export const DialogHeader = (props) => null;
+export const DialogTitle = (props) => null;
+export const DialogTrigger = (props) => null;
+export const Textarea = (props) => null;
+export const Badge = (props) => null;
+export const Alert = (props) => null;
+export const AlertDescription = (props) => null;
+export const Checkbox = (props) => null;
+export const AppShell = (props) => null;
+export const AppShellContent = (props) => null;
+export const ProjectForm = (props) => null;

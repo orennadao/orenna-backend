@@ -1,0 +1,46 @@
+version: '3.8'
+
+services:
+  # Canary API service (new version with indexers disabled)
+  orenna-api-canary:
+    build:
+      context: .
+      dockerfile: Dockerfile
+    container_name: orenna-api-canary
+    ports:
+      - "3002:3001"
+    environment:
+      - NODE_ENV=production
+      - INDEXER_ENABLED=false  # 🚨 INDEXERS DISABLED FOR CANARY
+      - API_PORT=3001
+      - API_HOST=0.0.0.0
+    env_file:
+      - .env
+    networks:
+      - orenna-network
+    restart: unless-stopped
+    healthcheck:
+      test: ["CMD", "curl", "-f", "http://localhost:3001/health"]
+      interval: 30s
+      timeout: 10s
+      retries: 3
+      start_period: 60s
+
+  # Load balancer for traffic splitting (nginx-based)
+  nginx-lb:
+    image: nginx:alpine
+    container_name: nginx-lb
+    ports:
+      - "80:80"
+      - "443:443"
+    volumes:
+      - ./nginx.conf:/etc/nginx/nginx.conf:ro
+    networks:
+      - orenna-network
+    restart: unless-stopped
+    depends_on:
+      - orenna-api-canary
+
+networks:
+  orenna-network:
+    driver: bridge

@@ -1,0 +1,15 @@
+{
+  "name": "orenna-api",
+  "version": "0.1.0",
+  "type": "module",
+  "scripts": {
+    "dev": "node api/index.js",
+    "build": "echo 'Build complete'"
+  },
+  "dependencies": {
+    "dotenv": "^17.2.1"
+  },
+  "engines": {
+    "node": "18.x"
+  }
+}

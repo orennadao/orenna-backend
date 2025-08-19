@@ -1,0 +1,106 @@
+groups:
+- name: verification_system
+  rules:
+  # Verification Processing Alerts
+  - alert: HighVerificationFailureRate
+    expr: (rate(verification_requests_failed_total[5m]) / rate(verification_requests_total[5m])) > 0.1
+    for: 2m
+    labels:
+      severity: warning
+    annotations:
+      summary: "High verification failure rate detected"
+      description: "Verification failure rate is {{ $value | humanizePercentage }} over the last 5 minutes"
+
+  - alert: VerificationProcessingDelay
+    expr: verification_processing_duration_seconds{quantile="0.95"} > 300
+    for: 5m
+    labels:
+      severity: warning
+    annotations:
+      summary: "Verification processing taking too long"
+      description: "95th percentile verification processing time is {{ $value }}s"
+
+  - alert: EvidenceStorageFailure
+    expr: rate(evidence_storage_failures_total[5m]) > 0.1
+    for: 1m
+    labels:
+      severity: critical
+    annotations:
+      summary: "Evidence storage failures detected"
+      description: "Evidence storage failure rate: {{ $value }}/min"
+
+  # Queue Health Alerts
+  - alert: VerificationQueueBacklog
+    expr: verification_queue_size > 100
+    for: 10m
+    labels:
+      severity: warning
+    annotations:
+      summary: "Verification queue backlog building up"
+      description: "{{ $value }} verification jobs queued for over 10 minutes"
+
+  - alert: QueueProcessingStalled
+    expr: increase(verification_queue_processed_total[10m]) == 0 and verification_queue_size > 0
+    for: 5m
+    labels:
+      severity: critical
+    annotations:
+      summary: "Queue processing appears stalled"
+      description: "No verification jobs processed in 10 minutes despite {{ $value }} jobs in queue"
+
+  # System Resource Alerts
+  - alert: DatabaseConnectionPoolExhaustion
+    expr: db_connections_active / db_connections_max > 0.9
+    for: 2m
+    labels:
+      severity: critical
+    annotations:
+      summary: "Database connection pool nearly exhausted"
+      description: "{{ $value | humanizePercentage }} of database connections in use"
+
+  - alert: RedisMemoryUsageHigh
+    expr: redis_memory_used_bytes / redis_memory_max_bytes > 0.8
+    for: 5m
+    labels:
+      severity: warning
+    annotations:
+      summary: "Redis memory usage is high"
+      description: "Redis memory usage: {{ $value | humanizePercentage }}"
+
+  # VWBA Specific Alerts
+  - alert: VWBAConfidenceScoreLow
+    expr: avg_over_time(vwba_confidence_score[1h]) < 0.7
+    for: 15m
+    labels:
+      severity: warning
+    annotations:
+      summary: "VWBA confidence scores trending low"
+      description: "Average VWBA confidence score over 1h: {{ $value | humanizePercentage }}"
+
+  - alert: EvidenceQualityDegrading
+    expr: avg_over_time(evidence_quality_grade_numeric[1h]) < 3.0
+    for: 30m
+    labels:
+      severity: warning
+    annotations:
+      summary: "Evidence quality degrading"
+      description: "Average evidence quality grade: {{ $value }}/5.0"
+
+  # API Health Alerts
+  - alert: HighAPIErrorRate
+    expr: (rate(http_requests_total{status=~"5.."}[5m]) / rate(http_requests_total[5m])) > 0.05
+    for: 2m
+    labels:
+      severity: warning
+    annotations:
+      summary: "High API error rate"
+      description: "{{ $value | humanizePercentage }} of API requests returning 5xx errors"
+
+  - alert: APIResponseTimeSlow
+    expr: http_request_duration_seconds{quantile="0.95"} > 5
+    for: 5m
+    labels:
+      severity: warning
+    annotations:
+      summary: "API response times slow"
+      description: "95th percentile API response time: {{ $value }}s"

@@ -1,0 +1,832 @@
+openapi: 3.0.3
+info:
+  title: Orenna Verification System API
+  description: |
+    Comprehensive API for managing and verifying lift tokens using standardized methodologies like VWBA v2.0.
+    
+    ## Authentication
+    All endpoints require Bearer token authentication.
+    
+    ## Rate Limits
+    - General API: 100 requests/minute
+    - Verification: 5 requests/5 minutes
+    - Evidence upload: 10 files/hour
+  version: 2.1.0
+  contact:
+    name: Orenna API Support
+    email: api-support@orenna.com
+    url: https://docs.orenna.com
+  license:
+    name: MIT
+    url: https://opensource.org/licenses/MIT
+
+servers:
+  - url: https://api.orenna.com
+    description: Production server
+  - url: https://staging-api.orenna.com
+    description: Staging server
+  - url: http://localhost:3001
+    description: Development server
+
+security:
+  - bearerAuth: []
+
+paths:
+  /api/lift-tokens/{id}/verify:
+    post:
+      tags:
+        - Verification
+      summary: Submit verification request
+      description: Submit a verification request for a lift token with evidence files
+      operationId: submitVerification
+      parameters:
+        - name: id
+          in: path
+          required: true
+          schema:
+            type: integer
+          description: Lift token ID
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/VerificationRequest'
+      responses:
+        '201':
+          description: Verification request submitted successfully
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/VerificationResult'
+        '400':
+          $ref: '#/components/responses/BadRequest'
+        '401':
+          $ref: '#/components/responses/Unauthorized'
+        '404':
+          $ref: '#/components/responses/NotFound'
+        '429':
+          $ref: '#/components/responses/RateLimited'
+
+  /api/lift-tokens/{id}/verification-status:
+    get:
+      tags:
+        - Verification
+      summary: Get verification status
+      description: Retrieve verification status for a lift token
+      operationId: getVerificationStatus
+      parameters:
+        - name: id
+          in: path
+          required: true
+          schema:
+            type: integer
+          description: Lift token ID
+      responses:
+        '200':
+          description: Verification status retrieved successfully
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/VerificationStatus'
+        '404':
+          $ref: '#/components/responses/NotFound'
+
+  /api/verification-results/{id}/calculate:
+    post:
+      tags:
+        - Verification
+      summary: Process verification calculation
+      description: Trigger verification calculation for a submitted request
+      operationId: calculateVerification
+      parameters:
+        - name: id
+          in: path
+          required: true
+          schema:
+            type: integer
+          description: Verification result ID
+      requestBody:
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/CalculationRequest'
+      responses:
+        '202':
+          description: Calculation queued successfully
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/JobResponse'
+
+  /api/verification-results/{id}/process-evidence:
+    post:
+      tags:
+        - Verification
+      summary: Process evidence files
+      description: Process and validate evidence files for verification
+      operationId: processEvidence
+      parameters:
+        - name: id
+          in: path
+          required: true
+          schema:
+            type: integer
+          description: Verification result ID
+      responses:
+        '200':
+          description: Evidence processed successfully
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/EvidenceProcessingResult'
+
+  /api/verification-results/{id}/mrv-assessment:
+    get:
+      tags:
+        - MRV
+      summary: Get MRV assessment
+      description: Retrieve MRV compliance assessment for verification
+      operationId: getMRVAssessment
+      parameters:
+        - name: id
+          in: path
+          required: true
+          schema:
+            type: integer
+          description: Verification result ID
+      responses:
+        '200':
+          description: MRV assessment retrieved successfully
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/MRVAssessment'
+
+  /api/verification-methods:
+    get:
+      tags:
+        - Methods
+      summary: List verification methods
+      description: Retrieve available verification methods
+      operationId: listVerificationMethods
+      parameters:
+        - name: methodologyType
+          in: query
+          schema:
+            type: string
+          description: Filter by methodology type
+        - name: active
+          in: query
+          schema:
+            type: boolean
+          description: Filter by active status
+        - name: chainId
+          in: query
+          schema:
+            type: integer
+          description: Filter by blockchain chain ID
+      responses:
+        '200':
+          description: Verification methods retrieved successfully
+          content:
+            application/json:
+              schema:
+                type: array
+                items:
+                  $ref: '#/components/schemas/VerificationMethod'
+
+    post:
+      tags:
+        - Methods
+      summary: Register verification method
+      description: Register a new verification method
+      operationId: registerVerificationMethod
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/VerificationMethodCreate'
+      responses:
+        '201':
+          description: Verification method registered successfully
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/VerificationMethod'
+
+  /api/mrv-protocols:
+    get:
+      tags:
+        - MRV
+      summary: List MRV protocols
+      description: Retrieve available MRV protocols
+      operationId: listMRVProtocols
+      responses:
+        '200':
+          description: MRV protocols retrieved successfully
+          content:
+            application/json:
+              schema:
+                type: array
+                items:
+                  $ref: '#/components/schemas/MRVProtocol'
+
+  /api/lift-tokens/batch/verify:
+    post:
+      tags:
+        - Batch Operations
+      summary: Batch verification
+      description: Submit multiple verification requests
+      operationId: batchVerify
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/BatchVerificationRequest'
+      responses:
+        '202':
+          description: Batch verification queued successfully
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/BatchJobResponse'
+
+  /api/lift-tokens/batch/status:
+    post:
+      tags:
+        - Batch Operations
+      summary: Batch status check
+      description: Check status of multiple verification requests
+      operationId: batchStatus
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/BatchStatusRequest'
+      responses:
+        '200':
+          description: Batch status retrieved successfully
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/BatchStatusResponse'
+
+components:
+  securitySchemes:
+    bearerAuth:
+      type: http
+      scheme: bearer
+      bearerFormat: JWT
+
+  schemas:
+    VerificationRequest:
+      type: object
+      required:
+        - methodId
+        - validatorAddress
+      properties:
+        methodId:
+          type: string
+          description: Verification method identifier
+          example: "vwba-v2.0"
+        validatorAddress:
+          type: string
+          pattern: '^0x[a-fA-F0-9]{40}$'
+          description: Ethereum address of validator
+          example: "0x1234567890123456789012345678901234567890"
+        validatorName:
+          type: string
+          description: Name of validating organization
+          example: "Water Conservation Validator Inc."
+        notes:
+          type: string
+          description: Additional notes for verification
+          example: "Q1 2024 water conservation project verification"
+        evidence:
+          type: array
+          items:
+            $ref: '#/components/schemas/EvidenceSubmission'
+
+    EvidenceSubmission:
+      type: object
+      required:
+        - evidenceType
+        - fileName
+        - fileContent
+        - mimeType
+      properties:
+        evidenceType:
+          type: string
+          enum:
+            - WATER_MEASUREMENT_DATA
+            - BASELINE_ASSESSMENT
+            - SITE_VERIFICATION
+            - GPS_COORDINATES
+            - METHODOLOGY_DOCUMENTATION
+          description: Type of evidence
+        fileName:
+          type: string
+          description: Original filename
+          example: "water_measurements_q1_2024.csv"
+        fileContent:
+          type: string
+          format: byte
+          description: Base64 encoded file content
+        mimeType:
+          type: string
+          description: MIME type of file
+          example: "text/csv"
+        captureDate:
+          type: string
+          format: date-time
+          description: When evidence was captured
+        captureLocation:
+          $ref: '#/components/schemas/Location'
+        captureDevice:
+          type: string
+          description: Device used to capture evidence
+          example: "Flow Meter Model XYZ-123"
+        metadata:
+          type: object
+          additionalProperties: true
+          description: Additional metadata
+
+    Location:
+      type: object
+      required:
+        - latitude
+        - longitude
+      properties:
+        latitude:
+          type: number
+          format: double
+          minimum: -90
+          maximum: 90
+          example: 40.7128
+        longitude:
+          type: number
+          format: double
+          minimum: -180
+          maximum: 180
+          example: -74.0060
+        altitude:
+          type: number
+          format: double
+          description: Altitude in meters
+          example: 10
+
+    VerificationResult:
+      type: object
+      properties:
+        id:
+          type: integer
+          example: 12345
+        liftTokenId:
+          type: integer
+          example: 67890
+        methodId:
+          type: string
+          example: "vwba-v2.0"
+        status:
+          type: string
+          enum: [PENDING, IN_REVIEW, VERIFIED, REJECTED, EXPIRED]
+          example: "PENDING"
+        verificationDate:
+          type: string
+          format: date-time
+        evidenceCount:
+          type: integer
+          example: 2
+
+    VerificationStatus:
+      type: object
+      properties:
+        verified:
+          type: boolean
+          example: false
+        results:
+          type: array
+          items:
+            $ref: '#/components/schemas/VerificationResultDetailed'
+        pending:
+          type: array
+          items:
+            $ref: '#/components/schemas/VerificationResult'
+
+    VerificationResultDetailed:
+      allOf:
+        - $ref: '#/components/schemas/VerificationResult'
+        - type: object
+          properties:
+            verified:
+              type: boolean
+            confidenceScore:
+              type: number
+              format: double
+              minimum: 0
+              maximum: 1
+              nullable: true
+            validatorAddress:
+              type: string
+            verificationMethod:
+              $ref: '#/components/schemas/VerificationMethodSummary'
+
+    VerificationMethod:
+      type: object
+      properties:
+        methodId:
+          type: string
+          example: "vwba-v2.0"
+        name:
+          type: string
+          example: "Volumetric Water Benefit Accounting v2.0"
+        description:
+          type: string
+          example: "WRI VWBA v2.0 methodology for water stewardship verification"
+        methodologyType:
+          type: string
+          example: "VWBA"
+        version:
+          type: string
+          example: "2.0"
+        active:
+          type: boolean
+          example: true
+        criteria:
+          $ref: '#/components/schemas/VerificationCriteria'
+        minimumConfidence:
+          type: number
+          format: double
+          example: 0.8
+        requiredDataTypes:
+          type: array
+          items:
+            type: string
+        chainId:
+          type: integer
+          example: 1
+        createdAt:
+          type: string
+          format: date-time
+
+    VerificationMethodCreate:
+      type: object
+      required:
+        - methodId
+        - name
+        - methodologyType
+        - criteria
+      properties:
+        methodId:
+          type: string
+        name:
+          type: string
+        description:
+          type: string
+        methodologyType:
+          type: string
+        version:
+          type: string
+          default: "1.0"
+        criteria:
+          $ref: '#/components/schemas/VerificationCriteria'
+        requiredDataTypes:
+          type: array
+          items:
+            type: string
+        minimumConfidence:
+          type: number
+          format: double
+        validationPeriod:
+          type: integer
+        chainId:
+          type: integer
+        approvedValidators:
+          type: array
+          items:
+            type: string
+        metadata:
+          type: object
+          additionalProperties: true
+
+    VerificationMethodSummary:
+      type: object
+      properties:
+        name:
+          type: string
+        methodologyType:
+          type: string
+        minimumConfidence:
+          type: number
+          format: double
+
+    VerificationCriteria:
+      type: object
+      properties:
+        requiredEvidenceTypes:
+          type: array
+          items:
+            type: string
+        minimumConfidence:
+          type: number
+          format: double
+        validationPeriod:
+          type: integer
+          description: Validation period in days
+
+    CalculationRequest:
+      type: object
+      properties:
+        priority:
+          type: string
+          enum: [low, normal, high, critical]
+          default: normal
+        forceRecalculation:
+          type: boolean
+          default: false
+
+    JobResponse:
+      type: object
+      properties:
+        jobId:
+          type: string
+          example: "calc_67890_12345"
+        status:
+          type: string
+          enum: [queued, processing, completed, failed]
+          example: "queued"
+        estimatedCompletion:
+          type: string
+          format: date-time
+        priority:
+          type: string
+          example: "high"
+
+    EvidenceProcessingResult:
+      type: object
+      properties:
+        processed:
+          type: integer
+          example: 5
+        successful:
+          type: integer
+          example: 4
+        failed:
+          type: integer
+          example: 1
+        overallScore:
+          type: number
+          format: double
+          example: 0.85
+        qualityGrade:
+          type: string
+          example: "B+"
+        issues:
+          type: array
+          items:
+            $ref: '#/components/schemas/EvidenceIssue'
+        ipfsHashes:
+          type: array
+          items:
+            type: string
+            example: "QmX1Y2Z3..."
+
+    EvidenceIssue:
+      type: object
+      properties:
+        evidenceType:
+          type: string
+        severity:
+          type: string
+          enum: [info, warning, error]
+        message:
+          type: string
+
+    MRVAssessment:
+      type: object
+      properties:
+        compliant:
+          type: boolean
+        protocol:
+          type: string
+        assessmentDate:
+          type: string
+          format: date-time
+        compliance:
+          $ref: '#/components/schemas/ComplianceDetails'
+        overallScore:
+          type: number
+          format: double
+        recommendations:
+          type: array
+          items:
+            type: string
+
+    ComplianceDetails:
+      type: object
+      properties:
+        monitoring:
+          $ref: '#/components/schemas/ComplianceSection'
+        reporting:
+          $ref: '#/components/schemas/ComplianceSection'
+        verification:
+          $ref: '#/components/schemas/ComplianceSection'
+
+    ComplianceSection:
+      type: object
+      properties:
+        score:
+          type: number
+          format: double
+        status:
+          type: string
+          enum: [compliant, non_compliant, partial]
+        requirements:
+          type: array
+          items:
+            $ref: '#/components/schemas/Requirement'
+
+    Requirement:
+      type: object
+      properties:
+        requirement:
+          type: string
+        met:
+          type: boolean
+        evidence:
+          type: array
+          items:
+            type: string
+
+    MRVProtocol:
+      type: object
+      properties:
+        protocolId:
+          type: string
+        name:
+          type: string
+        version:
+          type: string
+        applicableMethodologies:
+          type: array
+          items:
+            type: string
+        requirements:
+          type: object
+          properties:
+            monitoring:
+              type: array
+              items:
+                type: string
+            reporting:
+              type: array
+              items:
+                type: string
+            verification:
+              type: array
+              items:
+                type: string
+        minimumCompliance:
+          type: number
+          format: double
+
+    BatchVerificationRequest:
+      type: object
+      required:
+        - verifications
+      properties:
+        verifications:
+          type: array
+          items:
+            allOf:
+              - $ref: '#/components/schemas/VerificationRequest'
+              - type: object
+                required:
+                  - liftTokenId
+                properties:
+                  liftTokenId:
+                    type: integer
+        priority:
+          type: string
+          enum: [low, normal, high, critical]
+          default: normal
+        sharedEvidence:
+          type: boolean
+          default: false
+          description: Whether evidence can be shared across verifications
+
+    BatchJobResponse:
+      type: object
+      properties:
+        batchId:
+          type: string
+          example: "batch_20240817_001"
+        requestsSubmitted:
+          type: integer
+          example: 2
+        estimatedCompletion:
+          type: string
+          format: date-time
+        status:
+          type: string
+          enum: [processing, completed, failed]
+
+    BatchStatusRequest:
+      type: object
+      required:
+        - liftTokenIds
+      properties:
+        liftTokenIds:
+          type: array
+          items:
+            type: integer
+          maxItems: 500
+
+    BatchStatusResponse:
+      type: object
+      properties:
+        results:
+          type: array
+          items:
+            $ref: '#/components/schemas/BatchStatusItem'
+        summary:
+          $ref: '#/components/schemas/BatchSummary'
+
+    BatchStatusItem:
+      type: object
+      properties:
+        liftTokenId:
+          type: integer
+        verified:
+          type: boolean
+        latestVerification:
+          $ref: '#/components/schemas/VerificationResult'
+
+    BatchSummary:
+      type: object
+      properties:
+        total:
+          type: integer
+        verified:
+          type: integer
+        pending:
+          type: integer
+        rejected:
+          type: integer
+        not_submitted:
+          type: integer
+
+    Error:
+      type: object
+      properties:
+        error:
+          type: string
+          example: "Validation failed"
+        message:
+          type: string
+          example: "Evidence file exceeds maximum size limit"
+        code:
+          type: string
+          example: "EVIDENCE_TOO_LARGE"
+        details:
+          type: object
+          additionalProperties: true
+        timestamp:
+          type: string
+          format: date-time
+        requestId:
+          type: string
+          example: "req_abc123def456"
+
+  responses:
+    BadRequest:
+      description: Bad request
+      content:
+        application/json:
+          schema:
+            $ref: '#/components/schemas/Error'
+
+    Unauthorized:
+      description: Unauthorized
+      content:
+        application/json:
+          schema:
+            $ref: '#/components/schemas/Error'
+
+    NotFound:
+      description: Resource not found
+      content:
+        application/json:
+          schema:
+            $ref: '#/components/schemas/Error'
+
+    RateLimited:
+      description: Rate limit exceeded
+      content:
+        application/json:
+          schema:
+            $ref: '#/components/schemas/Error'

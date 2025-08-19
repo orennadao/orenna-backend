@@ -1,0 +1,45 @@
+global:
+  scrape_interval: 15s
+  evaluation_interval: 15s
+
+rule_files:
+  - "verification_alerts.yml"
+
+scrape_configs:
+  # Orenna API Main Service
+  - job_name: 'orenna-api-main'
+    static_configs:
+      - targets: ['orenna-api-main:3001']
+    scrape_interval: 10s
+    metrics_path: '/metrics'
+    
+  # Orenna API Canary Service  
+  - job_name: 'orenna-api-canary'
+    static_configs:
+      - targets: ['orenna-api-canary:3001']
+    scrape_interval: 10s
+    metrics_path: '/metrics'
+
+  # Database Metrics
+  - job_name: 'postgres'
+    static_configs:
+      - targets: ['db-prod:5432']
+    scrape_interval: 30s
+
+  # Redis Metrics
+  - job_name: 'redis'
+    static_configs:
+      - targets: ['redis-prod:6379']
+    scrape_interval: 30s
+
+  # Traefik Load Balancer
+  - job_name: 'traefik'
+    static_configs:
+      - targets: ['traefik:8080']
+    scrape_interval: 15s
+
+alerting:
+  alertmanagers:
+    - static_configs:
+        - targets:
+          - alertmanager:9093

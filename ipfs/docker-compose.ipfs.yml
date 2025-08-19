@@ -1,0 +1,160 @@
+version: '3.8'
+
+services:
+  # IPFS Node 1 (Primary)
+  ipfs-node1:
+    image: ipfs/kubo:latest
+    container_name: orenna-ipfs-node1
+    environment:
+      - IPFS_PROFILE=server
+      - IPFS_PATH=/data/ipfs
+    volumes:
+      - ipfs_node1_data:/data/ipfs
+      - ./ipfs-config/node1:/ipfs-config
+    ports:
+      - "4001:4001"     # P2P TCP port
+      - "5001:5001"     # API port
+      - "8080:8080"     # Gateway port
+    networks:
+      - ipfs-cluster
+    restart: unless-stopped
+    command: |
+      sh -c "
+        ipfs init --profile=server
+        ipfs config --json API.HTTPHeaders.Access-Control-Allow-Origin '[\"*\"]'
+        ipfs config --json API.HTTPHeaders.Access-Control-Allow-Methods '[\"GET\", \"POST\", \"PUT\", \"DELETE\"]'
+        ipfs config --json Addresses.Gateway '[\"0.0.0.0:8080\"]'
+        ipfs config --json Addresses.API '[\"0.0.0.0:5001\"]'
+        ipfs config --json Swarm.AddrFilters 'null'
+        ipfs config --json Discovery.MDNS.Enabled false
+        ipfs config --json Experimental.FilestoreEnabled true
+        ipfs config --json Experimental.Libp2pStreamMounting true
+        ipfs config --json Experimental.P2pHttpProxy true
+        ipfs daemon --migrate=true --enable-gc
+      "
+    healthcheck:
+      test: ["CMD", "ipfs", "id"]
+      interval: 30s
+      timeout: 10s
+      retries: 3
+
+  # IPFS Node 2 (Backup)
+  ipfs-node2:
+    image: ipfs/kubo:latest
+    container_name: orenna-ipfs-node2
+    environment:
+      - IPFS_PROFILE=server
+      - IPFS_PATH=/data/ipfs
+    volumes:
+      - ipfs_node2_data:/data/ipfs
+      - ./ipfs-config/node2:/ipfs-config
+    ports:
+      - "4002:4001"     # P2P TCP port
+      - "5002:5001"     # API port
+      - "8081:8080"     # Gateway port
+    networks:
+      - ipfs-cluster
+    restart: unless-stopped
+    depends_on:
+      - ipfs-node1
+    command: |
+      sh -c "
+        ipfs init --profile=server
+        ipfs config --json API.HTTPHeaders.Access-Control-Allow-Origin '[\"*\"]'
+        ipfs config --json API.HTTPHeaders.Access-Control-Allow-Methods '[\"GET\", \"POST\", \"PUT\", \"DELETE\"]'
+        ipfs config --json Addresses.Gateway '[\"0.0.0.0:8080\"]'
+        ipfs config --json Addresses.API '[\"0.0.0.0:5001\"]'
+        ipfs config --json Swarm.AddrFilters 'null'
+        ipfs config --json Discovery.MDNS.Enabled false
+        ipfs config --json Experimental.FilestoreEnabled true
+        ipfs daemon --migrate=true --enable-gc
+      "
+    healthcheck:
+      test: ["CMD", "ipfs", "id"]
+      interval: 30s
+      timeout: 10s
+      retries: 3
+
+  # IPFS Cluster (for replication and orchestration)
+  ipfs-cluster:
+    image: ipfs/ipfs-cluster:latest
+    container_name: orenna-ipfs-cluster
+    environment:
+      - CLUSTER_PEERNAME=orenna-cluster-peer1
+      - CLUSTER_SECRET=${CLUSTER_SECRET:-generate-32-char-secret-key-here}
+      - CLUSTER_IPFSHTTP_NODEMULTIADDRESS=/dns4/ipfs-node1/tcp/5001
+      - CLUSTER_CRDT_TRUSTEDPEERS='*'
+      - CLUSTER_RESTAPI_HTTPLISTENMULTIADDRESS=/ip4/0.0.0.0/tcp/9094
+      - CLUSTER_MONITORPINGINTERVAL=2s
+    volumes:
+      - ipfs_cluster_data:/data/ipfs-cluster
+    ports:
+      - "9094:9094"     # REST API
+      - "9095:9095"     # IPFS Proxy API
+      - "9096:9096"     # Cluster P2P
+    networks:
+      - ipfs-cluster
+    depends_on:
+      - ipfs-node1
+      - ipfs-node2
+    restart: unless-stopped
+    command: |
+      sh -c "
+        ipfs-cluster-service init
+        ipfs-cluster-service daemon
+      "
+    healthcheck:
+      test: ["CMD", "ipfs-cluster-ctl", "peers", "ls"]
+      interval: 30s
+      timeout: 10s
+      retries: 3
+
+  # IPFS Monitoring
+  ipfs-prometheus-exporter:
+    image: prometheus/node-exporter:latest
+    container_name: ipfs-metrics
+    volumes:
+      - /proc:/host/proc:ro
+      - /sys:/host/sys:ro
+      - /:/rootfs:ro
+    command:
+      - '--path.procfs=/host/proc'
+      - '--path.rootfs=/rootfs'
+      - '--path.sysfs=/host/sys'
+      - '--collector.filesystem.mount-points-exclude=^/(sys|proc|dev|host|etc)($$|/)'
+    ports:
+      - "9100:9100"
+    networks:
+      - ipfs-cluster
+    restart: unless-stopped
+
+  # Load Balancer for IPFS APIs
+  ipfs-nginx:
+    image: nginx:alpine
+    container_name: ipfs-loadbalancer
+    ports:
+      - "80:80"
+      - "443:443"
+    volumes:
+      - ./nginx/ipfs.conf:/etc/nginx/nginx.conf:ro
+      - ./ssl:/etc/nginx/ssl:ro
+    networks:
+      - ipfs-cluster
+    depends_on:
+      - ipfs-node1
+      - ipfs-node2
+    restart: unless-stopped
+    healthcheck:
+      test: ["CMD", "nginx", "-t"]
+      interval: 30s
+      timeout: 10s
+      retries: 3
+
+networks:
+  ipfs-cluster:
+    driver: bridge
+
+volumes:
+  ipfs_node1_data:
+  ipfs_node2_data:
+  ipfs_cluster_data:
