@@ -24,8 +24,8 @@ function createServerConfig(): Config {
 // Client config with full wallet support
 function createClientConfig(): Config {
   try {
-    // Get environment variables
-    const projectId = process.env.NEXT_PUBLIC_WALLET_CONNECT_PROJECT_ID
+    // Get environment variables and clean them
+    const projectId = process.env.NEXT_PUBLIC_WALLET_CONNECT_PROJECT_ID?.trim()
 
     if (!projectId) {
       console.warn('NEXT_PUBLIC_WALLET_CONNECT_PROJECT_ID is not set. WalletConnect and Coinbase Wallet will be disabled.')
@@ -69,6 +69,7 @@ function createClientConfig(): Config {
             coinbaseWallet({
               appName: 'Orenna DAO',
               appLogoUrl: 'https://orenna.org/logo.png',
+              preference: 'smartWalletOnly', // Reduce 401 metric errors
             }),
           ],
     })

@@ -60,10 +60,24 @@ await app.register(validationPlugin);
 // Configure CORS to support multiple domains
 const corsOrigins = env.API_CORS_ORIGIN.includes(',') 
   ? env.API_CORS_ORIGIN.split(',').map(origin => origin.trim())
-  : env.API_CORS_ORIGIN;
+  : [env.API_CORS_ORIGIN];
+
+app.log.info({ corsOrigins }, 'Configuring CORS with origins');
 
 await app.register(cors, { 
-  origin: corsOrigins,
+  origin: (origin, callback) => {
+    // Allow requests with no origin (mobile apps, etc.)
+    if (!origin) return callback(null, true);
+    
+    // Check if origin is in allowed list
+    if (corsOrigins.includes(origin)) {
+      return callback(null, true);
+    }
+    
+    // Log rejected origins for debugging
+    app.log.warn({ origin, allowedOrigins: corsOrigins }, 'CORS request rejected');
+    return callback(new Error('Not allowed by CORS'), false);
+  },
   credentials: true,
   methods: ['GET', 'POST', 'PUT', 'DELETE', 'OPTIONS'],
   allowedHeaders: ['Content-Type', 'Authorization', 'X-Requested-With']
