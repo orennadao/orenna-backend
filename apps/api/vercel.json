@@ -1,14 +1,15 @@
 {
   "version": 2,
   "functions": {
-    "api/**/*.js": {
+    "src/server.ts": {
+      "runtime": "@vercel/node@3.2.23",
       "maxDuration": 30
     }
   },
-  "buildCommand": "echo 'Build complete'",
-  "outputDirectory": ".",
-  "public": true,
-  "env": {
-    "NODE_ENV": "production"
-  }
+  "rewrites": [
+    {
+      "source": "/(.*)",
+      "destination": "/src/server.ts"
+    }
+  ]
 }
