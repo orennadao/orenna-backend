@@ -1,7 +1,11 @@
 {
-  "buildCommand": "cd apps/web && npm run build",
-  "outputDirectory": "apps/web/.next",
-  "devCommand": "cd apps/web && npm run dev",
-  "installCommand": "pnpm install",
-  "framework": null
+  "buildCommand": "npm run build",
+  "outputDirectory": ".next",
+  "installCommand": "cd ../.. && pnpm install --no-frozen-lockfile && cd apps/web",
+  "framework": "nextjs",
+  "functions": {
+    "apps/web/src/app/**": {
+      "runtime": "nodejs18.x"
+    }
+  }
 }
