@@ -13,6 +13,7 @@
   "scripts": {
     "build": "tsc -p tsconfig.json",
     "typecheck": "tsc -p tsconfig.json --noEmit",
+    "postinstall": "prisma generate --schema=./prisma/schema.prisma",
     "prisma:generate": "dotenv -e ../../.env -- prisma generate",
     "prisma:push": "dotenv -e ../../.env -- prisma db push",
     "prisma:migrate": "dotenv -e ../../.env -- prisma migrate dev --name init",
