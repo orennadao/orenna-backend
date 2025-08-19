@@ -119,4 +119,4 @@ The web app connects to the Orenna API backend at `/api` endpoints:
 1. Follow existing code patterns and TypeScript conventions
 2. Use Tailwind CSS for styling
 3. Ensure components are accessible and responsive
-4. Run type checking before committing: `pnpm typecheck`
+4. Run type checking before committing: `pnpm typecheck`# Trigger deployment
