@@ -17,8 +17,8 @@ export * from './components/textarea';
 export * from './components/checkbox';
 export * from './components/badge';
 export * from './components/alert';
-export * from './components/tabs';
-export * from './components/progress';
+export { Tabs, TabsList, TabsTrigger, TabsContent } from './components/tabs.tsx';
+export { Progress } from './components/progress.tsx';
 
 // Utils
 export { cn } from './lib/utils';
