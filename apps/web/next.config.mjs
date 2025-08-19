@@ -95,15 +95,15 @@ const nextConfig = {
     return config
   },
   
-  // API proxy rewrites
-  async rewrites() {
-    return [
-      {
-        source: '/api/:path*',
-        destination: `${process.env.NEXT_PUBLIC_API_URL || 'http://localhost:3001'}/api/:path*`,
-      },
-    ]
-  },
+  // API proxy rewrites - disabled since frontend calls API directly
+  // async rewrites() {
+  //   return [
+  //     {
+  //       source: '/api/:path*',
+  //       destination: `${process.env.NEXT_PUBLIC_API_URL || 'http://localhost:3001'}/api/:path*`,
+  //     },
+  //   ]
+  // },
 
   // Headers for caching
   async headers() {
