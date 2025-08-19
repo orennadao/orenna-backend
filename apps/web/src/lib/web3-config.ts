@@ -28,7 +28,8 @@ function createClientConfig(): Config {
     const projectId = process.env.NEXT_PUBLIC_WALLET_CONNECT_PROJECT_ID
 
     if (!projectId) {
-      console.warn('NEXT_PUBLIC_WALLET_CONNECT_PROJECT_ID is not set')
+      console.warn('NEXT_PUBLIC_WALLET_CONNECT_PROJECT_ID is not set. WalletConnect and Coinbase Wallet will be disabled.')
+      console.warn('To enable these features, get a project ID from https://cloud.walletconnect.com/')
       // Return basic config without WalletConnect
       return createConfig({
         chains,

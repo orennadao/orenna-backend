@@ -57,7 +57,17 @@ await app.register(securityPlugin);
 await app.register(validationPlugin);
 
 // Core plugins
-await app.register(cors, { origin: env.API_CORS_ORIGIN, credentials: true });
+// Configure CORS to support multiple domains
+const corsOrigins = env.API_CORS_ORIGIN.includes(',') 
+  ? env.API_CORS_ORIGIN.split(',').map(origin => origin.trim())
+  : env.API_CORS_ORIGIN;
+
+await app.register(cors, { 
+  origin: corsOrigins,
+  credentials: true,
+  methods: ['GET', 'POST', 'PUT', 'DELETE', 'OPTIONS'],
+  allowedHeaders: ['Content-Type', 'Authorization', 'X-Requested-With']
+});
 await app.register(cookie);
 await app.register(jwt, {
   secret: env.JWT_SECRET,
