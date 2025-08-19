@@ -73,6 +73,10 @@ export function useWebSocket({
   const subscriptionsRef = useRef<Set<string>>(new Set());
 
   const connect = useCallback(() => {
+    // EMERGENCY: Completely disable WebSocket connections to stop error storm
+    console.log('[WebSocket] Connections disabled to prevent error storm');
+    return;
+    
     if (wsRef.current?.readyState === WebSocket.OPEN || isConnecting) {
       return;
     }

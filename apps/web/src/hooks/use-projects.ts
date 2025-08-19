@@ -14,7 +14,12 @@ export function useProjects() {
       setIsLoading(true)
       setError(null)
       const response = await apiClient.getProjects() as any
-      setProjects(response.projects || response || [])
+      // Handle our API response format: { success: true, data: [...], meta: { pagination: {...} } }
+      if (response.success && Array.isArray(response.data)) {
+        setProjects(response.data)
+      } else {
+        setProjects(response.projects || response.data || response || [])
+      }
     } catch (err) {
       setError(err instanceof Error ? err.message : 'Failed to fetch projects')
     } finally {

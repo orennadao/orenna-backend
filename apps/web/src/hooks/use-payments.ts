@@ -22,8 +22,14 @@ export function usePayments(params?: {
       setIsLoading(true)
       setError(null)
       const response = await apiClient.getPayments(params) as any
-      setPayments(response.payments || [])
-      setTotal(response.total || 0)
+      // Handle our API response format: { success: true, data: [...], meta: { pagination: {...} } }
+      if (response.success && Array.isArray(response.data)) {
+        setPayments(response.data)
+        setTotal(response.meta?.pagination?.total || response.data.length)
+      } else {
+        setPayments(response.payments || response.data || [])
+        setTotal(response.total || response.meta?.pagination?.total || 0)
+      }
     } catch (err) {
       setError(err instanceof Error ? err.message : 'Failed to fetch payments')
     } finally {
@@ -55,8 +61,13 @@ export function usePayment(paymentId: string) {
     try {
       setIsLoading(true)
       setError(null)
-      const response = await apiClient.getPayment(paymentId) as Payment
-      setPayment(response)
+      const response = await apiClient.getPayment(paymentId) as any
+      // Handle our API response format: { success: true, data: {...} }
+      if (response.success && response.data) {
+        setPayment(response.data)
+      } else {
+        setPayment(response)
+      }
     } catch (err) {
       setError(err instanceof Error ? err.message : 'Failed to fetch payment')
     } finally {
@@ -84,7 +95,11 @@ export function useCreatePayment() {
     try {
       setIsLoading(true)
       setError(null)
-      const response = await apiClient.createPayment(payment)
+      const response = await apiClient.createPayment(payment) as any
+      // Handle our API response format: { success: true, data: {...} }
+      if (response.success && response.data) {
+        return response.data
+      }
       return response
     } catch (err) {
       const errorMessage = err instanceof Error ? err.message : 'Failed to create payment'

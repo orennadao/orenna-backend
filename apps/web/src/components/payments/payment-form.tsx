@@ -19,7 +19,7 @@ export function PaymentForm({ onSuccess, onCancel }: PaymentFormProps) {
   const { createPayment, isLoading, error } = useCreatePayment()
 
   const [formData, setFormData] = useState<Partial<CreatePaymentRequest>>({
-    paymentType: 'LIFT_UNIT_PURCHASE',
+    paymentType: 'LIFT_TOKEN_PURCHASE',
     chainId: chainId || 1,
     payerAddress: address || '',
   })
@@ -91,7 +91,7 @@ export function PaymentForm({ onSuccess, onCancel }: PaymentFormProps) {
             className="w-full p-3 border border-gray-300 rounded-md focus:ring-primary-500 focus:border-primary-500 text-base sm:text-sm min-h-[44px]"
             required
           >
-            <option value="LIFT_UNIT_PURCHASE">Lift Unit Purchase</option>
+            <option value="LIFT_TOKEN_PURCHASE">Lift Token Purchase</option>
             <option value="PROJECT_FUNDING">Project Funding</option>
             <option value="REPAYMENT">Repayment</option>
             <option value="PLATFORM_FEE">Platform Fee</option>
@@ -175,7 +175,7 @@ export function PaymentForm({ onSuccess, onCancel }: PaymentFormProps) {
           )}
           <Button
             type="submit"
-            variant="primary"
+            variant="default"
             disabled={isLoading || !address}
           >
             {isLoading ? 'Creating...' : 'Create Payment'}
