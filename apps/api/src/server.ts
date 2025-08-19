@@ -136,6 +136,19 @@ app.get(
   async () => app.printRoutes()
 );
 
+// Debug endpoint to check environment variables
+app.get(
+  "/__debug/env",
+  { schema: { hide: process.env.NODE_ENV === "production" } },
+  async () => ({
+    NODE_ENV: env.NODE_ENV,
+    API_CORS_ORIGIN: env.API_CORS_ORIGIN,
+    corsOrigins: env.API_CORS_ORIGIN.includes(',') 
+      ? env.API_CORS_ORIGIN.split(',').map(origin => origin.trim())
+      : [env.API_CORS_ORIGIN]
+  })
+);
+
 // Print routes once ready
 app.ready().then(() => app.log.info("\n" + app.printRoutes()));
 
