@@ -167,6 +167,14 @@ const close = async (sig?: NodeJS.Signals) => {
 process.on("SIGINT", () => close("SIGINT"));
 process.on("SIGTERM", () => close("SIGTERM"));
 
-// Start
-await app.listen({ port: env.API_PORT, host: env.API_HOST });
-app.log.info(`Docs at http://${env.API_HOST}:${env.API_PORT}/docs`);
+// Export for Vercel
+export default async function handler(req: any, res: any) {
+  await app.ready();
+  app.server.emit('request', req, res);
+}
+
+// Start server locally (not in Vercel)
+if (process.env.NODE_ENV !== 'production' || !process.env.VERCEL) {
+  await app.listen({ port: env.API_PORT, host: env.API_HOST });
+  app.log.info(`Docs at http://${env.API_HOST}:${env.API_PORT}/docs`);
+}
