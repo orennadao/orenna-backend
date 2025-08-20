@@ -51,6 +51,56 @@ export default function ProjectDetailPage() {
       try {
         const response = await fetch(`/api/projects/${projectId}`);
         if (!response.ok) {
+          // For demo purposes, show a mock project if API project doesn't exist
+          if (response.status === 404) {
+            const mockProjects = [
+              {
+                id: "1",
+                name: "Amazon Rainforest Conservation",
+                description: "Large-scale forest conservation project protecting 10,000 hectares of rainforest",
+                ownerAddress: "0x1234567890123456789012345678901234567890",
+                state: "DRAFT",
+                tokenUri: "https://example.com/metadata/1.json",
+                registryDataUri: "https://example.com/registry/1.json",
+                dataHash: "0xabcdef1234567890abcdef1234567890abcdef1234567890abcdef1234567890",
+                createdAt: "2024-01-15T00:00:00Z",
+                chainId: 8453,
+                schemaVersion: 1
+              },
+              {
+                id: "2", 
+                name: "Solar Energy Initiative",
+                description: "Community solar installation providing clean energy to 500 households",
+                ownerAddress: "0x2345678901234567890123456789012345678901",
+                state: "BASELINED",
+                tokenUri: "https://example.com/metadata/2.json",
+                registryDataUri: "https://example.com/registry/2.json", 
+                dataHash: "0xbcdef01234567890bcdef01234567890bcdef01234567890bcdef01234567890",
+                createdAt: "2024-02-01T00:00:00Z",
+                chainId: 8453,
+                schemaVersion: 1
+              },
+              {
+                id: "3",
+                name: "Watershed Restoration", 
+                description: "Restoring damaged watershed ecosystems and improving water quality",
+                ownerAddress: "0x3456789012345678901234567890123456789012",
+                state: "ACTIVE_FUNDRAISING",
+                tokenUri: "https://example.com/metadata/3.json",
+                registryDataUri: "https://example.com/registry/3.json",
+                dataHash: "0xcdef012345678901cdef012345678901cdef012345678901cdef012345678901", 
+                createdAt: "2023-12-01T00:00:00Z",
+                chainId: 8453,
+                schemaVersion: 1
+              }
+            ];
+            
+            const mockProject = mockProjects.find(p => p.id === projectId);
+            if (mockProject) {
+              setProject(mockProject);
+              return;
+            }
+          }
           throw new Error('Project not found');
         }
         const data = await response.json();
