@@ -1,5 +1,5 @@
 import { WebSocketManager } from '../lib/websocket-manager';
-import { RoleContext } from '../lib/rbac';
+// import { RoleContext } from '../lib/rbac'; // Commented out - finance system not implemented
 
 declare module 'fastify' {
   interface FastifyInstance {
@@ -12,6 +12,6 @@ declare module 'fastify' {
       address: string;
       chainId?: number;
     };
-    roleContext?: RoleContext;
+    // roleContext?: RoleContext; // Commented out - finance system not implemented
   }
 }
