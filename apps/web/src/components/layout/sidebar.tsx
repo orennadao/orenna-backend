@@ -101,8 +101,9 @@ const utilityItems = [
   {
     id: 'help',
     label: 'Help',
+    href: '/help',
     icon: HelpCircle,
-    action: 'help'
+    description: 'Help center and documentation'
   }
 ];
 
@@ -211,6 +212,36 @@ export function Sidebar({
           <div className="space-y-1">
             {utilityItems.map((item) => {
               const Icon = item.icon;
+              
+              // Handle href vs action items
+              if (item.href) {
+                return (
+                  <Link
+                    key={item.id}
+                    href={item.href}
+                    className={cn(
+                      "flex items-center w-full px-3 py-2 text-sm rounded-lg transition-colors text-gray-700 hover:bg-gray-100 hover:text-gray-900"
+                    )}
+                    title={isCollapsed ? item.label : item.description}
+                  >
+                    <Icon className={cn(
+                      "flex-shrink-0",
+                      isCollapsed ? "h-5 w-5" : "h-4 w-4 mr-3",
+                      "text-gray-500"
+                    )} />
+                    {!isCollapsed && (
+                      <div className="flex-1 flex items-center justify-between">
+                        <span className="font-medium">{item.label}</span>
+                        {item.shortcut && (
+                          <span className="text-xs text-gray-400 bg-gray-100 px-2 py-1 rounded">
+                            {item.shortcut}
+                          </span>
+                        )}
+                      </div>
+                    )}
+                  </Link>
+                );
+              }
               
               return (
                 <button
