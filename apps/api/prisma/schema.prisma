@@ -116,6 +116,29 @@ model MintRequestEvent {
   @@map("MintRequestEvent")
 }
 
+enum MintRequestStatus {
+  PENDING
+  APPROVED
+  MINTING
+  COMPLETED
+  REJECTED
+  FAILED
+  CANCELLED
+  @@map("MintRequestStatus")
+}
+
+enum MintRequestEventType {
+  SUBMITTED
+  REVIEWED
+  APPROVED
+  REJECTED
+  CANCELLED
+  MINT_STARTED
+  MINT_COMPLETED
+  MINT_FAILED
+  @@map("MintRequestEventType")
+}
+
 enum PaymentType {
   PROJECT_FUNDING
   MILESTONE_PAYMENT
