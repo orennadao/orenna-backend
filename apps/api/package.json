@@ -5,6 +5,7 @@
   "scripts": {
     "dev": "dotenv -e ../../.env -- tsx src/server.ts",
     "build": "tsc",
+    "start": "node dist/server.js",
     "typecheck": "tsc --noEmit",
     "test": "vitest run"
   },
