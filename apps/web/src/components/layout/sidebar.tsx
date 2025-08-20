@@ -7,6 +7,7 @@ import { cn } from '@/lib/utils';
 import { Button } from '@/components/ui/button';
 import { 
   Home,
+  BarChart,
   FolderOpen,
   TrendingUp,
   Coins,
@@ -29,7 +30,14 @@ const navigationItems = [
     label: 'Home',
     href: '/',
     icon: Home,
-    description: 'Overview and dashboard'
+    description: 'Landing page and overview'
+  },
+  {
+    id: 'dashboard',
+    label: 'Dashboard',
+    href: '/dashboard',
+    icon: BarChart,
+    description: 'Personal dashboard and activity'
   },
   {
     id: 'projects',

@@ -2,8 +2,6 @@
 
 import { Header } from "@/components/layout/header";
 import { Footer } from "@/components/layout/footer";
-import { MainLayout } from "@/components/layout/main-layout";
-import { useAuth } from "@/hooks/use-auth";
 import { 
   AnnouncementBar, 
   Hero, 
@@ -17,49 +15,7 @@ import { Button } from "@/components/ui/button";
 import { Sprout, Users, DollarSign } from "lucide-react";
 import Link from "next/link";
 
-export default function Home() {
-  const { isAuthenticated } = useAuth();
-  
-  // For authenticated users, show a different dashboard-style home
-  if (isAuthenticated) {
-    return (
-      <MainLayout
-        title="Dashboard"
-        description="Welcome back to Orenna DAO"
-      >
-        {/* Dashboard content for authenticated users */}
-        <div className="grid grid-cols-1 lg:grid-cols-3 gap-6">
-          <div className="lg:col-span-2">
-            <div className="bg-white rounded-lg p-6 shadow-sm border">
-              <h2 className="text-xl font-semibold mb-4">Recent Activity</h2>
-              <p className="text-gray-600">Your recent projects, forwards, and tokens will appear here.</p>
-            </div>
-          </div>
-          <div>
-            <div className="bg-white rounded-lg p-6 shadow-sm border">
-              <h3 className="text-lg font-semibold mb-4">Quick Actions</h3>
-              <div className="space-y-3">
-                <Link href="/projects/create" className="block">
-                  <Button className="w-full" variant="outline">Propose Project</Button>
-                </Link>
-                <Link href="/marketplace/forwards" className="block">
-                  <Button className="w-full" variant="outline">Browse Forwards</Button>
-                </Link>
-                <Link href="/mint-requests/create" className="block">
-                  <Button className="w-full" variant="outline">Submit Mint Request</Button>
-                </Link>
-                <Link href="/lift-tokens" className="block">
-                  <Button className="w-full" variant="outline">My Tokens</Button>
-                </Link>
-              </div>
-            </div>
-          </div>
-        </div>
-      </MainLayout>
-    );
-  }
-  
-  // For unauthenticated users, show the public landing page
+export default function LandingPage() {
   return (
     <div className="min-h-screen flex flex-col">
       <Header />
