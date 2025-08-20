@@ -134,6 +134,36 @@ export default async function liftTokenRoutes(app: FastifyInstance) {
     await queueService.close();
   });
   
+  // Debug endpoint for database connectivity
+  app.get('/lift-tokens/debug', async (request, reply) => {
+    try {
+      const tableExists = await app.prisma.$queryRaw`
+        SELECT EXISTS (
+          SELECT FROM information_schema.tables 
+          WHERE table_schema = 'public' 
+          AND table_name = 'LiftToken'
+        );
+      `;
+      
+      const allTables = await app.prisma.$queryRaw`
+        SELECT table_name FROM information_schema.tables 
+        WHERE table_schema = 'public';
+      `;
+      
+      return reply.send({
+        liftTokenTableExists: tableExists,
+        allTables: allTables,
+        databaseConnected: true
+      });
+    } catch (error: any) {
+      return reply.code(500).send({
+        error: 'Database debug failed',
+        details: error?.message,
+        databaseConnected: false
+      });
+    }
+  });
+
   // Get all lift tokens
   app.get('/lift-tokens', {
     schema: {
