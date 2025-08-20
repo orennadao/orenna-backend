@@ -1,8 +1,9 @@
 import { fetchWithCache, createCacheKey, apiCache } from './cache';
 
-const API_BASE_URL = process.env.NODE_ENV === 'production' 
-  ? 'https://orenna-7notjkury-orenna-dao.vercel.app/api'
-  : '/api';
+const API_BASE_URL = process.env.NEXT_PUBLIC_API_URL || 
+  (process.env.NODE_ENV === 'production' 
+    ? 'https://orenna-7notjkury-orenna-dao.vercel.app/api'
+    : '/api');
 
 class ApiClient {
   private baseUrl: string;
