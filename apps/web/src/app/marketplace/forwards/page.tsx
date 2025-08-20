@@ -1,9 +1,8 @@
 'use client';
 
 import { useState } from 'react';
-import { Header } from "@/components/layout/header";
-import { Footer } from "@/components/layout/footer";
 import { ProtectedRoute } from "@/components/auth/protected-route";
+import { MainLayout } from "@/components/layout/main-layout";
 import { Button } from "@/components/ui/button";
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
 import { Badge } from "@/components/ui/badge";
@@ -220,20 +219,11 @@ export default function ForwardsPage() {
 
   return (
     <ProtectedRoute>
-      <div className="min-h-screen flex flex-col">
-        <Header />
-        
-        <main className="flex-1 bg-gray-50">
-          <div className="container mx-auto px-4 py-8">
-            <div className="max-w-7xl mx-auto space-y-6">
-              
-              {/* Header */}
-              <div>
-                <h1 className="text-3xl font-bold text-foreground">Lift Forwards</h1>
-                <p className="text-muted-foreground">
-                  Back regenerative projects before they deliver verified outcomes
-                </p>
-              </div>
+      <MainLayout
+        title="Lift Forwards"
+        description="Back regenerative projects before they deliver verified outcomes"
+      >
+        <div className="space-y-6">
 
               {/* Summary Cards */}
               <div className="grid grid-cols-1 md:grid-cols-4 gap-4">
@@ -399,19 +389,15 @@ export default function ForwardsPage() {
                 ))}
               </div>
 
-              {filteredForwards.length === 0 && (
-                <Card>
-                  <CardContent className="p-8 text-center">
-                    <p className="text-muted-foreground">No forwards found matching your search.</p>
-                  </CardContent>
-                </Card>
-              )}
-            </div>
-          </div>
-        </main>
-        
-        <Footer />
-      </div>
+          {filteredForwards.length === 0 && (
+            <Card>
+              <CardContent className="p-8 text-center">
+                <p className="text-muted-foreground">No forwards found matching your search.</p>
+              </CardContent>
+            </Card>
+          )}
+        </div>
+      </MainLayout>
     </ProtectedRoute>
   );
 }

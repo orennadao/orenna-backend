@@ -223,6 +223,28 @@ class ApiClient {
     });
   }
 
+  // Global search endpoint
+  async search(query: string, params?: {
+    types?: string[];
+    limit?: number;
+    offset?: number;
+  }) {
+    const searchParams = new URLSearchParams();
+    searchParams.append('q', query);
+    if (params) {
+      if (params.types) {
+        params.types.forEach(type => searchParams.append('type', type));
+      }
+      if (params.limit !== undefined) {
+        searchParams.append('limit', String(params.limit));
+      }
+      if (params.offset !== undefined) {
+        searchParams.append('offset', String(params.offset));
+      }
+    }
+    return this.request(`/search?${searchParams.toString()}`);
+  }
+
   // Indexer endpoints
   async getIndexerStatus() {
     return this.request('/indexer/status');

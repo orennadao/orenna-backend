@@ -120,21 +120,7 @@ export function ProjectDashboard({
 
   return (
     <div className="space-y-6">
-      {/* Header */}
-      <div className="flex items-center justify-between">
-        <div>
-          <h1 className="text-3xl font-bold text-gray-900">Project Dashboard</h1>
-          <p className="text-gray-600">
-            Manage and monitor your regenerative finance projects
-          </p>
-        </div>
-        {onCreateProject && (
-          <Button onClick={onCreateProject} size="lg">
-            <Plus className="h-4 w-4 mr-2" />
-            New Project
-          </Button>
-        )}
-      </div>
+      {/* Remove header since it's now handled by MainLayout */}
 
       {/* Metrics Cards */}
       <div className="grid grid-cols-1 md:grid-cols-4 gap-4">

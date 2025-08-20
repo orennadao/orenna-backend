@@ -1,9 +1,10 @@
 'use client'
 
-import { Header } from "@/components/layout/header";
-import { Footer } from "@/components/layout/footer";
 import { ProtectedRoute } from "@/components/auth/protected-route";
+import { MainLayout } from "@/components/layout/main-layout";
 import { ProjectDashboard } from "@/components/projects/project-dashboard";
+import { Button } from "@/components/ui/button";
+import { Plus } from "lucide-react";
 import { useRouter } from 'next/navigation';
 
 export default function ProjectsPage() {
@@ -23,23 +24,22 @@ export default function ProjectsPage() {
 
   return (
     <ProtectedRoute>
-      <div className="min-h-screen flex flex-col">
-        <Header />
-        
-        <main className="flex-1 bg-gray-50">
-          <div className="container mx-auto px-4 py-8">
-            <div className="max-w-7xl mx-auto">
-              <ProjectDashboard 
-                onCreateProject={handleCreateProject}
-                onViewProject={handleViewProject}
-                onEditProject={handleEditProject}
-              />
-            </div>
-          </div>
-        </main>
-        
-        <Footer />
-      </div>
+      <MainLayout
+        title="Projects"
+        description="Browse and manage regenerative finance projects"
+        actions={
+          <Button onClick={handleCreateProject}>
+            <Plus className="h-4 w-4 mr-2" />
+            New Project
+          </Button>
+        }
+      >
+        <ProjectDashboard 
+          onCreateProject={handleCreateProject}
+          onViewProject={handleViewProject}
+          onEditProject={handleEditProject}
+        />
+      </MainLayout>
     </ProtectedRoute>
   );
 }

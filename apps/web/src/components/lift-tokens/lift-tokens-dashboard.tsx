@@ -7,6 +7,10 @@ import { Input } from "@/components/ui/input"
 import { Select } from "@/components/ui/select"
 import { Card } from "@/components/ui/card"
 import { Badge } from "@/components/ui/badge"
+import { ErrorBoundary, SimpleErrorFallback } from '@/components/ui/error-boundary'
+import { LoadingState, CardSkeleton } from '@/components/ui/loading-states'
+import { NoLiftTokensEmpty } from '@/components/ui/empty-states'
+import { parseApiError } from '@/lib/error-handling'
 import Link from 'next/link'
 import type { LiftToken } from '@/types/api'
 
@@ -40,27 +44,18 @@ export function LiftTokensDashboard() {
 
   if (error) {
     return (
-      <div className="bg-red-50 border border-red-200 rounded-lg p-4">
-        <p className="text-red-800">Error loading lift tokens: {error}</p>
-        <Button onClick={refetch} className="mt-2">Retry</Button>
-      </div>
+      <SimpleErrorFallback 
+        error={parseApiError(error)}
+        resetError={refetch}
+        title="Failed to load lift tokens"
+      />
     )
   }
 
   return (
-    <div className="space-y-6">
-      {/* Header */}
-      <div className="flex justify-between items-center">
-        <div>
-          <h1 className="text-3xl font-bold text-gray-900">Lift Tokens</h1>
-          <p className="text-gray-600 mt-2">
-            Manage and track ecosystem function lift tokens representing verified environmental improvements
-          </p>
-        </div>
-        <Link href="/lift-tokens/create">
-          <Button>Create Lift Token</Button>
-        </Link>
-      </div>
+    <ErrorBoundary>
+      <div className="space-y-6">
+      {/* Header removed - now handled by MainLayout */}
 
       {/* Filters */}
       <Card className="p-4">
@@ -144,17 +139,9 @@ export function LiftTokensDashboard() {
       {/* Lift Tokens List */}
       <div className="space-y-4">
         {isLoading ? (
-          <div className="text-center py-8">
-            <div className="inline-block animate-spin rounded-full h-8 w-8 border-b-2 border-blue-600"></div>
-            <p className="mt-2 text-gray-600">Loading lift tokens...</p>
-          </div>
+          <LoadingState title="Loading lift tokens..." />
         ) : liftTokens.length === 0 ? (
-          <Card className="p-8 text-center">
-            <p className="text-gray-600">No lift tokens found</p>
-            <Link href="/lift-tokens/create">
-              <Button className="mt-4">Create First Lift Token</Button>
-            </Link>
-          </Card>
+          <NoLiftTokensEmpty />
         ) : (
           liftTokens.map((token: LiftToken) => (
             <Card key={token.id} className="p-6 hover:shadow-md transition-shadow">
@@ -217,11 +204,11 @@ export function LiftTokensDashboard() {
                 <Link href={`/lift-tokens/${token.id}`}>
                   <Button variant="outline" size="sm">View Details</Button>
                 </Link>
-                {token.status === 'CREATED' && (
-                  <Button size="sm">Issue Token</Button>
-                )}
                 {token.status === 'ISSUED' && (
                   <Button variant="outline" size="sm">Retire Token</Button>
+                )}
+                {token.status === 'ISSUED' && (
+                  <Button variant="outline" size="sm">Transfer</Button>
                 )}
               </div>
             </Card>
@@ -255,6 +242,7 @@ export function LiftTokensDashboard() {
           </div>
         </div>
       )}
-    </div>
+      </div>
+    </ErrorBoundary>
   )
 }
