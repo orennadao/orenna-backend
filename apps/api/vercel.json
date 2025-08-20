@@ -11,6 +11,5 @@
       "src": "/(.*)",
       "dest": "/api/index.ts"
     }
-  ],
-  "alias": ["api.orennadao.com"]
+  ]
 }
