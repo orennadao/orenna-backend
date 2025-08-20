@@ -27,6 +27,7 @@ import { useRouter } from 'next/navigation';
 import Link from 'next/link';
 import { useAuth } from '@/hooks/use-auth';
 import { WalletConnectButton } from '@/components/auth/wallet-connect-button';
+import { apiClient } from '@/lib/api';
 
 const PROJECT_STEPS = [
   { id: 'type', title: 'Project Type', icon: FileText },
@@ -176,20 +177,10 @@ export function ProjectCreationWizard() {
         description: formData.description,
       };
 
-      const response = await fetch('/api/projects', {
+      const result = await apiClient.request('/projects', {
         method: 'POST',
-        headers: {
-          'Content-Type': 'application/json',
-        },
         body: JSON.stringify(projectData),
       });
-
-      if (!response.ok) {
-        const errorData = await response.json();
-        throw new Error(errorData.error || 'Failed to create project');
-      }
-
-      const result = await response.json();
       
       // Redirect to the created project
       router.push(`/projects/${result.id}`);

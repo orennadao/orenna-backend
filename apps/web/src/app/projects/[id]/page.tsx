@@ -20,6 +20,7 @@ import {
   Zap,
   Activity
 } from 'lucide-react';
+import { apiClient } from '@/lib/api';
 
 interface Project {
   id: string;
@@ -49,10 +50,13 @@ export default function ProjectDetailPage() {
 
     const fetchProject = async () => {
       try {
-        const response = await fetch(`/api/projects/${projectId}`);
-        if (!response.ok) {
+        try {
+          const data = await apiClient.request(`/projects/${projectId}`);
+          setProject(data);
+          return;
+        } catch (apiError: any) {
           // For demo purposes, show a mock project if API project doesn't exist
-          if (response.status === 404) {
+          if (apiError.message?.includes('404') || apiError.message?.includes('Not found')) {
             const mockProjects = [
               {
                 id: "1",
@@ -103,8 +107,6 @@ export default function ProjectDetailPage() {
           }
           throw new Error('Project not found');
         }
-        const data = await response.json();
-        setProject(data);
       } catch (err) {
         setError(err instanceof Error ? err.message : 'Failed to load project');
       } finally {
