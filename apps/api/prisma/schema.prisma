@@ -45,7 +45,7 @@ model Project {
   meta            Json?
 
   // Relations - match actual database structure
-  LiftUnit              LiftUnit[]
+  LiftToken             LiftToken[]
   MintRequest           MintRequest[]
   Payment               Payment[]
   ProjectPaymentConfig  ProjectPaymentConfig?
@@ -53,7 +53,7 @@ model Project {
   @@map("Project")
 }
 
-model LiftUnit {
+model LiftToken {
   id               Int      @id @default(autoincrement())
   projectId        Int?
   tokenId          String
@@ -66,14 +66,14 @@ model LiftUnit {
   updatedAt        DateTime @updatedAt
 
   project        Project?          @relation(fields: [projectId], references: [id], onDelete: SetNull)
-  LiftUnitEvent  LiftUnitEvent[]
+  LiftTokenEvent LiftTokenEvent[]
 
   @@map("LiftUnit")
 }
 
-model LiftUnitEvent {
+model LiftTokenEvent {
   id           Int      @id @default(autoincrement())
-  liftUnitId   Int
+  liftTokenId  Int
   eventType    String
   amount       String
   txHash       String
@@ -81,7 +81,7 @@ model LiftUnitEvent {
   logIndex     Int
   createdAt    DateTime @default(now())
 
-  liftUnit LiftUnit @relation(fields: [liftUnitId], references: [id], onDelete: Cascade)
+  liftToken LiftToken @relation(fields: [liftTokenId], references: [id], onDelete: Cascade)
 
   @@map("LiftUnitEvent")
 }
