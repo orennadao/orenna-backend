@@ -1,4 +1,4 @@
-import { PrismaClient, FinanceContract, ChangeOrder, ContractType, ContractStatus, ApprovalStatus, ChangeOrderReason, ChangeOrderCategory, ChangeOrderStatus } from '@prisma/client';
+import { PrismaClient, FinanceContract, ChangeOrder, ContractType, ContractStatus, ApprovalStatus, ChangeOrderReason, ChangeOrderCategory, ChangeOrderStatus } from '@orenna/db';
 import { logger } from '../utils/logger';
 
 export interface ContractCreateRequest {

@@ -1,4 +1,4 @@
-import { PrismaClient, DisbursementStatus, PaymentMethod, Disbursement } from '@prisma/client';
+import { PrismaClient, DisbursementStatus, PaymentMethod, Disbursement } from '@orenna/db';
 import { logger } from '../utils/logger';
 
 export interface BankStatement {

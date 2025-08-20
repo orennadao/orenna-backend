@@ -1,6 +1,6 @@
 // apps/api/src/lib/rbac.ts
 import { FastifyInstance, FastifyRequest, FastifyReply } from 'fastify';
-import { FinanceRole, SystemRoleType, RoleChangeType } from '@prisma/client';
+import { FinanceRole, SystemRoleType, RoleChangeType } from '@orenna/db';
 
 // Role permissions configuration
 export const ROLE_PERMISSIONS = {

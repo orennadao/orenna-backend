@@ -1,6 +1,6 @@
 import fp from "fastify-plugin";
 import type { FastifyPluginAsync } from "fastify";
-import { PrismaClient } from "@prisma/client";
+import { PrismaClient } from '@orenna/db';
 
 declare module "fastify" {
   interface FastifyInstance {

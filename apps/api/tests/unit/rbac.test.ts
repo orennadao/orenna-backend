@@ -1,7 +1,7 @@
 // apps/api/tests/unit/rbac.test.ts
 import { describe, test, expect } from 'vitest';
 import { ROLE_PERMISSIONS, SYSTEM_ROLE_PERMISSIONS } from '../../src/lib/rbac.js';
-import { FinanceRole, SystemRoleType } from '@prisma/client';
+import { FinanceRole, SystemRoleType } from '@orenna/db';
 
 describe('RBAC Configuration', () => {
   test('should have permissions defined for all finance roles', () => {

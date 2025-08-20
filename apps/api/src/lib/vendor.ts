@@ -1,4 +1,4 @@
-import { PrismaClient, Vendor, VendorDocument, VendorStatus, KycStatus, TaxStatus, PaymentMethod, VendorDocumentType } from '@prisma/client';
+import { PrismaClient, Vendor, VendorDocument, VendorStatus, KycStatus, TaxStatus, PaymentMethod, VendorDocumentType } from '@orenna/db';
 import { logger } from '../utils/logger';
 
 export interface VendorCreateRequest {
