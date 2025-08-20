@@ -131,7 +131,7 @@ model MintRequest {
   updatedAt    DateTime @updatedAt
 
   project            Project?             @relation(fields: [projectId], references: [id], onDelete: Restrict)
-  MintRequestEvent   MintRequestEvent[]
+  events             MintRequestEvent[]
   liftToken          LiftToken?
 
   @@map("MintRequest")
@@ -216,7 +216,7 @@ model Payment {
   confirmedAt          DateTime?
 
   project      Project?       @relation(fields: [projectId], references: [id], onDelete: SetNull)
-  PaymentEvent PaymentEvent[]
+  events       PaymentEvent[]
 
   @@index([chainId])
   @@index([createdAt])
