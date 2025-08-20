@@ -6,7 +6,7 @@ import { REPAYMENT_ESCROW_ABI, ALLOCATION_ESCROW_ABI } from './payment.js';
 interface IndexerConfig {
   chainId: number;
   contractAddress: Address;
-  indexerType: 'RepaymentEscrow' | 'AllocationEscrow' | 'LiftUnits';
+  indexerType: 'RepaymentEscrow' | 'AllocationEscrow' | 'LiftTokens';
   startBlock?: number;
   confirmations?: number;
   batchSize?: number;
@@ -482,12 +482,12 @@ export class BlockchainIndexer {
       const amount = amounts[i].toString();
 
       // Try to find existing lift unit or create one
-      await this.app.prisma.liftUnit.upsert({
+      await this.app.prisma.liftToken.upsert({
         where: { tokenId },
         update: {
           status: 'SOLD',
           meta: {
-            ...((await this.app.prisma.liftUnit.findUnique({ 
+            ...((await this.app.prisma.liftToken.findUnique({ 
               where: { tokenId }, 
               select: { meta: true } 
             }))?.meta || {}),

@@ -34,7 +34,7 @@ export const ORNA_ABI = parseAbi([
   'event Transfer(address indexed from, address indexed to, uint256 value)',
 ]);
 
-export const LIFT_UNITS_ABI = parseAbi([
+export const LIFT_TOKENS_ABI = parseAbi([
   'function uri(uint256 id) view returns (string)',
   'function totalSupply(uint256 id) view returns (uint256)',
   'function maxSupply(uint256 id) view returns (uint256)',
@@ -151,16 +151,16 @@ export class BlockchainService {
     return votes.toString();
   }
 
-  // Lift Units Methods
-  async getLiftUnitInfo(tokenId: string, chainId: number) {
-    if (!env.LIFT_UNITS_ADDRESS) {
-      throw new Error('LIFT_UNITS_ADDRESS not configured');
+    // Lift Tokens Methods
+  async getLiftTokenInfo(tokenId: string, chainId: number) {
+    if (!env.LIFT_TOKENS_ADDRESS) {
+      throw new Error('LIFT_TOKENS_ADDRESS not configured');
     }
 
     const publicClient = this.getPublicClient(chainId);
     const contract = getContract({
-      address: env.LIFT_UNITS_ADDRESS as Address,
-      abi: LIFT_UNITS_ABI,
+      address: env.LIFT_TOKENS_ADDRESS as Address,
+      abi: LIFT_TOKENS_ABI,
       client: publicClient,
     });
 
@@ -178,15 +178,15 @@ export class BlockchainService {
     };
   }
 
-  async getLiftUnitBalance(address: Address, tokenId: string, chainId: number) {
-    if (!env.LIFT_UNITS_ADDRESS) {
-      throw new Error('LIFT_UNITS_ADDRESS not configured');
+  async getLiftTokenBalance(address: Address, tokenId: string, chainId: number) {
+    if (!env.LIFT_TOKENS_ADDRESS) {
+      throw new Error('LIFT_TOKENS_ADDRESS not configured');
     }
 
     const publicClient = this.getPublicClient(chainId);
     const contract = getContract({
-      address: env.LIFT_UNITS_ADDRESS as Address,
-      abi: LIFT_UNITS_ABI,
+      address: env.LIFT_TOKENS_ADDRESS as Address,
+      abi: LIFT_TOKENS_ABI,
       client: publicClient,
     });
 
@@ -194,15 +194,15 @@ export class BlockchainService {
     return balance.toString();
   }
 
-  async getLiftUnitBalances(address: Address, tokenIds: string[], chainId: number) {
-    if (!env.LIFT_UNITS_ADDRESS) {
-      throw new Error('LIFT_UNITS_ADDRESS not configured');
+  async getLiftTokenBalances(address: Address, tokenIds: string[], chainId: number) {
+    if (!env.LIFT_TOKENS_ADDRESS) {
+      throw new Error('LIFT_TOKENS_ADDRESS not configured');
     }
 
     const publicClient = this.getPublicClient(chainId);
     const contract = getContract({
-      address: env.LIFT_UNITS_ADDRESS as Address,
-      abi: LIFT_UNITS_ABI,
+      address: env.LIFT_TOKENS_ADDRESS as Address,
+      abi: LIFT_TOKENS_ABI,
       client: publicClient,
     });
 
@@ -214,17 +214,17 @@ export class BlockchainService {
   }
 
   // Transaction Methods
-  async createLiftUnit(tokenId: string, maxSupply: string, uri: string, chainId: number): Promise<Hash> {
-    if (!env.LIFT_UNITS_ADDRESS) {
-      throw new Error('LIFT_UNITS_ADDRESS not configured');
+  async createLiftToken(tokenId: string, maxSupply: string, uri: string, chainId: number): Promise<Hash> {
+    if (!env.LIFT_TOKENS_ADDRESS) {
+      throw new Error('LIFT_TOKENS_ADDRESS not configured');
     }
 
     const walletClient = this.getWalletClient(chainId);
     const publicClient = this.getPublicClient(chainId);
     
     const contract = getContract({
-      address: env.LIFT_UNITS_ADDRESS as Address,
-      abi: LIFT_UNITS_ABI,
+      address: env.LIFT_TOKENS_ADDRESS as Address,
+      abi: LIFT_TOKENS_ABI,
       client: { public: publicClient, wallet: walletClient },
     });
 
@@ -237,23 +237,23 @@ export class BlockchainService {
     return hash;
   }
 
-  async mintLiftUnit(
+  async mintLiftToken(
     to: Address, 
     tokenId: string, 
     amount: string, 
     chainId: number,
     data: `0x${string}` = '0x'
   ): Promise<Hash> {
-    if (!env.LIFT_UNITS_ADDRESS) {
-      throw new Error('LIFT_UNITS_ADDRESS not configured');
+    if (!env.LIFT_TOKENS_ADDRESS) {
+      throw new Error('LIFT_TOKENS_ADDRESS not configured');
     }
 
     const walletClient = this.getWalletClient(chainId);
     const publicClient = this.getPublicClient(chainId);
     
     const contract = getContract({
-      address: env.LIFT_UNITS_ADDRESS as Address,
-      abi: LIFT_UNITS_ABI,
+      address: env.LIFT_TOKENS_ADDRESS as Address,
+      abi: LIFT_TOKENS_ABI,
       client: { public: publicClient, wallet: walletClient },
     });
 

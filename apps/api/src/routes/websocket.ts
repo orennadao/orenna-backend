@@ -94,7 +94,7 @@ export default async function websocketRoutes(app: FastifyInstance) {
     } else if (type === 'verification') {
       wsManager.emitVerificationEvent(event, {
         verificationResultId: data.verificationResultId || 1,
-        liftUnitId: data.liftUnitId || 1,
+        liftTokenId: data.liftTokenId || 1,
         methodId: data.methodId || 'vwba-v2',
         status: data.status || 'processing',
         progress: data.progress || 50,
@@ -119,10 +119,10 @@ export default async function websocketRoutes(app: FastifyInstance) {
       tags: ['WebSocket', 'Verification'],
       body: {
         type: 'object',
-        required: ['verificationResultId', 'liftUnitId', 'status'],
+        required: ['verificationResultId', 'liftTokenId', 'status'],
         properties: {
           verificationResultId: { type: 'number' },
-          liftUnitId: { type: 'number' },
+          liftTokenId: { type: 'number' },
           methodId: { type: 'string' },
           status: { type: 'string', enum: ['submitted', 'processing', 'completed', 'failed', 'expired'] },
           progress: { type: 'number', minimum: 0, maximum: 100 },
@@ -134,7 +134,7 @@ export default async function websocketRoutes(app: FastifyInstance) {
   }, async (request: FastifyRequest, reply) => {
     const data = request.body as {
       verificationResultId: number;
-      liftUnitId: number;
+      liftTokenId: number;
       methodId?: string;
       status: 'submitted' | 'processing' | 'completed' | 'failed' | 'expired';
       progress?: number;
@@ -145,7 +145,7 @@ export default async function websocketRoutes(app: FastifyInstance) {
     try {
       wsManager.emitVerificationEvent('verification_status_update', {
         verificationResultId: data.verificationResultId,
-        liftUnitId: data.liftUnitId,
+        liftTokenId: data.liftTokenId,
         methodId: data.methodId || 'unknown',
         status: data.status,
         progress: data.progress,

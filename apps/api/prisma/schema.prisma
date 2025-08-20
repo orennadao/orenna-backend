@@ -68,7 +68,7 @@ model LiftToken {
   project        Project?          @relation(fields: [projectId], references: [id], onDelete: SetNull)
   LiftTokenEvent LiftTokenEvent[]
 
-  @@map("LiftUnit")
+  @@map("LiftToken")
 }
 
 model LiftTokenEvent {
@@ -83,7 +83,7 @@ model LiftTokenEvent {
 
   liftToken LiftToken @relation(fields: [liftTokenId], references: [id], onDelete: Cascade)
 
-  @@map("LiftUnitEvent")
+  @@map("LiftTokenEvent")
 }
 
 model MintRequest {

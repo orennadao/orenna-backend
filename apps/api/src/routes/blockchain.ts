@@ -171,11 +171,11 @@ export default async function blockchainRoutes(app: FastifyInstance) {
     }
   });
 
-  // Lift Units Routes
-  app.get('/blockchain/lift-units/:tokenId', {
-    schema: {
-      description: 'Get lift unit token information',
-      tags: ['Blockchain', 'Lift Units'],
+    // Lift Tokens Routes
+    app.get('/blockchain/lift-tokens/:tokenId', {
+      schema: {
+        description: 'Get lift token information',
+        tags: ['Blockchain', 'Lift Tokens'],
       params: {
         type: 'object',
         required: ['tokenId'],
@@ -211,11 +211,11 @@ export default async function blockchainRoutes(app: FastifyInstance) {
       TokenIdSchema.parse(tokenId);
       ChainIdSchema.parse(chainId);
       
-      const tokenInfo = await blockchainService.getLiftUnitInfo(tokenId, chainId);
+        const tokenInfo = await blockchainService.getLiftTokenInfo(tokenId, chainId);
       
       return {
         ...tokenInfo,
-        contractAddress: env.LIFT_UNITS_ADDRESS,
+        contractAddress: env.LIFT_TOKENS_ADDRESS,
         chainId
       };
     } catch (error) {
@@ -223,15 +223,15 @@ export default async function blockchainRoutes(app: FastifyInstance) {
         return reply.code(400).send({ error: 'Invalid token ID format' });
       }
       
-      app.log.error({ error, tokenId, chainId }, 'Failed to fetch lift unit info');
+        app.log.error({ error, tokenId, chainId }, 'Failed to fetch lift token info');
       return reply.code(500).send({ error: 'Failed to fetch token information' });
     }
   });
 
-  app.get('/blockchain/lift-units/:tokenId/balance/:address', {
-    schema: {
-      description: 'Get lift unit balance for an address',
-      tags: ['Blockchain', 'Lift Units'],
+    app.get('/blockchain/lift-tokens/:tokenId/balance/:address', {
+      schema: {
+        description: 'Get lift token balance for an address',
+        tags: ['Blockchain', 'Lift Tokens'],
       params: {
         type: 'object',
         required: ['tokenId', 'address'],
@@ -267,7 +267,7 @@ export default async function blockchainRoutes(app: FastifyInstance) {
       AddressSchema.parse(address);
       ChainIdSchema.parse(chainId);
       
-      const balance = await blockchainService.getLiftUnitBalance(
+      const balance = await blockchainService.getLiftTokenBalance(
         address as `0x${string}`, 
         tokenId, 
         chainId
@@ -284,7 +284,7 @@ export default async function blockchainRoutes(app: FastifyInstance) {
         return reply.code(400).send({ error: 'Invalid parameters' });
       }
       
-      app.log.error({ error, tokenId, address, chainId }, 'Failed to fetch lift unit balance');
+      app.log.error({ error, tokenId, address, chainId }, 'Failed to fetch lift token balance');
       return reply.code(500).send({ error: 'Failed to fetch balance' });
     }
   });
@@ -331,10 +331,10 @@ export default async function blockchainRoutes(app: FastifyInstance) {
     }
   });
 
-  app.get('/blockchain/my/lift-units', {
+  app.get('/blockchain/my/lift-tokens', {
     preHandler: (app as any).authenticate,
     schema: {
-      description: 'Get lift unit balances for authenticated user',
+      description: 'Get lift token balances for authenticated user',
       tags: ['Blockchain', 'User'],
       security: [{ bearerAuth: [] }],
       querystring: {
@@ -381,7 +381,7 @@ export default async function blockchainRoutes(app: FastifyInstance) {
       }
       
       const tokenIdArray = tokenIds.split(',').map(id => id.trim());
-      const balances = await blockchainService.getLiftUnitBalances(
+      const balances = await blockchainService.getLiftTokenBalances(
         user.address as `0x${string}`, 
         tokenIdArray, 
         chainId
@@ -398,7 +398,7 @@ export default async function blockchainRoutes(app: FastifyInstance) {
         chainId
       };
     } catch (error) {
-      app.log.error({ error, address: user.address, chainId }, 'Failed to fetch user lift unit balances');
+      app.log.error({ error, address: user.address, chainId }, 'Failed to fetch user lift token balances');
       return reply.code(500).send({ error: 'Failed to fetch balances' });
     }
   });

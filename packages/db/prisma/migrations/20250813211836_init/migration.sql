@@ -1,5 +1,5 @@
 -- CreateTable
-CREATE TABLE "LiftUnit" (
+CREATE TABLE "LiftToken" (
     "id" SERIAL NOT NULL,
     "externalId" TEXT,
     "status" TEXT NOT NULL DEFAULT 'DRAFT',
@@ -11,13 +11,13 @@ CREATE TABLE "LiftUnit" (
     "createdAt" TIMESTAMP(3) NOT NULL DEFAULT CURRENT_TIMESTAMP,
     "updatedAt" TIMESTAMP(3) NOT NULL,
 
-    CONSTRAINT "LiftUnit_pkey" PRIMARY KEY ("id")
+    CONSTRAINT "LiftToken_pkey" PRIMARY KEY ("id")
 );
 
 -- CreateTable
-CREATE TABLE "LiftUnitEvent" (
+CREATE TABLE "LiftTokenEvent" (
     "id" SERIAL NOT NULL,
-    "liftUnitId" INTEGER NOT NULL,
+    "liftTokenId" INTEGER NOT NULL,
     "type" TEXT NOT NULL,
     "txId" TEXT,
     "payload" TEXT,
@@ -25,7 +25,7 @@ CREATE TABLE "LiftUnitEvent" (
     "eventAt" TIMESTAMP(3) NOT NULL DEFAULT CURRENT_TIMESTAMP,
     "createdAt" TIMESTAMP(3) NOT NULL DEFAULT CURRENT_TIMESTAMP,
 
-    CONSTRAINT "LiftUnitEvent_pkey" PRIMARY KEY ("id")
+    CONSTRAINT "LiftTokenEvent_pkey" PRIMARY KEY ("id")
 );
 
 -- CreateTable
@@ -55,16 +55,16 @@ CREATE TABLE "User" (
 );
 
 -- CreateIndex
-CREATE UNIQUE INDEX "LiftUnit_externalId_key" ON "LiftUnit"("externalId");
+CREATE UNIQUE INDEX "LiftToken_externalId_key" ON "LiftToken"("externalId");
 
 -- CreateIndex
-CREATE INDEX "LiftUnit_status_idx" ON "LiftUnit"("status");
+CREATE INDEX "LiftToken_status_idx" ON "LiftToken"("status");
 
 -- CreateIndex
-CREATE INDEX "LiftUnitEvent_liftUnitId_type_idx" ON "LiftUnitEvent"("liftUnitId", "type");
+CREATE INDEX "LiftTokenEvent_liftTokenId_type_idx" ON "LiftTokenEvent"("liftTokenId", "type");
 
 -- CreateIndex
-CREATE UNIQUE INDEX "LiftUnitEvent_liftUnitId_type_txId_key" ON "LiftUnitEvent"("liftUnitId", "type", "txId");
+CREATE UNIQUE INDEX "LiftTokenEvent_liftTokenId_type_txId_key" ON "LiftTokenEvent"("liftTokenId", "type", "txId");
 
 -- CreateIndex
 CREATE UNIQUE INDEX "Project_slug_key" ON "Project"("slug");
@@ -73,4 +73,4 @@ CREATE UNIQUE INDEX "Project_slug_key" ON "Project"("slug");
 CREATE UNIQUE INDEX "User_address_key" ON "User"("address");
 
 -- AddForeignKey
-ALTER TABLE "LiftUnitEvent" ADD CONSTRAINT "LiftUnitEvent_liftUnitId_fkey" FOREIGN KEY ("liftUnitId") REFERENCES "LiftUnit"("id") ON DELETE CASCADE ON UPDATE CASCADE;
+ALTER TABLE "LiftTokenEvent" ADD CONSTRAINT "LiftTokenEvent_liftTokenId_fkey" FOREIGN KEY ("liftTokenId") REFERENCES "LiftToken"("id") ON DELETE CASCADE ON UPDATE CASCADE;

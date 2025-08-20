@@ -25,7 +25,7 @@ RPC_URL_ARBITRUM=your-arbitrum-rpc-url
 
 # Contract Addresses
 ORNA_TOKEN_ADDRESS=your-token-address
-LIFT_UNITS_ADDRESS=your-lift-units-address
+LIFT_TOKENS_ADDRESS=your-lift-tokens-address
 REPAYMENT_ESCROW_ADDRESS=your-repayment-escrow-address
 ALLOCATION_ESCROW_ADDRESS=your-allocation-escrow-address
 

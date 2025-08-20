@@ -6,7 +6,7 @@ Successfully implemented PR1 with a complete, tested smart contract system for r
 
 ### **Core Contracts:**
 1. **MethodRegistry** - Governance for ecosystem measurement methods
-2. **LiftUnits** - ERC-1155 tokens representing verified ecosystem improvements  
+2. **LiftTokens** - ERC-1155 tokens representing verified ecosystem improvements  
 3. **RepaymentEscrow** - Dual-cap repayment waterfall (funder + platform fee caps)
 4. **AllocationEscrow** - Market Allocation Window management (ready for integration)
 
@@ -40,11 +40,11 @@ Successfully implemented PR1 with a complete, tested smart contract system for r
 Ran 4 test suites: ✅ 14 tests passed, 0 failed
 
 MethodRegistry: All tests passing
-LiftUnits: All tests passing
+LiftTokens: All tests passing
 RepaymentEscrow: All tests passing
 Integration: All tests passing
 ## 🏗️ Architecture:
-MethodRegistry → LiftUnits → AllocationEscrow → RepaymentEscrow
+MethodRegistry → LiftTokens → AllocationEscrow → RepaymentEscrow
 ↓              ↓              ↓              ↓
 Governance    Verified       MAW Sales      Dual-Cap
 Methods      Issuance      Management     Waterfall

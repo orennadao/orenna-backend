@@ -32,7 +32,7 @@ export function getEnv() {
     
     // Contract Addresses
     ORNA_TOKEN_ADDRESS: process.env.ORNA_TOKEN_ADDRESS,
-    LIFT_UNITS_ADDRESS: process.env.LIFT_UNITS_ADDRESS,
+    LIFT_TOKENS_ADDRESS: process.env.LIFT_TOKENS_ADDRESS,
     
     // Escrow Contract Addresses
     REPAYMENT_ESCROW_ADDRESS: process.env.REPAYMENT_ESCROW_ADDRESS,

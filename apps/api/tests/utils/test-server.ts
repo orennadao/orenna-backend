@@ -87,7 +87,7 @@ export class TestServer {
         upsert: vi.fn(),
         delete: vi.fn(),
       },
-      liftUnit: {
+      liftToken: {
         findUnique: vi.fn(),
         findMany: vi.fn(),
         create: vi.fn(),

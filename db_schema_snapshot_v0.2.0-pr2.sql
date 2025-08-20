@@ -204,10 +204,10 @@ CREATE TABLE public."IndexerState" (
 ALTER TABLE public."IndexerState" OWNER TO postgres;
 
 --
--- Name: LiftUnit; Type: TABLE; Schema: public; Owner: postgres
+-- Name: LiftToken; Type: TABLE; Schema: public; Owner: postgres
 --
 
-CREATE TABLE public."LiftUnit" (
+CREATE TABLE public."LiftToken" (
     id integer NOT NULL,
     "externalId" text,
     status text DEFAULT 'DRAFT'::text NOT NULL,
@@ -226,15 +226,15 @@ CREATE TABLE public."LiftUnit" (
 );
 
 
-ALTER TABLE public."LiftUnit" OWNER TO postgres;
+ALTER TABLE public."LiftToken" OWNER TO postgres;
 
 --
--- Name: LiftUnitEvent; Type: TABLE; Schema: public; Owner: postgres
+-- Name: LiftTokenEvent; Type: TABLE; Schema: public; Owner: postgres
 --
 
-CREATE TABLE public."LiftUnitEvent" (
+CREATE TABLE public."LiftTokenEvent" (
     id integer NOT NULL,
-    "liftUnitId" integer NOT NULL,
+    "liftTokenId" integer NOT NULL,
     type text NOT NULL,
     "eventAt" timestamp(3) without time zone DEFAULT CURRENT_TIMESTAMP NOT NULL,
     "createdAt" timestamp(3) without time zone DEFAULT CURRENT_TIMESTAMP NOT NULL,
@@ -246,13 +246,13 @@ CREATE TABLE public."LiftUnitEvent" (
 );
 
 
-ALTER TABLE public."LiftUnitEvent" OWNER TO postgres;
+ALTER TABLE public."LiftTokenEvent" OWNER TO postgres;
 
 --
--- Name: LiftUnitEvent_id_seq; Type: SEQUENCE; Schema: public; Owner: postgres
+-- Name: LiftTokenEvent_id_seq; Type: SEQUENCE; Schema: public; Owner: postgres
 --
 
-CREATE SEQUENCE public."LiftUnitEvent_id_seq"
+CREATE SEQUENCE public."LiftTokenEvent_id_seq"
     AS integer
     START WITH 1
     INCREMENT BY 1
@@ -261,20 +261,20 @@ CREATE SEQUENCE public."LiftUnitEvent_id_seq"
     CACHE 1;
 
 
-ALTER SEQUENCE public."LiftUnitEvent_id_seq" OWNER TO postgres;
+ALTER SEQUENCE public."LiftTokenEvent_id_seq" OWNER TO postgres;
 
 --
--- Name: LiftUnitEvent_id_seq; Type: SEQUENCE OWNED BY; Schema: public; Owner: postgres
+-- Name: LiftTokenEvent_id_seq; Type: SEQUENCE OWNED BY; Schema: public; Owner: postgres
 --
 
-ALTER SEQUENCE public."LiftUnitEvent_id_seq" OWNED BY public."LiftUnitEvent".id;
+ALTER SEQUENCE public."LiftTokenEvent_id_seq" OWNED BY public."LiftTokenEvent".id;
 
 
 --
--- Name: LiftUnit_id_seq; Type: SEQUENCE; Schema: public; Owner: postgres
+-- Name: LiftToken_id_seq; Type: SEQUENCE; Schema: public; Owner: postgres
 --
 
-CREATE SEQUENCE public."LiftUnit_id_seq"
+CREATE SEQUENCE public."LiftToken_id_seq"
     AS integer
     START WITH 1
     INCREMENT BY 1
@@ -283,13 +283,13 @@ CREATE SEQUENCE public."LiftUnit_id_seq"
     CACHE 1;
 
 
-ALTER SEQUENCE public."LiftUnit_id_seq" OWNER TO postgres;
+ALTER SEQUENCE public."LiftToken_id_seq" OWNER TO postgres;
 
 --
--- Name: LiftUnit_id_seq; Type: SEQUENCE OWNED BY; Schema: public; Owner: postgres
+-- Name: LiftToken_id_seq; Type: SEQUENCE OWNED BY; Schema: public; Owner: postgres
 --
 
-ALTER SEQUENCE public."LiftUnit_id_seq" OWNED BY public."LiftUnit".id;
+ALTER SEQUENCE public."LiftToken_id_seq" OWNED BY public."LiftToken".id;
 
 
 --
@@ -539,17 +539,17 @@ ALTER TABLE ONLY public."Contract" ALTER COLUMN id SET DEFAULT nextval('public."
 
 
 --
--- Name: LiftUnit id; Type: DEFAULT; Schema: public; Owner: postgres
+-- Name: LiftToken id; Type: DEFAULT; Schema: public; Owner: postgres
 --
 
-ALTER TABLE ONLY public."LiftUnit" ALTER COLUMN id SET DEFAULT nextval('public."LiftUnit_id_seq"'::regclass);
+ALTER TABLE ONLY public."LiftToken" ALTER COLUMN id SET DEFAULT nextval('public."LiftToken_id_seq"'::regclass);
 
 
 --
--- Name: LiftUnitEvent id; Type: DEFAULT; Schema: public; Owner: postgres
+-- Name: LiftTokenEvent id; Type: DEFAULT; Schema: public; Owner: postgres
 --
 
-ALTER TABLE ONLY public."LiftUnitEvent" ALTER COLUMN id SET DEFAULT nextval('public."LiftUnitEvent_id_seq"'::regclass);
+ALTER TABLE ONLY public."LiftTokenEvent" ALTER COLUMN id SET DEFAULT nextval('public."LiftTokenEvent_id_seq"'::regclass);
 
 
 --
@@ -591,19 +591,19 @@ ALTER TABLE ONLY public."IndexerState"
 
 
 --
--- Name: LiftUnitEvent LiftUnitEvent_pkey; Type: CONSTRAINT; Schema: public; Owner: postgres
+-- Name: LiftTokenEvent LiftTokenEvent_pkey; Type: CONSTRAINT; Schema: public; Owner: postgres
 --
 
-ALTER TABLE ONLY public."LiftUnitEvent"
-    ADD CONSTRAINT "LiftUnitEvent_pkey" PRIMARY KEY (id);
+ALTER TABLE ONLY public."LiftTokenEvent"
+    ADD CONSTRAINT "LiftTokenEvent_pkey" PRIMARY KEY (id);
 
 
 --
--- Name: LiftUnit LiftUnit_pkey; Type: CONSTRAINT; Schema: public; Owner: postgres
+-- Name: LiftToken LiftToken_pkey; Type: CONSTRAINT; Schema: public; Owner: postgres
 --
 
-ALTER TABLE ONLY public."LiftUnit"
-    ADD CONSTRAINT "LiftUnit_pkey" PRIMARY KEY (id);
+ALTER TABLE ONLY public."LiftToken"
+    ADD CONSTRAINT "LiftToken_pkey" PRIMARY KEY (id);
 
 
 --
@@ -770,73 +770,73 @@ CREATE INDEX "IndexerState_lastSyncAt_idx" ON public."IndexerState" USING btree 
 
 
 --
--- Name: LiftUnitEvent_liftUnitId_type_idx; Type: INDEX; Schema: public; Owner: postgres
+-- Name: LiftTokenEvent_liftTokenId_type_idx; Type: INDEX; Schema: public; Owner: postgres
 --
 
-CREATE INDEX "LiftUnitEvent_liftUnitId_type_idx" ON public."LiftUnitEvent" USING btree ("liftUnitId", type);
-
-
---
--- Name: LiftUnitEvent_liftUnitId_type_txHash_key; Type: INDEX; Schema: public; Owner: postgres
---
-
-CREATE UNIQUE INDEX "LiftUnitEvent_liftUnitId_type_txHash_key" ON public."LiftUnitEvent" USING btree ("liftUnitId", type, "txHash");
+CREATE INDEX "LiftTokenEvent_liftTokenId_type_idx" ON public."LiftTokenEvent" USING btree ("liftTokenId", type);
 
 
 --
--- Name: LiftUnitEvent_txHash_idx; Type: INDEX; Schema: public; Owner: postgres
+-- Name: LiftTokenEvent_liftTokenId_type_txHash_key; Type: INDEX; Schema: public; Owner: postgres
 --
 
-CREATE INDEX "LiftUnitEvent_txHash_idx" ON public."LiftUnitEvent" USING btree ("txHash");
-
-
---
--- Name: LiftUnit_chainId_idx; Type: INDEX; Schema: public; Owner: postgres
---
-
-CREATE INDEX "LiftUnit_chainId_idx" ON public."LiftUnit" USING btree ("chainId");
+CREATE UNIQUE INDEX "LiftTokenEvent_liftTokenId_type_txHash_key" ON public."LiftTokenEvent" USING btree ("liftTokenId", type, "txHash");
 
 
 --
--- Name: LiftUnit_contractAddress_idx; Type: INDEX; Schema: public; Owner: postgres
+-- Name: LiftTokenEvent_txHash_idx; Type: INDEX; Schema: public; Owner: postgres
 --
 
-CREATE INDEX "LiftUnit_contractAddress_idx" ON public."LiftUnit" USING btree ("contractAddress");
-
-
---
--- Name: LiftUnit_externalId_key; Type: INDEX; Schema: public; Owner: postgres
---
-
-CREATE UNIQUE INDEX "LiftUnit_externalId_key" ON public."LiftUnit" USING btree ("externalId");
+CREATE INDEX "LiftTokenEvent_txHash_idx" ON public."LiftTokenEvent" USING btree ("txHash");
 
 
 --
--- Name: LiftUnit_mintRequestId_key; Type: INDEX; Schema: public; Owner: postgres
+-- Name: LiftToken_chainId_idx; Type: INDEX; Schema: public; Owner: postgres
 --
 
-CREATE UNIQUE INDEX "LiftUnit_mintRequestId_key" ON public."LiftUnit" USING btree ("mintRequestId");
-
-
---
--- Name: LiftUnit_status_idx; Type: INDEX; Schema: public; Owner: postgres
---
-
-CREATE INDEX "LiftUnit_status_idx" ON public."LiftUnit" USING btree (status);
+CREATE INDEX "LiftToken_chainId_idx" ON public."LiftToken" USING btree ("chainId");
 
 
 --
--- Name: LiftUnit_tokenId_idx; Type: INDEX; Schema: public; Owner: postgres
+-- Name: LiftToken_contractAddress_idx; Type: INDEX; Schema: public; Owner: postgres
 --
 
-CREATE INDEX "LiftUnit_tokenId_idx" ON public."LiftUnit" USING btree ("tokenId");
+CREATE INDEX "LiftToken_contractAddress_idx" ON public."LiftToken" USING btree ("contractAddress");
 
 
 --
--- Name: LiftUnit_tokenId_key; Type: INDEX; Schema: public; Owner: postgres
+-- Name: LiftToken_externalId_key; Type: INDEX; Schema: public; Owner: postgres
 --
 
-CREATE UNIQUE INDEX "LiftUnit_tokenId_key" ON public."LiftUnit" USING btree ("tokenId");
+CREATE UNIQUE INDEX "LiftToken_externalId_key" ON public."LiftToken" USING btree ("externalId");
+
+
+--
+-- Name: LiftToken_mintRequestId_key; Type: INDEX; Schema: public; Owner: postgres
+--
+
+CREATE UNIQUE INDEX "LiftToken_mintRequestId_key" ON public."LiftToken" USING btree ("mintRequestId");
+
+
+--
+-- Name: LiftToken_status_idx; Type: INDEX; Schema: public; Owner: postgres
+--
+
+CREATE INDEX "LiftToken_status_idx" ON public."LiftToken" USING btree (status);
+
+
+--
+-- Name: LiftToken_tokenId_idx; Type: INDEX; Schema: public; Owner: postgres
+--
+
+CREATE INDEX "LiftToken_tokenId_idx" ON public."LiftToken" USING btree ("tokenId");
+
+
+--
+-- Name: LiftToken_tokenId_key; Type: INDEX; Schema: public; Owner: postgres
+--
+
+CREATE UNIQUE INDEX "LiftToken_tokenId_key" ON public."LiftToken" USING btree ("tokenId");
 
 
 --
@@ -1009,27 +1009,27 @@ ALTER TABLE ONLY public."IndexedEvent"
 
 
 --
--- Name: LiftUnitEvent LiftUnitEvent_liftUnitId_fkey; Type: FK CONSTRAINT; Schema: public; Owner: postgres
+-- Name: LiftTokenEvent LiftTokenEvent_liftTokenId_fkey; Type: FK CONSTRAINT; Schema: public; Owner: postgres
 --
 
-ALTER TABLE ONLY public."LiftUnitEvent"
-    ADD CONSTRAINT "LiftUnitEvent_liftUnitId_fkey" FOREIGN KEY ("liftUnitId") REFERENCES public."LiftUnit"(id) ON UPDATE CASCADE ON DELETE CASCADE;
-
-
---
--- Name: LiftUnit LiftUnit_mintRequestId_fkey; Type: FK CONSTRAINT; Schema: public; Owner: postgres
---
-
-ALTER TABLE ONLY public."LiftUnit"
-    ADD CONSTRAINT "LiftUnit_mintRequestId_fkey" FOREIGN KEY ("mintRequestId") REFERENCES public."MintRequest"(id) ON UPDATE CASCADE ON DELETE SET NULL;
+ALTER TABLE ONLY public."LiftTokenEvent"
+    ADD CONSTRAINT "LiftTokenEvent_liftTokenId_fkey" FOREIGN KEY ("liftTokenId") REFERENCES public."LiftToken"(id) ON UPDATE CASCADE ON DELETE CASCADE;
 
 
 --
--- Name: LiftUnit LiftUnit_projectId_fkey; Type: FK CONSTRAINT; Schema: public; Owner: postgres
+-- Name: LiftToken LiftToken_mintRequestId_fkey; Type: FK CONSTRAINT; Schema: public; Owner: postgres
 --
 
-ALTER TABLE ONLY public."LiftUnit"
-    ADD CONSTRAINT "LiftUnit_projectId_fkey" FOREIGN KEY ("projectId") REFERENCES public."Project"(id) ON UPDATE CASCADE ON DELETE SET NULL;
+ALTER TABLE ONLY public."LiftToken"
+    ADD CONSTRAINT "LiftToken_mintRequestId_fkey" FOREIGN KEY ("mintRequestId") REFERENCES public."MintRequest"(id) ON UPDATE CASCADE ON DELETE SET NULL;
+
+
+--
+-- Name: LiftToken LiftToken_projectId_fkey; Type: FK CONSTRAINT; Schema: public; Owner: postgres
+--
+
+ALTER TABLE ONLY public."LiftToken"
+    ADD CONSTRAINT "LiftToken_projectId_fkey" FOREIGN KEY ("projectId") REFERENCES public."Project"(id) ON UPDATE CASCADE ON DELETE SET NULL;
 
 
 --

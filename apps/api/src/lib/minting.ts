@@ -91,8 +91,8 @@ export class MintingExecutionService {
         }
       });
 
-      // Step 5: Create or update the LiftUnit record
-      await this.createLiftUnitRecord(mintRequest, mintResult.txHash!, receipt);
+      // Step 5: Create or update the LiftToken record
+      await this.createLiftTokenRecord(mintRequest, mintResult.txHash!, receipt);
 
       this.app.log.info({
         mintRequestId,
@@ -132,17 +132,17 @@ export class MintingExecutionService {
       
       // Check if token already exists by trying to get its info
       try {
-        const tokenInfo = await blockchainService.getLiftUnitInfo(mintRequest.tokenId, chainId);
+        const tokenInfo = await blockchainService.getLiftTokenInfo(mintRequest.tokenId, chainId);
         
         // If maxSupply is 0, the token doesn't exist yet
         if (tokenInfo.maxSupply === '0') {
           this.app.log.info({ tokenId: mintRequest.tokenId }, 'Token does not exist, creating...');
           
           // Create the token on blockchain
-          const createTxHash = await blockchainService.createLiftUnit(
+          const createTxHash = await blockchainService.createLiftToken(
             mintRequest.tokenId,
             '1000000', // Max supply (1M tokens) - make this configurable
-            `${env.API_BASE_URL}/api/lift-units/${mintRequest.tokenId}/metadata`,
+            `${env.API_BASE_URL}/api/lift-tokens/${mintRequest.tokenId}/metadata`,
             chainId
           );
 
@@ -161,10 +161,10 @@ export class MintingExecutionService {
         // If we can't get token info, it probably doesn't exist, so create it
         this.app.log.info({ tokenId: mintRequest.tokenId }, 'Creating new token...');
         
-        const createTxHash = await blockchainService.createLiftUnit(
+        const createTxHash = await blockchainService.createLiftToken(
           mintRequest.tokenId,
           '1000000', // Max supply 
-          `${env.API_BASE_URL}/api/lift-units/${mintRequest.tokenId}/metadata`,
+          `${env.API_BASE_URL}/api/lift-tokens/${mintRequest.tokenId}/metadata`,
           chainId
         );
 
@@ -188,7 +188,7 @@ export class MintingExecutionService {
     try {
       const chainId = mintRequest.project?.chainId || env.DEFAULT_CHAIN_ID;
       
-      const txHash = await blockchainService.mintLiftUnit(
+      const txHash = await blockchainService.mintLiftToken(
         mintRequest.recipient,
         mintRequest.tokenId,
         mintRequest.amount,
@@ -210,21 +210,21 @@ export class MintingExecutionService {
   }
 
   /**
-   * Create or update LiftUnit database record
+   * Create or update LiftToken database record
    */
-  private async createLiftUnitRecord(mintRequest: any, txHash: string, receipt: any) {
+  private async createLiftTokenRecord(mintRequest: any, txHash: string, receipt: any) {
     try {
-      // Check if LiftUnit already exists for this mint request
-      let liftUnit = await this.app.prisma.liftUnit.findFirst({
+      // Check if LiftToken already exists for this mint request
+      let liftToken = await this.app.prisma.liftToken.findFirst({
         where: { mintRequestId: mintRequest.id }
       });
 
-      if (!liftUnit) {
-        // Create new LiftUnit record
-        liftUnit = await this.app.prisma.liftUnit.create({
+      if (!liftToken) {
+        // Create new LiftToken record
+        liftToken = await this.app.prisma.liftToken.create({
           data: {
             tokenId: mintRequest.tokenId,
-            contractAddress: env.LIFT_UNITS_ADDRESS,
+            contractAddress: env.LIFT_TOKENS_ADDRESS,
             chainId: mintRequest.project?.chainId || env.DEFAULT_CHAIN_ID,
             mintRequestId: mintRequest.id,
             projectId: mintRequest.projectId,
@@ -243,9 +243,9 @@ export class MintingExecutionService {
           }
         });
       } else {
-        // Update existing LiftUnit
-        liftUnit = await this.app.prisma.liftUnit.update({
-          where: { id: liftUnit.id },
+        // Update existing LiftToken
+        liftToken = await this.app.prisma.liftToken.update({
+          where: { id: liftToken.id },
           data: {
             status: 'ISSUED',
             issuedAt: new Date()
@@ -253,10 +253,10 @@ export class MintingExecutionService {
         });
       }
 
-      // Create LiftUnit event
-      await this.app.prisma.liftUnitEvent.create({
+      // Create LiftToken event
+      await this.app.prisma.liftTokenEvent.create({
         data: {
-          liftUnitId: liftUnit.id,
+          liftTokenId: liftToken.id,
           type: 'ISSUED',
           txHash,
           blockNumber: Number(receipt.blockNumber),
@@ -271,13 +271,13 @@ export class MintingExecutionService {
       });
 
       this.app.log.info({
-        liftUnitId: liftUnit.id,
+        liftTokenId: liftToken.id,
         mintRequestId: mintRequest.id,
         tokenId: mintRequest.tokenId
-      }, 'LiftUnit record created/updated');
+      }, 'LiftToken record created/updated');
 
     } catch (error) {
-      this.app.log.error({ error, mintRequestId: mintRequest.id }, 'Failed to create LiftUnit record');
+      this.app.log.error({ error, mintRequestId: mintRequest.id }, 'Failed to create LiftToken record');
       // Don't throw here - the blockchain mint succeeded, this is just database housekeeping
     }
   }

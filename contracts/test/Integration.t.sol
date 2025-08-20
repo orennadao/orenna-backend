@@ -3,11 +3,11 @@ pragma solidity ^0.8.24;
 
 import {Test} from "forge-std/Test.sol";
 import {MethodRegistry} from "../src/MethodRegistry.sol";
-import {LiftUnits} from "../src/LiftUnits.sol";
+import {LiftTokens} from "../src/LiftTokens.sol";
 
 contract IntegrationTest is Test {
     MethodRegistry methodRegistry;
-    LiftUnits liftUnits;
+    LiftTokens liftTokens;
 
     address admin = makeAddr("admin");
     uint256 projectId = 1;
@@ -17,17 +17,17 @@ contract IntegrationTest is Test {
     function setUp() public {
         vm.startPrank(admin);
         methodRegistry = new MethodRegistry();
-        liftUnits = new LiftUnits("https://api.orenna.dao/lift-units/{id}", methodRegistry);
+        liftTokens = new LiftTokens("https://api.orenna.dao/lift-tokens/{id}", methodRegistry);
         
         // Grant necessary roles to admin
-        liftUnits.grantRole(liftUnits.PROJECT_ADMIN_ROLE(), admin);
+        liftTokens.grantRole(liftTokens.PROJECT_ADMIN_ROLE(), admin);
         
         vm.stopPrank();
     }
 
     function test_BasicDeployment() public {
         assertTrue(address(methodRegistry) != address(0));
-        assertTrue(address(liftUnits) != address(0));
+        assertTrue(address(liftTokens) != address(0));
     }
 
     function test_FullWorkflow() public {
@@ -38,7 +38,7 @@ contract IntegrationTest is Test {
 
         // Test issuance configuration (admin already has PROJECT_ADMIN_ROLE from setUp)
         vm.prank(admin);
-        liftUnits.configureIssuance(
+        liftTokens.configureIssuance(
             projectId, 
             methodId, 
             methodHash, 
@@ -50,7 +50,7 @@ contract IntegrationTest is Test {
 
         // Verify configuration
         (, , uint256 targetUnits, uint256 minUnits, uint256 maxUnits, , , , bool configured) = 
-            liftUnits.issuanceConfigs(projectId);
+            liftTokens.issuanceConfigs(projectId);
         
         assertEq(targetUnits, 100_000);
         assertEq(minUnits, 80_000);
@@ -61,7 +61,7 @@ contract IntegrationTest is Test {
     function test_TokenStats() public {
         uint256 tokenId = 1001;
         (uint256 totalMinted, uint256 totalRetired, uint256 circulating) = 
-            liftUnits.getTokenStats(tokenId);
+            liftTokens.getTokenStats(tokenId);
         
         assertEq(totalMinted, 0);
         assertEq(totalRetired, 0);
@@ -75,9 +75,9 @@ contract IntegrationTest is Test {
         assertTrue(methodRegistry.hasRole(methodRegistry.GOVERNANCE_ROLE(), admin));
     }
 
-    function test_LiftUnitsRoles() public {
+    function test_LiftTokensRoles() public {
         // Test that admin has the right roles
-        assertTrue(liftUnits.hasRole(liftUnits.DEFAULT_ADMIN_ROLE(), admin));
-        assertTrue(liftUnits.hasRole(liftUnits.PROJECT_ADMIN_ROLE(), admin));
+        assertTrue(liftTokens.hasRole(liftTokens.DEFAULT_ADMIN_ROLE(), admin));
+        assertTrue(liftTokens.hasRole(liftTokens.PROJECT_ADMIN_ROLE(), admin));
     }
 }

@@ -1,7 +1,7 @@
 /*
   Warnings:
 
-  - A unique constraint covering the columns `[mintRequestId]` on the table `LiftUnit` will be added. If there are existing duplicate values, this will fail.
+  - A unique constraint covering the columns `[mintRequestId]` on the table `LiftToken` will be added. If there are existing duplicate values, this will fail.
 
 */
 -- CreateEnum
@@ -11,7 +11,7 @@ CREATE TYPE "MintRequestStatus" AS ENUM ('PENDING', 'APPROVED', 'MINTING', 'COMP
 CREATE TYPE "MintRequestEventType" AS ENUM ('SUBMITTED', 'REVIEWED', 'APPROVED', 'REJECTED', 'CANCELLED', 'MINT_STARTED', 'MINT_COMPLETED', 'MINT_FAILED');
 
 -- AlterTable
-ALTER TABLE "LiftUnit" ADD COLUMN     "mintRequestId" TEXT;
+ALTER TABLE "LiftToken" ADD COLUMN     "mintRequestId" TEXT;
 
 -- CreateTable
 CREATE TABLE "MintRequest" (
@@ -76,10 +76,10 @@ CREATE INDEX "MintRequestEvent_type_idx" ON "MintRequestEvent"("type");
 CREATE INDEX "MintRequestEvent_createdAt_idx" ON "MintRequestEvent"("createdAt");
 
 -- CreateIndex
-CREATE UNIQUE INDEX "LiftUnit_mintRequestId_key" ON "LiftUnit"("mintRequestId");
+CREATE UNIQUE INDEX "LiftToken_mintRequestId_key" ON "LiftToken"("mintRequestId");
 
 -- AddForeignKey
-ALTER TABLE "LiftUnit" ADD CONSTRAINT "LiftUnit_mintRequestId_fkey" FOREIGN KEY ("mintRequestId") REFERENCES "MintRequest"("id") ON DELETE SET NULL ON UPDATE CASCADE;
+ALTER TABLE "LiftToken" ADD CONSTRAINT "LiftToken_mintRequestId_fkey" FOREIGN KEY ("mintRequestId") REFERENCES "MintRequest"("id") ON DELETE SET NULL ON UPDATE CASCADE;
 
 -- AddForeignKey
 ALTER TABLE "MintRequest" ADD CONSTRAINT "MintRequest_projectId_fkey" FOREIGN KEY ("projectId") REFERENCES "Project"("id") ON DELETE RESTRICT ON UPDATE CASCADE;

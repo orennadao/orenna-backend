@@ -88,7 +88,7 @@ export class VerificationService {
    */
   async submitVerification(request: VerificationRequest): Promise<VerificationResult> {
     this.logger.info({ 
-      liftUnitId: request.liftUnitId, 
+      liftTokenId: request.liftTokenId, 
       methodId: request.methodId 
     }, 'Processing verification request');
 
