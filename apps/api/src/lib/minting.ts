@@ -142,7 +142,7 @@ export class MintingExecutionService {
           const createTxHash = await blockchainService.createLiftUnit(
             mintRequest.tokenId,
             '1000000', // Max supply (1M tokens) - make this configurable
-            `${env.API_CORS_ORIGIN}/api/lift-units/${mintRequest.tokenId}/metadata`,
+            `${env.API_BASE_URL}/api/lift-units/${mintRequest.tokenId}/metadata`,
             chainId
           );
 
@@ -164,7 +164,7 @@ export class MintingExecutionService {
         const createTxHash = await blockchainService.createLiftUnit(
           mintRequest.tokenId,
           '1000000', // Max supply 
-          `${env.API_CORS_ORIGIN}/api/lift-units/${mintRequest.tokenId}/metadata`,
+          `${env.API_BASE_URL}/api/lift-units/${mintRequest.tokenId}/metadata`,
           chainId
         );
 

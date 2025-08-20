@@ -16,6 +16,7 @@ export function getEnv() {
     API_PORT: Number(process.env.API_PORT ?? 3001),
     API_HOST: process.env.API_HOST ?? '0.0.0.0',
     API_CORS_ORIGIN: process.env.API_CORS_ORIGIN ?? 'http://localhost:3000',
+    API_BASE_URL: process.env.API_BASE_URL ?? 'http://localhost:3001',
     JWT_SECRET: process.env.JWT_SECRET!,
     
     // SIWE Configuration

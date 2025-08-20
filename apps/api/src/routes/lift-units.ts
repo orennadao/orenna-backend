@@ -276,7 +276,7 @@ export default async function liftUnitRoutes(app: FastifyInstance) {
       // Try to create token on blockchain if contracts are configured
       if (env.LIFT_UNITS_ADDRESS && env.MINTER_PRIVATE_KEY) {
         try {
-          const uri = body.uri || `${env.API_CORS_ORIGIN}/api/lift-units/${liftUnit.id}/metadata`;
+          const uri = body.uri || `${env.API_BASE_URL}/api/lift-units/${liftUnit.id}/metadata`;
           
           txHash = await blockchainService.createLiftUnit(
             body.tokenId,
@@ -671,7 +671,7 @@ export default async function liftUnitRoutes(app: FastifyInstance) {
         name: `Lift Unit #${liftUnit.tokenId || liftUnit.id}`,
         description: liftUnit.project?.description || 
           `Ecosystem function lift unit representing verified environmental improvements.`,
-        image: `${env.API_CORS_ORIGIN}/api/lift-units/${liftUnit.id}/image`,
+        image: `${env.API_BASE_URL}/api/lift-units/${liftUnit.id}/image`,
         external_url: `${env.API_CORS_ORIGIN}/projects/${liftUnit.project?.slug || liftUnit.projectId}`,
         attributes: [
           {
