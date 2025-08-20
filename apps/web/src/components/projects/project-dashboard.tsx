@@ -1,6 +1,6 @@
 'use client';
 
-import { useState } from 'react';
+import { useState, useEffect } from 'react';
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Card } from "@/components/ui/card";
@@ -38,6 +38,12 @@ export function ProjectDashboard({
   const [view, setView] = useState<'grid' | 'list'>('grid');
   const [filter, setFilter] = useState<'all' | 'active' | 'pending' | 'completed'>('all');
   const [searchTerm, setSearchTerm] = useState('');
+  const [isClient, setIsClient] = useState(false);
+
+  // Ensure hydration safety by only formatting dates on client
+  useEffect(() => {
+    setIsClient(true);
+  }, []);
 
   // Mock projects data for demonstration
   const projects = [
@@ -291,7 +297,7 @@ export function ProjectDashboard({
                   {project.createdAt && (
                     <div className="flex items-center text-sm text-gray-600">
                       <Calendar className="h-3 w-3 mr-1" />
-                      Created {new Date(project.createdAt).toLocaleDateString()}
+                      Created {isClient ? new Date(project.createdAt).toLocaleDateString() : 'Loading...'}
                     </div>
                   )}
 
@@ -384,7 +390,7 @@ export function ProjectDashboard({
                         {project.createdAt && (
                           <div className="flex items-center">
                             <Calendar className="h-3 w-3 mr-1" />
-                            {new Date(project.createdAt).toLocaleDateString()}
+                            {isClient ? new Date(project.createdAt).toLocaleDateString() : 'Loading...'}
                           </div>
                         )}
                       </div>
