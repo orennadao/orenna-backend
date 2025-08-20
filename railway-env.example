@@ -1,0 +1,73 @@
+# Railway Environment Variables Template
+# Copy these to your Railway project environment settings
+
+# Required Environment Variables
+API_PORT=3001
+API_HOST=0.0.0.0
+DATABASE_URL=postgresql://username:password@host:port/database
+JWT_SECRET=your-jwt-secret-here
+
+# CORS Configuration
+API_CORS_ORIGIN=https://your-frontend-domain.com
+API_BASE_URL=https://your-railway-app.railway.app
+
+# SIWE Configuration
+SIWE_DOMAIN=your-frontend-domain.com
+SIWE_ORIGIN=https://your-frontend-domain.com
+SIWE_SESSION_TTL=604800
+
+# Blockchain Configuration
+DEFAULT_CHAIN_ID=1
+RPC_URL_MAINNET=your-mainnet-rpc-url
+RPC_URL_SEPOLIA=your-sepolia-rpc-url
+RPC_URL_POLYGON=your-polygon-rpc-url
+RPC_URL_ARBITRUM=your-arbitrum-rpc-url
+
+# Contract Addresses
+ORNA_TOKEN_ADDRESS=your-token-address
+LIFT_UNITS_ADDRESS=your-lift-units-address
+REPAYMENT_ESCROW_ADDRESS=your-repayment-escrow-address
+ALLOCATION_ESCROW_ADDRESS=your-allocation-escrow-address
+
+# Platform Configuration
+PLATFORM_TREASURY_ADDRESS=your-treasury-address
+PLATFORM_FEE_BPS=250
+PLATFORM_FEE_CAP=1000000000000000000
+
+# Private Keys (for contract interactions - keep secure!)
+MINTER_PRIVATE_KEY=your-minter-private-key
+ADMIN_PRIVATE_KEY=your-admin-private-key
+PAYMENT_PROCESSOR_PRIVATE_KEY=your-payment-processor-private-key
+
+# Payment Configuration
+PAYMENT_CONFIRMATION_BLOCKS=12
+PAYMENT_TIMEOUT_MINUTES=30
+
+# Indexer Configuration
+INDEXER_ENABLED=true
+INDEXER_START_BLOCK_MAINNET=18000000
+INDEXER_START_BLOCK_SEPOLIA=4000000
+INDEXER_BATCH_SIZE=1000
+INDEXER_POLL_INTERVAL=30000
+INDEXER_CONFIRMATION_BLOCKS=12
+
+# Notification Configuration
+EMAIL_NOTIFICATIONS_ENABLED=false
+WEBHOOK_NOTIFICATIONS_ENABLED=false
+PUSH_NOTIFICATIONS_ENABLED=false
+
+# External Services (optional)
+STRIPE_SECRET_KEY=your-stripe-secret-key
+STRIPE_WEBHOOK_SECRET=your-stripe-webhook-secret
+COINBASE_API_KEY=your-coinbase-api-key
+COINBASE_WEBHOOK_SECRET=your-coinbase-webhook-secret
+
+# Monitoring
+NODE_ENV=production
+LOG_LEVEL=info
+SENTRY_DSN=your-sentry-dsn
+METRICS_ENABLED=true
+
+# Rate Limiting
+RATE_LIMIT_WINDOW_MS=900000
+RATE_LIMIT_MAX_REQUESTS=100

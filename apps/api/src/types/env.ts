@@ -1,5 +1,4 @@
 const required = [
-  'API_PORT',
   'API_HOST',
   'DATABASE_URL',
   'JWT_SECRET'
@@ -13,7 +12,7 @@ export function getEnv() {
   }
   return {
     NODE_ENV: process.env.NODE_ENV ?? 'development',
-    API_PORT: Number(process.env.API_PORT ?? 3001),
+    API_PORT: Number(process.env.PORT ?? process.env.API_PORT ?? 3001),
     API_HOST: process.env.API_HOST ?? '0.0.0.0',
     API_CORS_ORIGIN: process.env.API_CORS_ORIGIN ?? 'http://localhost:3000',
     API_BASE_URL: process.env.API_BASE_URL ?? 'http://localhost:3001',

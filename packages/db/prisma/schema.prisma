@@ -73,9 +73,17 @@ model LiftUnit {
   meta      Json?
   issuedAt  DateTime?
   retiredAt DateTime?
+  
+  // Verification fields (added by migration)
+  verificationMethodId String?
+  verifiedAt           DateTime?
 
   // Events relation
   events LiftUnitEvent[]
+  
+  // Verification relations
+  verificationResults VerificationResult[]
+  verificationMethod  VerificationMethod? @relation("VerificationMethodLiftUnits", fields: [verificationMethodId], references: [methodId], onDelete: SetNull)
 
   createdAt DateTime @default(now())
   updatedAt DateTime @updatedAt
@@ -447,4 +455,117 @@ model ProjectPaymentConfig {
   
   createdAt         DateTime  @default(now())
   updatedAt         DateTime  @updatedAt
+}
+
+// Verification System Models (from migration 20250816132549_verification_system)
+
+enum VerificationStatus {
+  PENDING
+  IN_REVIEW
+  VERIFIED
+  REJECTED
+  EXPIRED
+  REVOKED
+}
+
+model VerificationMethod {
+  id                Int       @id @default(autoincrement())
+  methodId          String    @unique
+  name              String
+  description       String?
+  methodologyType   String
+  version           String    @default("1.0")
+  criteria          Json
+  requiredDataTypes Json?
+  minimumConfidence Decimal?  @db.Decimal(5, 4)
+  validationPeriod  Int?
+  registryContract  String?
+  chainId           Int?
+  methodHash        String?
+  active            Boolean   @default(true)
+  isPublic          Boolean   @default(true)
+  approvedValidators Json?
+  metadata          Json?
+  createdAt         DateTime  @default(now())
+  updatedAt         DateTime  @updatedAt
+  
+  // Relations
+  verificationResults VerificationResult[]
+  liftUnits          LiftUnit[] @relation("VerificationMethodLiftUnits")
+  
+  @@index([methodId])
+  @@index([methodologyType])
+  @@index([active])
+  @@index([chainId])
+}
+
+model VerificationResult {
+  id                Int                @id @default(autoincrement())
+  liftUnitId        Int
+  methodId          String
+  verified          Boolean
+  confidenceScore   Decimal?           @db.Decimal(5, 4)
+  verificationLevel String?
+  evidenceHash      String?
+  evidenceIpfsCid   String?
+  calculationData   Json?
+  validatorAddress  String
+  validatorName     String?
+  verificationDate  DateTime
+  expiryDate        DateTime?
+  submittedAt       DateTime           @default(now())
+  status            VerificationStatus @default(PENDING)
+  notes             String?
+  metadata          Json?
+  reviewedBy        String?
+  reviewedAt        DateTime?
+  reviewNotes       String?
+  createdAt         DateTime           @default(now())
+  updatedAt         DateTime           @updatedAt
+  
+  // Relations
+  liftUnit          LiftUnit           @relation(fields: [liftUnitId], references: [id], onDelete: Cascade)
+  method            VerificationMethod @relation(fields: [methodId], references: [methodId], onDelete: Restrict)
+  evidenceFiles     EvidenceFile[]
+  
+  @@index([liftUnitId])
+  @@index([methodId])
+  @@index([verified])
+  @@index([status])
+  @@index([verificationDate])
+  @@index([validatorAddress])
+}
+
+model EvidenceFile {
+  id                    Int                @id @default(autoincrement())
+  verificationResultId  Int
+  evidenceType          String
+  fileName              String
+  originalFileName      String?
+  fileHash              String
+  ipfsCid               String?
+  fileSize              BigInt
+  mimeType              String?
+  captureDate           DateTime?
+  captureLocation       Json?
+  captureDevice         String?
+  uploadedBy            String
+  uploadedAt            DateTime           @default(now())
+  processed             Boolean            @default(false)
+  processingError       String?
+  verified              Boolean            @default(false)
+  verifiedAt            DateTime?
+  verificationHash      String?
+  metadata              Json?
+  createdAt             DateTime           @default(now())
+  
+  // Relations
+  verificationResult    VerificationResult @relation(fields: [verificationResultId], references: [id], onDelete: Cascade)
+  
+  @@index([verificationResultId])
+  @@index([evidenceType])
+  @@index([fileHash])
+  @@index([ipfsCid])
+  @@index([uploadedBy])
+  @@index([processed])
 }

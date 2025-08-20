@@ -5,6 +5,8 @@ import cors from "@fastify/cors";
 import cookie from "@fastify/cookie";
 import jwt from "@fastify/jwt";
 import websocket from "@fastify/websocket";
+import helmet from "@fastify/helmet";
+import rateLimit from "@fastify/rate-limit";
 import swagger from "./plugins/swagger";
 import prismaPlugin from "./plugins/prisma";
 import readiness from "./plugins/readiness";
@@ -22,15 +24,16 @@ import paymentRoutes from './routes/payments';
 import indexerRoutes from './routes/indexer';
 import websocketRoutes from './routes/websocket';
 import analyticsRoutes from './routes/analytics';
-import rolesRoutes from './routes/roles';
-import { vendorRoutes } from './routes/vendors';
-import { contractRoutes } from './routes/contracts';
-import { invoiceRoutes } from './routes/invoices';
-import { financePaymentRoutes } from './routes/finance-payments';
-import { reconciliationRoutes } from './routes/reconciliation';
-import { governanceRoutes } from './routes/governance';
-import { financeLoopRoutes } from './routes/finance-loop';
-import { financeIntegrityRoutes } from './routes/finance-integrity';
+// import rolesRoutes from './routes/roles'; // Commented out - depends on FinanceRole model
+// Comprehensive finance routes (commented out - models not implemented in current schema)
+// import { vendorRoutes } from './routes/vendors';
+// import { contractRoutes } from './routes/contracts';
+// import { invoiceRoutes } from './routes/invoices';
+// import { financePaymentRoutes } from './routes/finance-payments';
+// import { reconciliationRoutes } from './routes/reconciliation';
+// import { governanceRoutes } from './routes/governance';
+// import { financeLoopRoutes } from './routes/finance-loop';
+// import { financeIntegrityRoutes } from './routes/finance-integrity';
 
 
 // Simple Fastify instance without Zod type provider
@@ -53,6 +56,32 @@ app.setErrorHandler((err, _req, reply) => {
 });
 
 // Security plugins (register first)
+await app.register(helmet, {
+  contentSecurityPolicy: {
+    directives: {
+      defaultSrc: ["'self'"],
+      styleSrc: ["'self'", "'unsafe-inline'"],
+      scriptSrc: ["'self'"],
+      imgSrc: ["'self'", "data:", "https:"],
+      connectSrc: ["'self'"],
+      fontSrc: ["'self'"],
+      objectSrc: ["'none'"],
+      mediaSrc: ["'self'"],
+      frameSrc: ["'none'"],
+    },
+  },
+});
+await app.register(rateLimit, {
+  max: env.RATE_LIMIT_MAX_REQUESTS,
+  timeWindow: env.RATE_LIMIT_WINDOW_MS,
+  errorResponseBuilder: function (request, context) {
+    return {
+      statusCode: 429,
+      error: 'Too Many Requests',
+      message: `Rate limit exceeded, retry in ${Math.round(context.ttl / 1000)} seconds.`
+    }
+  }
+});
 await app.register(securityPlugin);
 await app.register(validationPlugin);
 
@@ -115,15 +144,16 @@ await app.register(paymentRoutes, { prefix: '/api' });
 await app.register(indexerRoutes, { prefix: '/api' });
 await app.register(websocketRoutes, { prefix: '/api' });
 await app.register(analyticsRoutes, { prefix: '/api' });
-await app.register(rolesRoutes, { prefix: '/api' });
-await app.register(vendorRoutes, { prefix: '/api/vendors' });
-await app.register(contractRoutes, { prefix: '/api/contracts' });
-await app.register(invoiceRoutes, { prefix: '/api/invoices' });
-await app.register(financePaymentRoutes, { prefix: '/api/finance' });
-await app.register(reconciliationRoutes, { prefix: '/api/reconciliation' });
-await app.register(governanceRoutes, { prefix: '/api' });
-await app.register(financeLoopRoutes, { prefix: '/api/finance' });
-await app.register(financeIntegrityRoutes, { prefix: '/api/finance' });
+// await app.register(rolesRoutes, { prefix: '/api' }); // Commented out - depends on FinanceRole model
+// Comprehensive finance routes (commented out - models not implemented in current schema)
+// await app.register(vendorRoutes, { prefix: '/api/vendors' });
+// await app.register(contractRoutes, { prefix: '/api/contracts' });
+// await app.register(invoiceRoutes, { prefix: '/api/invoices' });
+// await app.register(financePaymentRoutes, { prefix: '/api/finance' });
+// await app.register(reconciliationRoutes, { prefix: '/api/reconciliation' });
+// await app.register(governanceRoutes, { prefix: '/api' });
+// await app.register(financeLoopRoutes, { prefix: '/api/finance' });
+// await app.register(financeIntegrityRoutes, { prefix: '/api/finance' });
 
 // Cost tracking routes
 import costTrackingRoutes from './routes/cost-tracking.js';
