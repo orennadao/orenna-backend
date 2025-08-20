@@ -215,12 +215,13 @@ export default async function liftTokenRoutes(app: FastifyInstance) {
         limit,
         offset
       };
-    } catch (error) {
-      app.log.error({ error, errorMessage: error.message, errorStack: error.stack }, 'Failed to fetch lift tokens');
+    } catch (error: any) {
+      app.log.error({ error, errorMessage: error?.message, errorStack: error?.stack }, 'Failed to fetch lift tokens');
       return reply.code(500).send({ 
         error: 'Failed to fetch lift tokens', 
-        details: error.message,
-        type: error.constructor.name 
+        details: error?.message || 'Unknown error',
+        type: error?.constructor?.name || 'Unknown',
+        code: error?.code || 'No code'
       });
     }
   });
