@@ -1,7 +1,7 @@
 import ky from 'ky';
 import type { ApiResponse, PaginatedResponse, Project, LiftToken, Payment, MintRequest } from './types/api';
 
-const API_BASE_URL = process.env.NEXT_PUBLIC_API_BASE_URL || 'http://localhost:3000';
+const API_BASE_URL = process.env.NEXT_PUBLIC_API_BASE_URL || 'https://orenna-backend-production.up.railway.app';
 
 export const apiClient = ky.create({
   prefixUrl: API_BASE_URL,

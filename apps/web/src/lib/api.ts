@@ -1,6 +1,6 @@
 import { fetchWithCache, createCacheKey, apiCache } from './cache';
 
-const API_BASE_URL = 'https://orenna-api-new.vercel.app/api';
+const API_BASE_URL = 'https://orenna-backend-production.up.railway.app/api';
 
 // Debug log
 console.log('API_BASE_URL:', API_BASE_URL);
