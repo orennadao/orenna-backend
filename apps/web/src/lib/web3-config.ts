@@ -61,7 +61,7 @@ function createClientConfig(): Config {
               metadata: {
                 name: 'Orenna DAO',
                 description: 'Regenerative finance platform',
-                url: 'https://orenna.org',
+                url: typeof window !== 'undefined' ? window.location.origin : 'https://orenna.org',
                 icons: ['https://orenna.org/logo.png'],
               },
             }),
