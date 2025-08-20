@@ -24,8 +24,8 @@ export type {
   User,
   Session,
   Project,
-  LiftUnit,
-  LiftUnitEvent,
+  // LiftUnit, // Commented out - schema mismatch between packages/db and apps/api
+  // LiftUnitEvent, // Commented out - schema mismatch
   Contract,
   MintRequest,
   MintRequestEvent,
@@ -35,10 +35,10 @@ export type {
   IndexerState,
   ProjectPaymentConfig,
   
-  // Verification models (added to schema)
-  VerificationMethod,
-  VerificationResult,
-  EvidenceFile,
+  // Verification models (temporarily commented out)
+  // VerificationMethod, // Commented out - schema mismatch
+  // VerificationResult, // Commented out - schema mismatch
+  // EvidenceFile, // Commented out - schema mismatch
   
   // Note: Only export types that actually exist in schema.prisma
 } from '@prisma/client';
@@ -46,14 +46,14 @@ export type {
 // Re-export only enums that actually exist in the schema
 export {
   // These enums are defined in schema.prisma
-  MintRequestStatus,
-  MintRequestEventType,
+  // MintRequestStatus, // Commented out - schema mismatch
+  // MintRequestEventType, // Commented out - schema mismatch
   PaymentType,
   PaymentStatus,
   PaymentEventType,
   
-  // Verification enum (added to schema)
-  VerificationStatus,
+  // Verification enum (commented out temporarily)
+  // VerificationStatus, // Commented out - schema mismatch
   
   // Note: Add other enums as they are defined in schema.prisma
 } from '@prisma/client';
