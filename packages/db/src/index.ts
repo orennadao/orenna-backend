@@ -16,7 +16,7 @@ if (process.env.NODE_ENV !== 'production') {
 }
 
 // Re-export Prisma Client and all types/enums
-export { PrismaClient, Prisma } from '@prisma/client';
+export { PrismaClient, Prisma, PaymentType, PaymentStatus, PaymentEventType, VerificationStatus } from '@prisma/client';
 
 // Re-export all Prisma types and enums that are used across the API
 export type {
@@ -43,17 +43,4 @@ export type {
   // Note: Only export types that actually exist in schema.prisma
 } from '@prisma/client';
 
-// Re-export enums via the Prisma namespace to avoid runtime import errors
-export const {
-  // These enums are defined in schema.prisma
-  // MintRequestStatus, // Commented out - schema mismatch
-  // MintRequestEventType, // Commented out - schema mismatch
-  PaymentType,
-  PaymentStatus,
-  PaymentEventType,
-
-
-  // Verification enum
-  VerificationStatus
-} = Prisma;
 

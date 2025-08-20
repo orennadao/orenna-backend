@@ -1,4 +1,4 @@
-import { PrismaClient } from '@prisma/client';
+import { PrismaClient } from '@orenna/db';
 
 /**
  * Simplified Cost Tracking Service for Lift Token Pricing

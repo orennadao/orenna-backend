@@ -1,4 +1,4 @@
-import { PrismaClient } from "@prisma/client";
+import { PrismaClient } from "@orenna/db";
 import { execSync } from "child_process";
 import { randomBytes } from "crypto";
 

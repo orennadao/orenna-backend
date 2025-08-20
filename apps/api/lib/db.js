@@ -1,5 +1,5 @@
 // Database connection utility for Vercel serverless functions
-const { PrismaClient } = require('@prisma/client');
+const { PrismaClient } = require('@orenna/db');
 
 // Global variable to cache the Prisma client across function invocations
 let prisma;

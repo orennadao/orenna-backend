@@ -1,4 +1,4 @@
-import { PrismaClient, LedgerEntryType, LedgerReferenceType, FundingBucket, LedgerEntry } from '@prisma/client';
+import { PrismaClient, LedgerEntryType, LedgerReferenceType, FundingBucket, LedgerEntry } from '@orenna/db';
 import { logger } from '../utils/logger';
 
 export interface ReconciliationResult {

@@ -1,5 +1,5 @@
 import { describe, it, expect, beforeEach, vi } from 'vitest';
-import { PrismaClient, ContractStatus } from '@prisma/client';
+import { PrismaClient, ContractStatus } from '@orenna/db';
 import { ContractService } from '../../../src/lib/contract';
 import { mockDeep, mockReset, DeepMockProxy } from 'vitest-mock-extended';
 

@@ -1,5 +1,5 @@
 import { describe, it, expect, beforeEach, vi } from 'vitest';
-import { PrismaClient } from '@prisma/client';
+import { PrismaClient } from '@orenna/db';
 import { LedgerService } from '../../../src/lib/ledger';
 import { mockDeep, mockReset, DeepMockProxy } from 'vitest-mock-extended';
 

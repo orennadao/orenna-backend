@@ -1,4 +1,4 @@
-import { PrismaClient, Invoice, InvoiceType, InvoiceStatus, ApprovalStatus, FinanceRole, ApprovalDecision } from '@prisma/client';
+import { PrismaClient, Invoice, InvoiceType, InvoiceStatus, ApprovalStatus, FinanceRole, ApprovalDecision } from '@orenna/db';
 import { logger } from '../utils/logger';
 
 export interface InvoiceCreateRequest {
