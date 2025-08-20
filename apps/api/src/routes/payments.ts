@@ -424,9 +424,14 @@ export default async function paymentRoutes(app: FastifyInstance) {
         limit,
         offset
       };
-    } catch (error) {
-      app.log.error({ error }, 'Failed to get payments');
-      return reply.code(500).send({ error: 'Internal server error' });
+    } catch (error: any) {
+      app.log.error({ error, errorMessage: error?.message, errorStack: error?.stack }, 'Failed to get payments');
+      return reply.code(500).send({ 
+        error: 'Failed to fetch payments',
+        details: error?.message || 'Unknown error',
+        type: error?.constructor?.name || 'Unknown',
+        code: error?.code || 'No code'
+      });
     }
   });
 

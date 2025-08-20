@@ -250,9 +250,14 @@ export default async function mintRequestRoutes(app: FastifyInstance) {
         limit,
         offset
       };
-    } catch (error) {
-      app.log.error({ error }, 'Failed to fetch mint requests');
-      return reply.code(500).send({ error: 'Failed to fetch mint requests' });
+    } catch (error: any) {
+      app.log.error({ error, errorMessage: error?.message, errorStack: error?.stack }, 'Failed to fetch mint requests');
+      return reply.code(500).send({ 
+        error: 'Failed to fetch mint requests',
+        details: error?.message || 'Unknown error',
+        type: error?.constructor?.name || 'Unknown',
+        code: error?.code || 'No code'
+      });
     }
   });
 
