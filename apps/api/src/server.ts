@@ -199,4 +199,4 @@ process.on("SIGTERM", () => close("SIGTERM"));
 
 // Start server
 await app.listen({ port: env.API_PORT, host: env.API_HOST });
-app.log.info(`Docs at http://${env.API_HOST}:${env.API_PORT}/docs`);# Trigger Railway deployment after database setup
+app.log.info(`Docs at http://${env.API_HOST}:${env.API_PORT}/docs`);
