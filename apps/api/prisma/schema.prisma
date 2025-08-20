@@ -45,7 +45,7 @@ model Project {
   meta            Json?
 
   // Relations - match actual database structure
-  LiftToken             LiftToken[]
+  liftTokens            LiftToken[]
   MintRequest           MintRequest[]
   Payment               Payment[]
   ProjectPaymentConfig  ProjectPaymentConfig?
@@ -54,35 +54,69 @@ model Project {
 }
 
 model LiftToken {
-  id               Int      @id @default(autoincrement())
-  projectId        Int?
-  tokenId          String
-  currentSupply    String
-  totalMinted      String
-  totalBurned      String
-  contractAddress  String
-  chainId          Int
-  createdAt        DateTime @default(now())
-  updatedAt        DateTime @updatedAt
+  id              Int     @id @default(autoincrement())
+  externalId      String? @unique
+  tokenId         String? @unique
+  contractAddress String?
+  chainId         Int?
 
-  project        Project?          @relation(fields: [projectId], references: [id], onDelete: SetNull)
-  LiftTokenEvent LiftTokenEvent[]
+  // Mint request relation (one-to-one)
+  mintRequestId Int? @unique
+  mintRequest   MintRequest? @relation(fields: [mintRequestId], references: [id])
 
+  status   String   @default("DRAFT")
+  quantity Decimal?
+  unit     String?
+
+  // Project relation
+  projectId Int?
+  project   Project? @relation(fields: [projectId], references: [id])
+
+  meta      Json?
+  issuedAt  DateTime?
+  retiredAt DateTime?
+
+  // Verification fields
+  verificationMethodId String?
+  verifiedAt           DateTime?
+
+  // Events relation
+  events LiftTokenEvent[]
+
+  // Verification relations
+  verificationResults VerificationResult[]
+  verificationMethod  VerificationMethod? @relation("VerificationMethodLiftTokens", fields: [verificationMethodId], references: [methodId], onDelete: SetNull)
+
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+
+  @@index([status])
+  @@index([tokenId])
+  @@index([contractAddress])
+  @@index([chainId])
   @@map("LiftToken")
 }
 
 model LiftTokenEvent {
-  id           Int      @id @default(autoincrement())
-  liftTokenId  Int
-  eventType    String
-  amount       String
-  txHash       String
-  blockNumber  Int
-  logIndex     Int
-  createdAt    DateTime @default(now())
+  id          Int    @id @default(autoincrement())
+  liftTokenId Int
+  type        String
+
+  txHash      String?
+  blockNumber Int?
+  logIndex    Int?
+
+  payload Json?
+  meta    Json?
+  eventAt DateTime @default(now())
 
   liftToken LiftToken @relation(fields: [liftTokenId], references: [id], onDelete: Cascade)
 
+  createdAt DateTime @default(now())
+
+  @@unique([liftTokenId, type, txHash])
+  @@index([liftTokenId, type])
+  @@index([txHash])
   @@map("LiftTokenEvent")
 }
 
@@ -98,6 +132,7 @@ model MintRequest {
 
   project            Project?             @relation(fields: [projectId], references: [id], onDelete: Restrict)
   MintRequestEvent   MintRequestEvent[]
+  liftToken          LiftToken?
 
   @@map("MintRequest")
 }
@@ -286,37 +321,116 @@ model IndexerState {
   @@map("IndexerState")
 }
 
-model VerificationMethod {
-  id          Int      @id @default(autoincrement())
-  name        String
-  description String?
-  schema      Json
-  isActive    Boolean  @default(true)
-  createdAt   DateTime @default(now())
-  updatedAt   DateTime @updatedAt
+enum VerificationStatus {
+  PENDING
+  IN_REVIEW
+  VERIFIED
+  REJECTED
+  EXPIRED
+  REVOKED
+}
 
+model VerificationMethod {
+  id                Int       @id @default(autoincrement())
+  methodId          String    @unique
+  name              String
+  description       String?
+  methodologyType   String
+  version           String    @default("1.0")
+  criteria          Json
+  requiredDataTypes Json?
+  minimumConfidence Decimal?  @db.Decimal(5, 4)
+  validationPeriod  Int?
+  registryContract  String?
+  chainId           Int?
+  methodHash        String?
+  active            Boolean   @default(true)
+  isPublic          Boolean   @default(true)
+  approvedValidators Json?
+  metadata          Json?
+  createdAt         DateTime  @default(now())
+  updatedAt         DateTime  @updatedAt
+
+  // Relations
+  verificationResults VerificationResult[]
+  liftTokens          LiftToken[] @relation("VerificationMethodLiftTokens")
+
+  @@index([methodId])
+  @@index([methodologyType])
+  @@index([active])
+  @@index([chainId])
   @@map("VerificationMethod")
 }
 
 model VerificationResult {
-  id                     Int      @id @default(autoincrement())
-  verificationMethodId   Int
-  data                   Json
-  status                 String
-  createdAt              DateTime @default(now())
-  updatedAt              DateTime @updatedAt
+  id                Int                @id @default(autoincrement())
+  liftTokenId       Int
+  methodId          String
+  verified          Boolean
+  confidenceScore   Decimal?           @db.Decimal(5, 4)
+  verificationLevel String?
+  evidenceHash      String?
+  evidenceIpfsCid   String?
+  calculationData   Json?
+  validatorAddress  String
+  validatorName     String?
+  verificationDate  DateTime
+  expiryDate        DateTime?
+  submittedAt       DateTime           @default(now())
+  status            VerificationStatus @default(PENDING)
+  notes             String?
+  metadata          Json?
+  reviewedBy        String?
+  reviewedAt        DateTime?
+  reviewNotes       String?
+  createdAt         DateTime           @default(now())
+  updatedAt         DateTime           @updatedAt
 
+  // Relations
+  liftToken          LiftToken           @relation(fields: [liftTokenId], references: [id], onDelete: Cascade)
+  method            VerificationMethod @relation(fields: [methodId], references: [methodId], onDelete: Restrict)
+  evidenceFiles     EvidenceFile[]
+
+  @@index([liftTokenId])
+  @@index([methodId])
+  @@index([verified])
+  @@index([status])
+  @@index([verificationDate])
+  @@index([validatorAddress])
   @@map("VerificationResult")
 }
 
 model EvidenceFile {
-  id         Int      @id @default(autoincrement())
-  filename   String
-  mimeType   String
-  size       Int
-  hash       String
-  uploadedBy String
-  createdAt  DateTime @default(now())
+  id                    Int                @id @default(autoincrement())
+  verificationResultId  Int
+  evidenceType          String
+  fileName              String
+  originalFileName      String?
+  fileHash              String
+  ipfsCid               String?
+  fileSize              BigInt
+  mimeType              String?
+  captureDate           DateTime?
+  captureLocation       Json?
+  captureDevice         String?
+  uploadedBy            String
+  uploadedAt            DateTime           @default(now())
+  processed             Boolean            @default(false)
+  processingError       String?
+  verified              Boolean            @default(false)
+  verifiedAt            DateTime?
+  verificationHash      String?
+  metadata              Json?
+  createdAt             DateTime           @default(now())
 
+  // Relations
+  verificationResult    VerificationResult @relation(fields: [verificationResultId], references: [id], onDelete: Cascade)
+
+  @@index([verificationResultId])
+  @@index([evidenceType])
+  @@index([fileHash])
+  @@index([ipfsCid])
+  @@index([uploadedBy])
+  @@index([processed])
   @@map("EvidenceFile")
 }
