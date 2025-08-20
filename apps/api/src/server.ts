@@ -197,6 +197,6 @@ const close = async (sig?: NodeJS.Signals) => {
 process.on("SIGINT", () => close("SIGINT"));
 process.on("SIGTERM", () => close("SIGTERM"));
 
-// Start server
+// Start server - Docker build fix attempt
 await app.listen({ port: env.API_PORT, host: env.API_HOST });
 app.log.info(`Docs at http://${env.API_HOST}:${env.API_PORT}/docs`);
