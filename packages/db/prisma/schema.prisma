@@ -46,12 +46,12 @@ model Project {
   
   // Relations
   mintRequests MintRequest[]
-  liftUnits    LiftUnit[]
+  liftTokens    LiftToken[]
   payments     Payment[]
   paymentConfig ProjectPaymentConfig?
 }
 
-model LiftUnit {
+model LiftToken {
   id              Int     @id @default(autoincrement())
   externalId      String? @unique
   tokenId         String? @unique
@@ -79,11 +79,11 @@ model LiftUnit {
   verifiedAt           DateTime?
 
   // Events relation
-  events LiftUnitEvent[]
+  events LiftTokenEvent[]
   
   // Verification relations
   verificationResults VerificationResult[]
-  verificationMethod  VerificationMethod? @relation("VerificationMethodLiftUnits", fields: [verificationMethodId], references: [methodId], onDelete: SetNull)
+  verificationMethod  VerificationMethod? @relation("VerificationMethodLiftTokens", fields: [verificationMethodId], references: [methodId], onDelete: SetNull)
 
   createdAt DateTime @default(now())
   updatedAt DateTime @updatedAt
@@ -94,9 +94,9 @@ model LiftUnit {
   @@index([chainId])
 }
 
-model LiftUnitEvent {
+model LiftTokenEvent {
   id         Int    @id @default(autoincrement())
-  liftUnitId Int
+  liftTokenId Int
   type       String
 
   txHash      String?
@@ -107,12 +107,12 @@ model LiftUnitEvent {
   meta    Json?
   eventAt DateTime @default(now())
 
-  liftUnit LiftUnit @relation(fields: [liftUnitId], references: [id], onDelete: Cascade)
+  liftToken LiftToken @relation(fields: [liftTokenId], references: [id], onDelete: Cascade)
 
   createdAt DateTime @default(now())
 
-  @@unique([liftUnitId, type, txHash])
-  @@index([liftUnitId, type])
+  @@unique([liftTokenId, type, txHash])
+  @@index([liftTokenId, type])
   @@index([txHash])
 }
 
@@ -173,7 +173,7 @@ model MintRequest {
   
   // Relations
   events      MintRequestEvent[]
-  liftUnit    LiftUnit? // One-to-one: mint request can create one lift unit
+  liftToken    LiftToken? // One-to-one: mint request can create one lift unit
   
   @@index([status])
   @@index([projectId])
@@ -491,7 +491,7 @@ model VerificationMethod {
   
   // Relations
   verificationResults VerificationResult[]
-  liftUnits          LiftUnit[] @relation("VerificationMethodLiftUnits")
+  liftTokens          LiftToken[] @relation("VerificationMethodLiftTokens")
   
   @@index([methodId])
   @@index([methodologyType])
@@ -501,7 +501,7 @@ model VerificationMethod {
 
 model VerificationResult {
   id                Int                @id @default(autoincrement())
-  liftUnitId        Int
+  liftTokenId        Int
   methodId          String
   verified          Boolean
   confidenceScore   Decimal?           @db.Decimal(5, 4)
@@ -524,11 +524,11 @@ model VerificationResult {
   updatedAt         DateTime           @updatedAt
   
   // Relations
-  liftUnit          LiftUnit           @relation(fields: [liftUnitId], references: [id], onDelete: Cascade)
+  liftToken          LiftToken           @relation(fields: [liftTokenId], references: [id], onDelete: Cascade)
   method            VerificationMethod @relation(fields: [methodId], references: [methodId], onDelete: Restrict)
   evidenceFiles     EvidenceFile[]
   
-  @@index([liftUnitId])
+  @@index([liftTokenId])
   @@index([methodId])
   @@index([verified])
   @@index([status])

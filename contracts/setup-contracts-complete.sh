@@ -262,15 +262,15 @@ echo "📝 Creating remaining contracts..."
 cat > create_remaining_contracts.sh << 'EOF'
 #!/bin/bash
 
-echo "Creating LiftUnits.sol..."
+echo "Creating LiftTokens.sol..."
 # Due to file size limits, we'll create these one by one
 echo "// SPDX-License-Identifier: MIT
 pragma solidity ^0.8.24;
 
 // This is a placeholder - run the full setup to get complete contracts
-contract LiftUnits {
+contract LiftTokens {
     // Implementation needed
-}" > src/LiftUnits.sol
+}" > src/LiftTokens.sol
 
 echo "Creating AllocationEscrow.sol..."
 echo "// SPDX-License-Identifier: MIT

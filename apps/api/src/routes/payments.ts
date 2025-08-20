@@ -31,7 +31,7 @@ const InitiatePaymentSchema = z.object({
   }).optional()
 });
 
-const ProcessLiftUnitPurchaseSchema = z.object({
+const ProcessLiftTokenPurchaseSchema = z.object({
   paymentId: z.string(),
   tokenIds: z.array(z.string().regex(/^\d+$/)),
   tokenAmounts: z.array(z.string().regex(/^\d+$/)),
@@ -151,10 +151,10 @@ export default async function paymentRoutes(app: FastifyInstance) {
   // Process lift unit purchase
   app.post('/payments/process-lift-purchase', async (request: FastifyRequest, reply) => {
     const { paymentId, tokenIds, tokenAmounts, considerationRef } = 
-      request.body as z.infer<typeof ProcessLiftUnitPurchaseSchema>;
+      request.body as z.infer<typeof ProcessLiftTokenPurchaseSchema>;
 
     try {
-      const result = await paymentService.processLiftUnitPurchase(
+      const result = await paymentService.processLiftTokenPurchase(
         paymentId,
         tokenIds,
         tokenAmounts,

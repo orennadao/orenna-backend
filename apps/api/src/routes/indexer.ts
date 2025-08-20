@@ -8,7 +8,7 @@ const StartIndexerSchema = z.object({
   configs: z.array(z.object({
     chainId: z.number().int().positive(),
     contractAddress: z.string().regex(/^0x[a-fA-F0-9]{40}$/, 'Invalid contract address'),
-    indexerType: z.enum(['RepaymentEscrow', 'AllocationEscrow', 'LiftUnits']),
+    indexerType: z.enum(['RepaymentEscrow', 'AllocationEscrow', 'LiftTokens']),
     startBlock: z.number().int().min(0).optional(),
     confirmations: z.number().int().min(1).max(100).optional(),
     batchSize: z.number().int().min(1).max(10000).optional()

@@ -25,7 +25,7 @@ export const generateReceiptId = (projectId: string | number, beneficiaryId: str
 export const generateVerificationGateId = (projectId: string | number, phase: string): string =>
   `VG-${projectId}-${phase.toUpperCase()}-${Date.now().toString().slice(-6)}`;
 
-export const generateLiftUnitBatchId = (projectId: string | number, unitType: string): string =>
+export const generateLiftTokenBatchId = (projectId: string | number, unitType: string): string =>
   `LU-${projectId}-${unitType.toUpperCase()}-${Date.now().toString().slice(-6)}`;
 
 export const formatFinanceRef = (type: 'invoice' | 'contract' | 'disbursement' | 'receipt', id: string | number): string =>

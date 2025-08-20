@@ -10,7 +10,7 @@ Here's a tight, implementation-ready spec for adding a Project Parent Token to O
 ✅ **COMPLETED**:
 - ✅ ProjectNFT contract (ERC-721, UUPS, AccessControl, Pausable) - `contracts/src/ProjectNFT.sol`
 - ✅ Updated AllocationEscrow (LiftForward) to require projectId and emit ForwardLinked events
-- ✅ Updated LiftTokens and LiftUnits contracts with project integration and LiftBatchLinked events
+- ✅ Updated LiftTokens and LiftTokens contracts with project integration and LiftBatchLinked events
 - ✅ Prisma database schema migration for Project model with new fields (tokenId, ownerAddress, state, etc.)
 - ✅ API routes for project CRUD, state management, verification attestation - `apps/api/src/routes/projects.ts`
 - ✅ Frontend project creation wizard with wallet integration and metadata steps

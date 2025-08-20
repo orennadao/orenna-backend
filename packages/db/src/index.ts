@@ -1,4 +1,4 @@
-import { PrismaClient } from '@prisma/client';
+import { PrismaClient, Prisma } from '@prisma/client';
 
 declare global {
   // eslint-disable-next-line no-var
@@ -16,7 +16,7 @@ if (process.env.NODE_ENV !== 'production') {
 }
 
 // Re-export Prisma Client and all types/enums
-export { PrismaClient } from '@prisma/client';
+export { PrismaClient, Prisma } from '@prisma/client';
 
 // Re-export all Prisma types and enums that are used across the API
 export type {
@@ -24,8 +24,8 @@ export type {
   User,
   Session,
   Project,
-  // LiftUnit, // Commented out - schema mismatch between packages/db and apps/api
-  // LiftUnitEvent, // Commented out - schema mismatch
+  LiftToken,
+  LiftTokenEvent,
   Contract,
   MintRequest,
   MintRequestEvent,
@@ -35,25 +35,23 @@ export type {
   IndexerState,
   ProjectPaymentConfig,
   
-  // Verification models (temporarily commented out)
-  // VerificationMethod, // Commented out - schema mismatch
-  // VerificationResult, // Commented out - schema mismatch
-  // EvidenceFile, // Commented out - schema mismatch
+  // Verification models
+  VerificationMethod,
+  VerificationResult,
+  EvidenceFile,
   
   // Note: Only export types that actually exist in schema.prisma
 } from '@prisma/client';
 
-// Re-export only enums that actually exist in the schema
-export {
+// Re-export enums via the Prisma namespace to avoid runtime import errors
+export const {
   // These enums are defined in schema.prisma
   // MintRequestStatus, // Commented out - schema mismatch
   // MintRequestEventType, // Commented out - schema mismatch
   PaymentType,
   PaymentStatus,
   PaymentEventType,
-  
-  // Verification enum (commented out temporarily)
-  // VerificationStatus, // Commented out - schema mismatch
-  
-  // Note: Add other enums as they are defined in schema.prisma
-} from '@prisma/client';
+
+  // Verification enum
+  VerificationStatus
+} = Prisma;

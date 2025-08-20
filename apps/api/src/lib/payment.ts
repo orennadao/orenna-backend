@@ -124,7 +124,7 @@ export class PaymentService {
     }
   }
 
-  async processLiftUnitPurchase(
+  async processLiftTokenPurchase(
     paymentId: string, 
     tokenIds: string[], 
     tokenAmounts: string[],

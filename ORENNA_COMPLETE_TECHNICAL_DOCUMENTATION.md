@@ -716,7 +716,7 @@ export function useAuth() {
 ```
 contracts/src/
 ├── LiftTokens.sol             # ERC-1155 tokens for verified improvements
-├── LiftUnits.sol              # Legacy token contract
+├── LiftTokens.sol              # Legacy token contract
 ├── OrennaGovernanceToken.sol  # ERC-20 governance token
 ├── OrennaGovernor.sol         # Governor contract for DAO
 ├── OrennaTimelock.sol         # Timelock for governance execution

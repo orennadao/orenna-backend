@@ -180,7 +180,7 @@ export default async function analyticsRoutes(app: FastifyInstance) {
   });
 
   // Get lift unit analytics
-  app.get('/analytics/lift-units', {
+  app.get('/analytics/lift-tokens', {
     schema: {
       description: 'Get lift unit analytics and metrics',
       tags: ['Analytics'],
@@ -447,7 +447,7 @@ export default async function analyticsRoutes(app: FastifyInstance) {
       querystring: {
         type: 'object',
         properties: {
-          type: { type: 'string', enum: ['payments', 'blockchain', 'lift-units', 'verification'] },
+          type: { type: 'string', enum: ['payments', 'blockchain', 'lift-tokens', 'verification'] },
           format: { type: 'string', enum: ['json', 'csv'] },
           startDate: { type: 'string', format: 'date-time' },
           endDate: { type: 'string', format: 'date-time' },
@@ -464,7 +464,7 @@ export default async function analyticsRoutes(app: FastifyInstance) {
         endDate, 
         projectId 
       } = request.query as {
-        type?: 'payments' | 'blockchain' | 'lift-units' | 'verification';
+        type?: 'payments' | 'blockchain' | 'lift-tokens' | 'verification';
         format?: 'json' | 'csv';
         startDate?: string;
         endDate?: string;
@@ -484,7 +484,7 @@ export default async function analyticsRoutes(app: FastifyInstance) {
         case 'blockchain':
           data = await analyticsService.getBlockchainAnalytics();
           break;
-        case 'lift-units':
+        case 'lift-tokens':
           data = await analyticsService.getLiftTokenAnalytics(projectId);
           break;
         case 'verification':
@@ -903,7 +903,7 @@ export default async function analyticsRoutes(app: FastifyInstance) {
       querystring: {
         type: 'object',
         properties: {
-          entityType: { type: 'string', enum: ['verification', 'payment', 'lift-unit', 'all'], default: 'all' },
+          entityType: { type: 'string', enum: ['verification', 'payment', 'lift-token', 'all'], default: 'all' },
           entityId: { type: 'string' },
           startDate: { type: 'string', format: 'date-time' },
           endDate: { type: 'string', format: 'date-time' },
@@ -922,7 +922,7 @@ export default async function analyticsRoutes(app: FastifyInstance) {
         includeSystemEvents = false,
         format = 'json'
       } = request.query as {
-        entityType?: 'verification' | 'payment' | 'lift-unit' | 'all';
+        entityType?: 'verification' | 'payment' | 'lift-token' | 'all';
         entityId?: string;
         startDate?: string;
         endDate?: string;
@@ -1411,7 +1411,7 @@ async function generateAuditTrail(app: FastifyInstance, options: {
   }
 
   // Lift unit events
-  if (entityType === 'all' || entityType === 'lift-unit') {
+  if (entityType === 'all' || entityType === 'lift-token') {
     const liftTokenEvents = await app.prisma.liftTokenEvent.findMany({
       where: {
         liftTokenId: entityId ? parseInt(entityId) : undefined,
@@ -1975,7 +1975,7 @@ function generateDashboardWidgets(verificationAnalytics: any, paymentAnalytics: 
       }
     },
     {
-      id: 'active-lift-units',
+      id: 'active-lift-tokens',
       type: 'metric',
       title: 'Active Lift Units',
       data: {
@@ -2025,7 +2025,7 @@ function convertToCSV(data: any, type: string): string {
         }
         break;
 
-      case 'lift-units':
+      case 'lift-tokens':
         if (data.issuanceTimeline) {
           const headers = ['Date', 'Issued', 'Retired', 'Cumulative'];
           const rows = data.issuanceTimeline.map((metric: any) => [

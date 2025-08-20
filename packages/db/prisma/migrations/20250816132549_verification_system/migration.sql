@@ -2,7 +2,7 @@
 CREATE TYPE "VerificationStatus" AS ENUM ('PENDING', 'IN_REVIEW', 'VERIFIED', 'REJECTED', 'EXPIRED', 'REVOKED');
 
 -- AlterTable
-ALTER TABLE "LiftUnit" ADD COLUMN     "verificationMethodId" TEXT,
+ALTER TABLE "LiftToken" ADD COLUMN     "verificationMethodId" TEXT,
 ADD COLUMN     "verifiedAt" TIMESTAMP(3);
 
 -- CreateTable
@@ -33,7 +33,7 @@ CREATE TABLE "VerificationMethod" (
 -- CreateTable
 CREATE TABLE "VerificationResult" (
     "id" SERIAL NOT NULL,
-    "liftUnitId" INTEGER NOT NULL,
+    "liftTokenId" INTEGER NOT NULL,
     "methodId" TEXT NOT NULL,
     "verified" BOOLEAN NOT NULL,
     "confidenceScore" DECIMAL(5,4),
@@ -101,7 +101,7 @@ CREATE INDEX "VerificationMethod_active_idx" ON "VerificationMethod"("active");
 CREATE INDEX "VerificationMethod_chainId_idx" ON "VerificationMethod"("chainId");
 
 -- CreateIndex
-CREATE INDEX "VerificationResult_liftUnitId_idx" ON "VerificationResult"("liftUnitId");
+CREATE INDEX "VerificationResult_liftTokenId_idx" ON "VerificationResult"("liftTokenId");
 
 -- CreateIndex
 CREATE INDEX "VerificationResult_methodId_idx" ON "VerificationResult"("methodId");
@@ -137,13 +137,13 @@ CREATE INDEX "EvidenceFile_uploadedBy_idx" ON "EvidenceFile"("uploadedBy");
 CREATE INDEX "EvidenceFile_processed_idx" ON "EvidenceFile"("processed");
 
 -- CreateIndex
-CREATE INDEX "LiftUnit_verificationMethodId_idx" ON "LiftUnit"("verificationMethodId");
+CREATE INDEX "LiftToken_verificationMethodId_idx" ON "LiftToken"("verificationMethodId");
 
 -- AddForeignKey
-ALTER TABLE "LiftUnit" ADD CONSTRAINT "LiftUnit_verificationMethodId_fkey" FOREIGN KEY ("verificationMethodId") REFERENCES "VerificationMethod"("methodId") ON DELETE SET NULL ON UPDATE CASCADE;
+ALTER TABLE "LiftToken" ADD CONSTRAINT "LiftToken_verificationMethodId_fkey" FOREIGN KEY ("verificationMethodId") REFERENCES "VerificationMethod"("methodId") ON DELETE SET NULL ON UPDATE CASCADE;
 
 -- AddForeignKey
-ALTER TABLE "VerificationResult" ADD CONSTRAINT "VerificationResult_liftUnitId_fkey" FOREIGN KEY ("liftUnitId") REFERENCES "LiftUnit"("id") ON DELETE CASCADE ON UPDATE CASCADE;
+ALTER TABLE "VerificationResult" ADD CONSTRAINT "VerificationResult_liftTokenId_fkey" FOREIGN KEY ("liftTokenId") REFERENCES "LiftToken"("id") ON DELETE CASCADE ON UPDATE CASCADE;
 
 -- AddForeignKey
 ALTER TABLE "VerificationResult" ADD CONSTRAINT "VerificationResult_methodId_fkey" FOREIGN KEY ("methodId") REFERENCES "VerificationMethod"("methodId") ON DELETE RESTRICT ON UPDATE CASCADE;
