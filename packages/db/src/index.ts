@@ -52,6 +52,8 @@ export const {
   PaymentStatus,
   PaymentEventType,
 
+
   // Verification enum
   VerificationStatus
 } = Prisma;
+
