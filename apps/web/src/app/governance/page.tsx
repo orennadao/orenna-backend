@@ -2,6 +2,7 @@
 
 import React, { useState } from 'react'
 import Link from 'next/link'
+import { MainLayout } from '@/components/layout/main-layout'
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card'
 import { Button } from '@/components/ui/button'
 import { Badge } from '@/components/ui/badge'
@@ -105,7 +106,7 @@ export default function GovernancePage() {
 
   if (!isConnected) {
     return (
-      <div className="container mx-auto px-4 py-8">
+      <MainLayout>
         <div className="max-w-md mx-auto text-center">
           <Card>
             <CardContent className="pt-6">
@@ -120,13 +121,13 @@ export default function GovernancePage() {
             </CardContent>
           </Card>
         </div>
-      </div>
+      </MainLayout>
     )
   }
 
   if (!user) {
     return (
-      <div className="container mx-auto px-4 py-8">
+      <MainLayout>
         <div className="max-w-md mx-auto text-center">
           <Card>
             <CardContent className="pt-6">
@@ -141,12 +142,12 @@ export default function GovernancePage() {
             </CardContent>
           </Card>
         </div>
-      </div>
+      </MainLayout>
     )
   }
 
   return (
-    <div className="container mx-auto px-4 py-8">
+    <MainLayout>
       {/* Header */}
       <div className="mb-8">
         <h1 className="text-3xl font-bold mb-2">OrennaDAO Governance</h1>
@@ -373,6 +374,6 @@ export default function GovernancePage() {
           </div>
         )}
       </div>
-    </div>
+    </MainLayout>
   )
 }

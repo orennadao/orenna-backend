@@ -1,8 +1,7 @@
 'use client';
 
 import React, { useState } from 'react';
-import { Header } from '@/components/layout/header';
-import { Footer } from '@/components/layout/footer';
+import { MainLayout } from '@/components/layout/main-layout';
 import { useDashboardAnalytics, usePaymentAnalytics, useBlockchainAnalytics, useLiftTokenAnalytics } from '@/hooks/use-analytics';
 import { ChartContainer } from '@/components/analytics/chart-container';
 import { RealtimeAnalyticsWrapper, LiveMetric } from '@/components/analytics/real-time-analytics';
@@ -40,16 +39,13 @@ export default function AnalyticsPage() {
   };
 
   return (
-    <div className="min-h-screen bg-gray-50">
-      <Header />
-      
-      <main className="container mx-auto px-4 py-6 sm:py-8">
-        <div className="mb-6 sm:mb-8">
-          <h1 className="text-2xl sm:text-3xl font-bold text-gray-900 mb-2">Analytics Dashboard</h1>
-          <p className="text-sm sm:text-base text-gray-600">
-            Comprehensive analytics for payments, blockchain metrics, and platform performance
-          </p>
-        </div>
+    <MainLayout>
+      <div className="mb-6 sm:mb-8">
+        <h1 className="text-2xl sm:text-3xl font-bold text-gray-900 mb-2">Analytics Dashboard</h1>
+        <p className="text-sm sm:text-base text-gray-600">
+          Comprehensive analytics for payments, blockchain metrics, and platform performance
+        </p>
+      </div>
 
         {/* Date Range Picker and Export Actions */}
         <div className="space-y-4 mb-6">
@@ -273,9 +269,6 @@ export default function AnalyticsPage() {
             </ChartContainer>
           </div>
         )}
-      </main>
-
-      <Footer />
-    </div>
+    </MainLayout>
   );
 }

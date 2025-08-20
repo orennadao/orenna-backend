@@ -1,9 +1,7 @@
 'use client';
 
 import { useState } from 'react';
-import { Header } from "@/components/layout/header";
-import { Footer } from "@/components/layout/footer";
-import { ProtectedRoute } from "@/components/auth/protected-route";
+import { MainLayout } from '@/components/layout/main-layout';
 import { MarketplaceDashboard } from "@/components/marketplace/marketplace-dashboard";
 import { MarketplaceItemDetails } from "@/components/marketplace/marketplace-item-details";
 
@@ -130,31 +128,19 @@ export default function MarketplacePage() {
   };
 
   return (
-    <ProtectedRoute>
-      <div className="min-h-screen flex flex-col">
-        <Header />
-        
-        <main className="flex-1 bg-gray-50">
-          <div className="container mx-auto px-4 py-8">
-            <div className="max-w-7xl mx-auto">
-              {selectedItem ? (
-                <MarketplaceItemDetails
-                  item={selectedItem}
-                  onBack={handleBack}
-                  onPurchase={handlePurchase}
-                />
-              ) : (
-                <MarketplaceDashboard 
-                  onViewItem={handleViewItem}
-                  onPurchase={handlePurchase}
-                />
-              )}
-            </div>
-          </div>
-        </main>
-        
-        <Footer />
-      </div>
-    </ProtectedRoute>
+    <MainLayout>
+      {selectedItem ? (
+        <MarketplaceItemDetails
+          item={selectedItem}
+          onBack={handleBack}
+          onPurchase={handlePurchase}
+        />
+      ) : (
+        <MarketplaceDashboard 
+          onViewItem={handleViewItem}
+          onPurchase={handlePurchase}
+        />
+      )}
+    </MainLayout>
   );
 }

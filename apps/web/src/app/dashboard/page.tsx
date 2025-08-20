@@ -1,6 +1,4 @@
-import { Header } from "@/components/layout/header";
-import { Footer } from "@/components/layout/footer";
-import { ProtectedRoute } from "@/components/auth/protected-route";
+import { MainLayout } from '@/components/layout/main-layout';
 import { Button } from "@/components/ui/button";
 import { Card } from "@/components/ui/card";
 import Link from 'next/link';
@@ -8,16 +6,10 @@ import { Coins, BarChart3, Plus } from 'lucide-react';
 
 export default function DashboardPage() {
   return (
-    <ProtectedRoute>
-      <div className="min-h-screen flex flex-col">
-        <Header />
-        
-        <main className="flex-1 bg-gray-50">
-          <div className="container mx-auto px-4 py-8">
-            <div className="max-w-6xl mx-auto">
-              <h1 className="text-3xl font-bold text-gray-900 mb-8">
-                Dashboard
-              </h1>
+    <MainLayout>
+      <h1 className="text-3xl font-bold text-gray-900 mb-8">
+        Dashboard
+      </h1>
               
               <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-6 mb-8">
                 <div className="bg-white rounded-lg p-6 shadow-sm border border-gray-200">
@@ -160,12 +152,6 @@ export default function DashboardPage() {
                   </div>
                 </div>
               </div>
-            </div>
-          </div>
-        </main>
-        
-        <Footer />
-      </div>
-    </ProtectedRoute>
+    </MainLayout>
   );
 }
