@@ -3,7 +3,7 @@ pragma solidity ^0.8.24;
 
 import {Script, console} from "forge-std/Script.sol";
 import {MethodRegistry} from "../src/MethodRegistry.sol";
-import {LiftUnits} from "../src/LiftUnits.sol";
+import {LiftTokens} from "../src/LiftTokens.sol";
 import {RepaymentEscrow} from "../src/RepaymentEscrow.sol";
 
 // Define the interface directly here for casting
@@ -19,7 +19,7 @@ contract Deploy is Script {
 
         // Deploy core contracts first
         MethodRegistry methodRegistry = new MethodRegistry();
-        LiftUnits liftUnits = new LiftUnits("https://api.orenna.dao/lift-units/{id}", methodRegistry);
+        LiftTokens liftTokens = new LiftTokens("https://api.orenna.dao/lift-tokens/{id}", methodRegistry);
         RepaymentEscrow repaymentEscrow = new RepaymentEscrow();
 
         // For now, let's skip AllocationEscrow since it has interface issues
@@ -29,7 +29,7 @@ contract Deploy is Script {
 
         console.log("Core Deployment Complete!");
         console.log("MethodRegistry:", address(methodRegistry));
-        console.log("LiftUnits:", address(liftUnits));
+        console.log("LiftTokens:", address(liftTokens));
         console.log("RepaymentEscrow:", address(repaymentEscrow));
         
         console.log("Next Steps:");

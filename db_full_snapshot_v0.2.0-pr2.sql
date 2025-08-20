@@ -204,10 +204,10 @@ CREATE TABLE public."IndexerState" (
 ALTER TABLE public."IndexerState" OWNER TO postgres;
 
 --
--- Name: LiftUnit; Type: TABLE; Schema: public; Owner: postgres
+-- Name: LiftToken; Type: TABLE; Schema: public; Owner: postgres
 --
 
-CREATE TABLE public."LiftUnit" (
+CREATE TABLE public."LiftToken" (
     id integer NOT NULL,
     "externalId" text,
     status text DEFAULT 'DRAFT'::text NOT NULL,
@@ -226,15 +226,15 @@ CREATE TABLE public."LiftUnit" (
 );
 
 
-ALTER TABLE public."LiftUnit" OWNER TO postgres;
+ALTER TABLE public."LiftToken" OWNER TO postgres;
 
 --
--- Name: LiftUnitEvent; Type: TABLE; Schema: public; Owner: postgres
+-- Name: LiftTokenEvent; Type: TABLE; Schema: public; Owner: postgres
 --
 
-CREATE TABLE public."LiftUnitEvent" (
+CREATE TABLE public."LiftTokenEvent" (
     id integer NOT NULL,
-    "liftUnitId" integer NOT NULL,
+    "liftTokenId" integer NOT NULL,
     type text NOT NULL,
     "eventAt" timestamp(3) without time zone DEFAULT CURRENT_TIMESTAMP NOT NULL,
     "createdAt" timestamp(3) without time zone DEFAULT CURRENT_TIMESTAMP NOT NULL,
@@ -246,13 +246,13 @@ CREATE TABLE public."LiftUnitEvent" (
 );
 
 
-ALTER TABLE public."LiftUnitEvent" OWNER TO postgres;
+ALTER TABLE public."LiftTokenEvent" OWNER TO postgres;
 
 --
--- Name: LiftUnitEvent_id_seq; Type: SEQUENCE; Schema: public; Owner: postgres
+-- Name: LiftTokenEvent_id_seq; Type: SEQUENCE; Schema: public; Owner: postgres
 --
 
-CREATE SEQUENCE public."LiftUnitEvent_id_seq"
+CREATE SEQUENCE public."LiftTokenEvent_id_seq"
     AS integer
     START WITH 1
     INCREMENT BY 1
@@ -261,20 +261,20 @@ CREATE SEQUENCE public."LiftUnitEvent_id_seq"
     CACHE 1;
 
 
-ALTER SEQUENCE public."LiftUnitEvent_id_seq" OWNER TO postgres;
+ALTER SEQUENCE public."LiftTokenEvent_id_seq" OWNER TO postgres;
 
 --
--- Name: LiftUnitEvent_id_seq; Type: SEQUENCE OWNED BY; Schema: public; Owner: postgres
+-- Name: LiftTokenEvent_id_seq; Type: SEQUENCE OWNED BY; Schema: public; Owner: postgres
 --
 
-ALTER SEQUENCE public."LiftUnitEvent_id_seq" OWNED BY public."LiftUnitEvent".id;
+ALTER SEQUENCE public."LiftTokenEvent_id_seq" OWNED BY public."LiftTokenEvent".id;
 
 
 --
--- Name: LiftUnit_id_seq; Type: SEQUENCE; Schema: public; Owner: postgres
+-- Name: LiftToken_id_seq; Type: SEQUENCE; Schema: public; Owner: postgres
 --
 
-CREATE SEQUENCE public."LiftUnit_id_seq"
+CREATE SEQUENCE public."LiftToken_id_seq"
     AS integer
     START WITH 1
     INCREMENT BY 1
@@ -283,13 +283,13 @@ CREATE SEQUENCE public."LiftUnit_id_seq"
     CACHE 1;
 
 
-ALTER SEQUENCE public."LiftUnit_id_seq" OWNER TO postgres;
+ALTER SEQUENCE public."LiftToken_id_seq" OWNER TO postgres;
 
 --
--- Name: LiftUnit_id_seq; Type: SEQUENCE OWNED BY; Schema: public; Owner: postgres
+-- Name: LiftToken_id_seq; Type: SEQUENCE OWNED BY; Schema: public; Owner: postgres
 --
 
-ALTER SEQUENCE public."LiftUnit_id_seq" OWNED BY public."LiftUnit".id;
+ALTER SEQUENCE public."LiftToken_id_seq" OWNED BY public."LiftToken".id;
 
 
 --
@@ -539,17 +539,17 @@ ALTER TABLE ONLY public."Contract" ALTER COLUMN id SET DEFAULT nextval('public."
 
 
 --
--- Name: LiftUnit id; Type: DEFAULT; Schema: public; Owner: postgres
+-- Name: LiftToken id; Type: DEFAULT; Schema: public; Owner: postgres
 --
 
-ALTER TABLE ONLY public."LiftUnit" ALTER COLUMN id SET DEFAULT nextval('public."LiftUnit_id_seq"'::regclass);
+ALTER TABLE ONLY public."LiftToken" ALTER COLUMN id SET DEFAULT nextval('public."LiftToken_id_seq"'::regclass);
 
 
 --
--- Name: LiftUnitEvent id; Type: DEFAULT; Schema: public; Owner: postgres
+-- Name: LiftTokenEvent id; Type: DEFAULT; Schema: public; Owner: postgres
 --
 
-ALTER TABLE ONLY public."LiftUnitEvent" ALTER COLUMN id SET DEFAULT nextval('public."LiftUnitEvent_id_seq"'::regclass);
+ALTER TABLE ONLY public."LiftTokenEvent" ALTER COLUMN id SET DEFAULT nextval('public."LiftTokenEvent_id_seq"'::regclass);
 
 
 --
@@ -593,18 +593,18 @@ cmedjzxj40007jmjvnskbk4d6	1	0x0987654321098765432109876543210987654321	Allocatio
 
 
 --
--- Data for Name: LiftUnit; Type: TABLE DATA; Schema: public; Owner: postgres
+-- Data for Name: LiftToken; Type: TABLE DATA; Schema: public; Owner: postgres
 --
 
-COPY public."LiftUnit" (id, "externalId", status, quantity, unit, "issuedAt", "retiredAt", "createdAt", "updatedAt", "chainId", "contractAddress", "projectId", "tokenId", meta, "mintRequestId") FROM stdin;
+COPY public."LiftToken" (id, "externalId", status, quantity, unit, "issuedAt", "retiredAt", "createdAt", "updatedAt", "chainId", "contractAddress", "projectId", "tokenId", meta, "mintRequestId") FROM stdin;
 \.
 
 
 --
--- Data for Name: LiftUnitEvent; Type: TABLE DATA; Schema: public; Owner: postgres
+-- Data for Name: LiftTokenEvent; Type: TABLE DATA; Schema: public; Owner: postgres
 --
 
-COPY public."LiftUnitEvent" (id, "liftUnitId", type, "eventAt", "createdAt", "blockNumber", "logIndex", "txHash", payload, meta) FROM stdin;
+COPY public."LiftTokenEvent" (id, "liftTokenId", type, "eventAt", "createdAt", "blockNumber", "logIndex", "txHash", payload, meta) FROM stdin;
 \.
 
 
@@ -625,7 +625,7 @@ COPY public."MintRequestEvent" (id, "mintRequestId", type, "performedBy", notes,
 cmec6i6th0003umi63l9vtf3n	cmec6i6t30001umi6zn9bjb88	SUBMITTED	0xd8dA6BF26964aF9D7eEd9e03E53415D37aA96045	Test mint request for forest carbon sequestration	{"testRequest": true, "authorizationReason": "Project owner"}	\N	\N	\N	2025-08-15 01:58:03.269
 cmec6nrhp0005umi69qnmzc2y	cmec6i6t30001umi6zn9bjb88	APPROVED	0xd8dA6BF26964aF9D7eEd9e03E53415D37aA96045	Verification data looks solid. Carbon measurements verified through satellite imagery and soil sampling. Approving for minting.	{"testApproval": true, "previousStatus": "PENDING"}	\N	\N	\N	2025-08-15 02:02:23.342
 cmec7y1yn000111hilaj726at	cmec6i6t30001umi6zn9bjb88	MINT_STARTED	0xd8dA6BF26964aF9D7eEd9e03E53415D37aA96045	Starting blockchain minting process	{"timestamp": "2025-08-15T02:38:23.086Z"}	\N	\N	\N	2025-08-15 02:38:23.087
-cmec7y353000311hikg4yxodg	cmec6i6t30001umi6zn9bjb88	MINT_FAILED	0xd8dA6BF26964aF9D7eEd9e03E53415D37aA96045	Failed to create token: Token creation failed: Missing or invalid parameters.\nDouble check you have provided the correct parameters.\n\nURL: https://eth.llamarpc.com\nRequest body: {"method":"eth_estimateGas","params":[{"data":"0x5f78f43600000000000000000000000000000000000000000000000000000000000003e900000000000000000000000000000000000000000000000000000000000f424000000000000000000000000000000000000000000000000000000000000000600000000000000000000000000000000000000000000000000000000000000032687474703a2f2f6c6f63616c686f73743a333030302f6170692f6c6966742d756e6974732f313030312f6d657461646174610000000000000000000000000000","from":"0x2e988A386a799F506693793c6A5AF6B54dfAaBfB","maxFeePerGas":"0x242e4c47","maxPriorityFeePerGas":"0xbf68","nonce":"0x19","to":"0x1234567890123456789012345678901234567890"}]}\n \nEstimate Gas Arguments:\n  from:                  0x2e988A386a799F506693793c6A5AF6B54dfAaBfB\n  to:                    0x1234567890123456789012345678901234567890\n  data:                  0x5f78f43600000000000000000000000000000000000000000000000000000000000003e900000000000000000000000000000000000000000000000000000000000f424000000000000000000000000000000000000000000000000000000000000000600000000000000000000000000000000000000000000000000000000000000032687474703a2f2f6c6f63616c686f73743a333030302f6170692f6c6966742d756e6974732f313030312f6d657461646174610000000000000000000000000000\n  maxFeePerGas:          0.607013959 gwei\n  maxPriorityFeePerGas:  0.000049 gwei\n  nonce:                 25\n \nRequest Arguments:\n  from:  0x2e988A386a799F506693793c6A5AF6B54dfAaBfB\n  to:    0x1234567890123456789012345678901234567890\n  data:  0x5f78f43600000000000000000000000000000000000000000000000000000000000003e900000000000000000000000000000000000000000000000000000000000f424000000000000000000000000000000000000000000000000000000000000000600000000000000000000000000000000000000000000000000000000000000032687474703a2f2f6c6f63616c686f73743a333030302f6170692f6c6966742d756e6974732f313030312f6d657461646174610000000000000000000000000000\n \nContract Call:\n  address:   0x1234567890123456789012345678901234567890\n  function:  createToken(uint256 id, uint256 cap, string customUri)\n  args:                 (1001, 1000000, http://localhost:3000/api/lift-units/1001/metadata)\n  sender:    0x2e988A386a799F506693793c6A5AF6B54dfAaBfB\n\nDocs: https://viem.sh/docs/contract/writeContract\nDetails: gas required exceeds allowance (0)\nVersion: viem@2.33.3	{"timestamp": "2025-08-15T02:38:24.614Z"}	\N	\N	\N	2025-08-15 02:38:24.615
+cmec7y353000311hikg4yxodg	cmec6i6t30001umi6zn9bjb88	MINT_FAILED	0xd8dA6BF26964aF9D7eEd9e03E53415D37aA96045	Failed to create token: Token creation failed: Missing or invalid parameters.\nDouble check you have provided the correct parameters.\n\nURL: https://eth.llamarpc.com\nRequest body: {"method":"eth_estimateGas","params":[{"data":"0x5f78f43600000000000000000000000000000000000000000000000000000000000003e900000000000000000000000000000000000000000000000000000000000f424000000000000000000000000000000000000000000000000000000000000000600000000000000000000000000000000000000000000000000000000000000032687474703a2f2f6c6f63616c686f73743a333030302f6170692f6c6966742d756e6974732f313030312f6d657461646174610000000000000000000000000000","from":"0x2e988A386a799F506693793c6A5AF6B54dfAaBfB","maxFeePerGas":"0x242e4c47","maxPriorityFeePerGas":"0xbf68","nonce":"0x19","to":"0x1234567890123456789012345678901234567890"}]}\n \nEstimate Gas Arguments:\n  from:                  0x2e988A386a799F506693793c6A5AF6B54dfAaBfB\n  to:                    0x1234567890123456789012345678901234567890\n  data:                  0x5f78f43600000000000000000000000000000000000000000000000000000000000003e900000000000000000000000000000000000000000000000000000000000f424000000000000000000000000000000000000000000000000000000000000000600000000000000000000000000000000000000000000000000000000000000032687474703a2f2f6c6f63616c686f73743a333030302f6170692f6c6966742d756e6974732f313030312f6d657461646174610000000000000000000000000000\n  maxFeePerGas:          0.607013959 gwei\n  maxPriorityFeePerGas:  0.000049 gwei\n  nonce:                 25\n \nRequest Arguments:\n  from:  0x2e988A386a799F506693793c6A5AF6B54dfAaBfB\n  to:    0x1234567890123456789012345678901234567890\n  data:  0x5f78f43600000000000000000000000000000000000000000000000000000000000003e900000000000000000000000000000000000000000000000000000000000f424000000000000000000000000000000000000000000000000000000000000000600000000000000000000000000000000000000000000000000000000000000032687474703a2f2f6c6f63616c686f73743a333030302f6170692f6c6966742d756e6974732f313030312f6d657461646174610000000000000000000000000000\n \nContract Call:\n  address:   0x1234567890123456789012345678901234567890\n  function:  createToken(uint256 id, uint256 cap, string customUri)\n  args:                 (1001, 1000000, http://localhost:3000/api/lift-tokens/1001/metadata)\n  sender:    0x2e988A386a799F506693793c6A5AF6B54dfAaBfB\n\nDocs: https://viem.sh/docs/contract/writeContract\nDetails: gas required exceeds allowance (0)\nVersion: viem@2.33.3	{"timestamp": "2025-08-15T02:38:24.614Z"}	\N	\N	\N	2025-08-15 02:38:24.615
 \.
 
 
@@ -703,17 +703,17 @@ SELECT pg_catalog.setval('public."Contract_id_seq"', 1, false);
 
 
 --
--- Name: LiftUnitEvent_id_seq; Type: SEQUENCE SET; Schema: public; Owner: postgres
+-- Name: LiftTokenEvent_id_seq; Type: SEQUENCE SET; Schema: public; Owner: postgres
 --
 
-SELECT pg_catalog.setval('public."LiftUnitEvent_id_seq"', 1, false);
+SELECT pg_catalog.setval('public."LiftTokenEvent_id_seq"', 1, false);
 
 
 --
--- Name: LiftUnit_id_seq; Type: SEQUENCE SET; Schema: public; Owner: postgres
+-- Name: LiftToken_id_seq; Type: SEQUENCE SET; Schema: public; Owner: postgres
 --
 
-SELECT pg_catalog.setval('public."LiftUnit_id_seq"', 1, false);
+SELECT pg_catalog.setval('public."LiftToken_id_seq"', 1, false);
 
 
 --
@@ -755,19 +755,19 @@ ALTER TABLE ONLY public."IndexerState"
 
 
 --
--- Name: LiftUnitEvent LiftUnitEvent_pkey; Type: CONSTRAINT; Schema: public; Owner: postgres
+-- Name: LiftTokenEvent LiftTokenEvent_pkey; Type: CONSTRAINT; Schema: public; Owner: postgres
 --
 
-ALTER TABLE ONLY public."LiftUnitEvent"
-    ADD CONSTRAINT "LiftUnitEvent_pkey" PRIMARY KEY (id);
+ALTER TABLE ONLY public."LiftTokenEvent"
+    ADD CONSTRAINT "LiftTokenEvent_pkey" PRIMARY KEY (id);
 
 
 --
--- Name: LiftUnit LiftUnit_pkey; Type: CONSTRAINT; Schema: public; Owner: postgres
+-- Name: LiftToken LiftToken_pkey; Type: CONSTRAINT; Schema: public; Owner: postgres
 --
 
-ALTER TABLE ONLY public."LiftUnit"
-    ADD CONSTRAINT "LiftUnit_pkey" PRIMARY KEY (id);
+ALTER TABLE ONLY public."LiftToken"
+    ADD CONSTRAINT "LiftToken_pkey" PRIMARY KEY (id);
 
 
 --
@@ -934,73 +934,73 @@ CREATE INDEX "IndexerState_lastSyncAt_idx" ON public."IndexerState" USING btree 
 
 
 --
--- Name: LiftUnitEvent_liftUnitId_type_idx; Type: INDEX; Schema: public; Owner: postgres
+-- Name: LiftTokenEvent_liftTokenId_type_idx; Type: INDEX; Schema: public; Owner: postgres
 --
 
-CREATE INDEX "LiftUnitEvent_liftUnitId_type_idx" ON public."LiftUnitEvent" USING btree ("liftUnitId", type);
-
-
---
--- Name: LiftUnitEvent_liftUnitId_type_txHash_key; Type: INDEX; Schema: public; Owner: postgres
---
-
-CREATE UNIQUE INDEX "LiftUnitEvent_liftUnitId_type_txHash_key" ON public."LiftUnitEvent" USING btree ("liftUnitId", type, "txHash");
+CREATE INDEX "LiftTokenEvent_liftTokenId_type_idx" ON public."LiftTokenEvent" USING btree ("liftTokenId", type);
 
 
 --
--- Name: LiftUnitEvent_txHash_idx; Type: INDEX; Schema: public; Owner: postgres
+-- Name: LiftTokenEvent_liftTokenId_type_txHash_key; Type: INDEX; Schema: public; Owner: postgres
 --
 
-CREATE INDEX "LiftUnitEvent_txHash_idx" ON public."LiftUnitEvent" USING btree ("txHash");
-
-
---
--- Name: LiftUnit_chainId_idx; Type: INDEX; Schema: public; Owner: postgres
---
-
-CREATE INDEX "LiftUnit_chainId_idx" ON public."LiftUnit" USING btree ("chainId");
+CREATE UNIQUE INDEX "LiftTokenEvent_liftTokenId_type_txHash_key" ON public."LiftTokenEvent" USING btree ("liftTokenId", type, "txHash");
 
 
 --
--- Name: LiftUnit_contractAddress_idx; Type: INDEX; Schema: public; Owner: postgres
+-- Name: LiftTokenEvent_txHash_idx; Type: INDEX; Schema: public; Owner: postgres
 --
 
-CREATE INDEX "LiftUnit_contractAddress_idx" ON public."LiftUnit" USING btree ("contractAddress");
-
-
---
--- Name: LiftUnit_externalId_key; Type: INDEX; Schema: public; Owner: postgres
---
-
-CREATE UNIQUE INDEX "LiftUnit_externalId_key" ON public."LiftUnit" USING btree ("externalId");
+CREATE INDEX "LiftTokenEvent_txHash_idx" ON public."LiftTokenEvent" USING btree ("txHash");
 
 
 --
--- Name: LiftUnit_mintRequestId_key; Type: INDEX; Schema: public; Owner: postgres
+-- Name: LiftToken_chainId_idx; Type: INDEX; Schema: public; Owner: postgres
 --
 
-CREATE UNIQUE INDEX "LiftUnit_mintRequestId_key" ON public."LiftUnit" USING btree ("mintRequestId");
-
-
---
--- Name: LiftUnit_status_idx; Type: INDEX; Schema: public; Owner: postgres
---
-
-CREATE INDEX "LiftUnit_status_idx" ON public."LiftUnit" USING btree (status);
+CREATE INDEX "LiftToken_chainId_idx" ON public."LiftToken" USING btree ("chainId");
 
 
 --
--- Name: LiftUnit_tokenId_idx; Type: INDEX; Schema: public; Owner: postgres
+-- Name: LiftToken_contractAddress_idx; Type: INDEX; Schema: public; Owner: postgres
 --
 
-CREATE INDEX "LiftUnit_tokenId_idx" ON public."LiftUnit" USING btree ("tokenId");
+CREATE INDEX "LiftToken_contractAddress_idx" ON public."LiftToken" USING btree ("contractAddress");
 
 
 --
--- Name: LiftUnit_tokenId_key; Type: INDEX; Schema: public; Owner: postgres
+-- Name: LiftToken_externalId_key; Type: INDEX; Schema: public; Owner: postgres
 --
 
-CREATE UNIQUE INDEX "LiftUnit_tokenId_key" ON public."LiftUnit" USING btree ("tokenId");
+CREATE UNIQUE INDEX "LiftToken_externalId_key" ON public."LiftToken" USING btree ("externalId");
+
+
+--
+-- Name: LiftToken_mintRequestId_key; Type: INDEX; Schema: public; Owner: postgres
+--
+
+CREATE UNIQUE INDEX "LiftToken_mintRequestId_key" ON public."LiftToken" USING btree ("mintRequestId");
+
+
+--
+-- Name: LiftToken_status_idx; Type: INDEX; Schema: public; Owner: postgres
+--
+
+CREATE INDEX "LiftToken_status_idx" ON public."LiftToken" USING btree (status);
+
+
+--
+-- Name: LiftToken_tokenId_idx; Type: INDEX; Schema: public; Owner: postgres
+--
+
+CREATE INDEX "LiftToken_tokenId_idx" ON public."LiftToken" USING btree ("tokenId");
+
+
+--
+-- Name: LiftToken_tokenId_key; Type: INDEX; Schema: public; Owner: postgres
+--
+
+CREATE UNIQUE INDEX "LiftToken_tokenId_key" ON public."LiftToken" USING btree ("tokenId");
 
 
 --
@@ -1173,27 +1173,27 @@ ALTER TABLE ONLY public."IndexedEvent"
 
 
 --
--- Name: LiftUnitEvent LiftUnitEvent_liftUnitId_fkey; Type: FK CONSTRAINT; Schema: public; Owner: postgres
+-- Name: LiftTokenEvent LiftTokenEvent_liftTokenId_fkey; Type: FK CONSTRAINT; Schema: public; Owner: postgres
 --
 
-ALTER TABLE ONLY public."LiftUnitEvent"
-    ADD CONSTRAINT "LiftUnitEvent_liftUnitId_fkey" FOREIGN KEY ("liftUnitId") REFERENCES public."LiftUnit"(id) ON UPDATE CASCADE ON DELETE CASCADE;
-
-
---
--- Name: LiftUnit LiftUnit_mintRequestId_fkey; Type: FK CONSTRAINT; Schema: public; Owner: postgres
---
-
-ALTER TABLE ONLY public."LiftUnit"
-    ADD CONSTRAINT "LiftUnit_mintRequestId_fkey" FOREIGN KEY ("mintRequestId") REFERENCES public."MintRequest"(id) ON UPDATE CASCADE ON DELETE SET NULL;
+ALTER TABLE ONLY public."LiftTokenEvent"
+    ADD CONSTRAINT "LiftTokenEvent_liftTokenId_fkey" FOREIGN KEY ("liftTokenId") REFERENCES public."LiftToken"(id) ON UPDATE CASCADE ON DELETE CASCADE;
 
 
 --
--- Name: LiftUnit LiftUnit_projectId_fkey; Type: FK CONSTRAINT; Schema: public; Owner: postgres
+-- Name: LiftToken LiftToken_mintRequestId_fkey; Type: FK CONSTRAINT; Schema: public; Owner: postgres
 --
 
-ALTER TABLE ONLY public."LiftUnit"
-    ADD CONSTRAINT "LiftUnit_projectId_fkey" FOREIGN KEY ("projectId") REFERENCES public."Project"(id) ON UPDATE CASCADE ON DELETE SET NULL;
+ALTER TABLE ONLY public."LiftToken"
+    ADD CONSTRAINT "LiftToken_mintRequestId_fkey" FOREIGN KEY ("mintRequestId") REFERENCES public."MintRequest"(id) ON UPDATE CASCADE ON DELETE SET NULL;
+
+
+--
+-- Name: LiftToken LiftToken_projectId_fkey; Type: FK CONSTRAINT; Schema: public; Owner: postgres
+--
+
+ALTER TABLE ONLY public."LiftToken"
+    ADD CONSTRAINT "LiftToken_projectId_fkey" FOREIGN KEY ("projectId") REFERENCES public."Project"(id) ON UPDATE CASCADE ON DELETE SET NULL;
 
 
 --

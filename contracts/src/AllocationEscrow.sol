@@ -63,15 +63,15 @@ contract AllocationEscrow is EIP712, AccessControl, ReentrancyGuard {
     );
     event AssignedToFunder(uint256 indexed projectId, uint256[] tokenIds, uint256[] amounts);
 
-    IERC1155 public immutable liftUnits;
+    IERC1155 public immutable liftTokens;
     IRepaymentEscrow public immutable repaymentEscrow;
     
     mapping(uint256 => MarketAllocationWindow) public marketWindows;
     mapping(uint256 => ExpiryConfig) public expiryConfigs;
     mapping(uint256 => uint256) public nonces;
 
-    constructor(IERC1155 _liftUnits, IRepaymentEscrow _repaymentEscrow) EIP712("LiftForward", "1") {
-        liftUnits = _liftUnits;
+    constructor(IERC1155 _liftTokens, IRepaymentEscrow _repaymentEscrow) EIP712("LiftForward", "1") {
+        liftTokens = _liftTokens;
         repaymentEscrow = _repaymentEscrow;
         _grantRole(DEFAULT_ADMIN_ROLE, msg.sender);
     }
@@ -163,7 +163,7 @@ contract AllocationEscrow is EIP712, AccessControl, ReentrancyGuard {
         require(tokenIds.length > 0, "empty-sale");
         require(beneficiary != address(0), "invalid-beneficiary");
 
-        liftUnits.safeBatchTransferFrom(address(this), beneficiary, tokenIds, amounts, "");
+        liftTokens.safeBatchTransferFrom(address(this), beneficiary, tokenIds, amounts, "");
 
         if (proceeds > 0) {
             repaymentEscrow.notifyProceeds(projectId, proceeds, considerationRef);
@@ -184,10 +184,10 @@ contract AllocationEscrow is EIP712, AccessControl, ReentrancyGuard {
         uint256[] memory amounts = new uint256[](1);
         
         tokenIds[0] = projectId * 1000;
-        amounts[0] = liftUnits.balanceOf(address(this), tokenIds[0]);
+        amounts[0] = liftTokens.balanceOf(address(this), tokenIds[0]);
 
         if (amounts[0] > 0) {
-            liftUnits.safeTransferFrom(
+            liftTokens.safeTransferFrom(
                 address(this), 
                 config.funderUnitWallet, 
                 tokenIds[0], 

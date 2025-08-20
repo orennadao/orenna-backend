@@ -1,8 +1,8 @@
 -- DropIndex
-DROP INDEX "LiftUnitEvent_liftUnitId_type_txId_key";
+DROP INDEX "LiftTokenEvent_liftTokenId_type_txId_key";
 
 -- AlterTable
-ALTER TABLE "LiftUnit" ADD COLUMN     "chainId" INTEGER,
+ALTER TABLE "LiftToken" ADD COLUMN     "chainId" INTEGER,
 ADD COLUMN     "contractAddress" TEXT,
 ADD COLUMN     "projectId" INTEGER,
 ADD COLUMN     "tokenId" TEXT,
@@ -10,7 +10,7 @@ DROP COLUMN "meta",
 ADD COLUMN     "meta" JSONB;
 
 -- AlterTable
-ALTER TABLE "LiftUnitEvent" DROP COLUMN "txId",
+ALTER TABLE "LiftTokenEvent" DROP COLUMN "txId",
 ADD COLUMN     "blockNumber" INTEGER,
 ADD COLUMN     "logIndex" INTEGER,
 ADD COLUMN     "txHash" TEXT,
@@ -71,26 +71,26 @@ CREATE INDEX "Contract_chainId_type_idx" ON "Contract"("chainId", "type");
 CREATE UNIQUE INDEX "Contract_address_chainId_key" ON "Contract"("address", "chainId");
 
 -- CreateIndex
-CREATE UNIQUE INDEX "LiftUnit_tokenId_key" ON "LiftUnit"("tokenId");
+CREATE UNIQUE INDEX "LiftToken_tokenId_key" ON "LiftToken"("tokenId");
 
 -- CreateIndex
-CREATE INDEX "LiftUnit_tokenId_idx" ON "LiftUnit"("tokenId");
+CREATE INDEX "LiftToken_tokenId_idx" ON "LiftToken"("tokenId");
 
 -- CreateIndex
-CREATE INDEX "LiftUnit_contractAddress_idx" ON "LiftUnit"("contractAddress");
+CREATE INDEX "LiftToken_contractAddress_idx" ON "LiftToken"("contractAddress");
 
 -- CreateIndex
-CREATE INDEX "LiftUnit_chainId_idx" ON "LiftUnit"("chainId");
+CREATE INDEX "LiftToken_chainId_idx" ON "LiftToken"("chainId");
 
 -- CreateIndex
-CREATE INDEX "LiftUnitEvent_txHash_idx" ON "LiftUnitEvent"("txHash");
+CREATE INDEX "LiftTokenEvent_txHash_idx" ON "LiftTokenEvent"("txHash");
 
 -- CreateIndex
-CREATE UNIQUE INDEX "LiftUnitEvent_liftUnitId_type_txHash_key" ON "LiftUnitEvent"("liftUnitId", "type", "txHash");
+CREATE UNIQUE INDEX "LiftTokenEvent_liftTokenId_type_txHash_key" ON "LiftTokenEvent"("liftTokenId", "type", "txHash");
 
 -- AddForeignKey
 ALTER TABLE "Session" ADD CONSTRAINT "Session_userId_fkey" FOREIGN KEY ("userId") REFERENCES "User"("id") ON DELETE CASCADE ON UPDATE CASCADE;
 
 -- AddForeignKey
-ALTER TABLE "LiftUnit" ADD CONSTRAINT "LiftUnit_projectId_fkey" FOREIGN KEY ("projectId") REFERENCES "Project"("id") ON DELETE SET NULL ON UPDATE CASCADE;
+ALTER TABLE "LiftToken" ADD CONSTRAINT "LiftToken_projectId_fkey" FOREIGN KEY ("projectId") REFERENCES "Project"("id") ON DELETE SET NULL ON UPDATE CASCADE;
 
