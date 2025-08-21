@@ -2,9 +2,38 @@ import { http, createConfig } from 'wagmi'
 import { mainnet, sepolia } from 'wagmi/chains'
 import { walletConnect, injected, coinbaseWallet } from 'wagmi/connectors'
 import type { Config } from 'wagmi'
+import { QueryClient } from '@tanstack/react-query'
 
-// Define the chains your app will work with
+// Define the chains your app will work with (allowlist for security)
 export const chains = [mainnet, sepolia] as const
+
+// React Query client for wagmi
+export const queryClient = new QueryClient({
+  defaultOptions: {
+    queries: {
+      staleTime: 60 * 1000, // 1 minute
+      retry: 3,
+    },
+  },
+})
+
+// SIWE Configuration
+export const SIWE_CONFIG = {
+  domain: process.env.NEXT_PUBLIC_SIWE_DOMAIN || 'localhost:3000',
+  origin: process.env.NEXT_PUBLIC_SIWE_ORIGIN || 'http://localhost:3000',
+  statement: `Welcome to Orenna DAO!\n\nConnect your wallet to access regenerative finance projects, vote on governance proposals, and participate in ecological restoration.\n\nDomain: ${process.env.NEXT_PUBLIC_SIWE_DOMAIN || 'localhost:3000'}\n\nBy signing this message, you agree to our Terms of Service and Privacy Policy.`,
+  version: '1',
+  nonceTTL: 5 * 60 * 1000, // 5 minutes
+  sessionTTL: 24 * 60 * 60 * 1000, // 24 hours
+} as const
+
+// API endpoints
+export const API_ENDPOINTS = {
+  NONCE: '/api/auth/siwe/nonce',
+  VERIFY: '/api/auth/siwe/verify', 
+  SESSION: '/api/auth/session',
+  LOGOUT: '/api/auth/logout',
+} as const
 
 // Server-safe basic config for SSR
 function createServerConfig(): Config {
@@ -15,7 +44,10 @@ function createServerConfig(): Config {
       [sepolia.id]: http(),
     },
     connectors: [
-      injected({ shimDisconnect: true }),
+      injected({ 
+        shimDisconnect: true,
+        target: 'metaMask', // Enable EIP-6963 discovery
+      }),
     ],
     ssr: true,
   })
@@ -38,7 +70,10 @@ function createClientConfig(): Config {
           [sepolia.id]: http(),
         },
         connectors: [
-          injected({ shimDisconnect: true }),
+          injected({ 
+            shimDisconnect: true,
+            target: 'metaMask', // Enable EIP-6963 discovery
+          }),
         ],
       })
     }
@@ -65,7 +100,10 @@ function createClientConfig(): Config {
                 icons: ['https://orenna.org/logo.png'],
               },
             }),
-            injected({ shimDisconnect: true }),
+            injected({ 
+              shimDisconnect: true,
+              target: 'metaMask', // Enable EIP-6963 discovery
+            }),
             coinbaseWallet({
               appName: 'Orenna DAO',
               appLogoUrl: 'https://orenna.org/logo.png',
