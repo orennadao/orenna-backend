@@ -17,8 +17,8 @@ function AuthContent() {
   const router = useRouter();
   const searchParams = useSearchParams();
 
-  // Get redirect parameter or default to governance portal
-  const redirectTo = searchParams.get('redirect') || '/governance';
+  // Get redirect parameter or default to dashboard
+  const redirectTo = searchParams.get('redirect') || '/dashboard';
 
   // Auto-redirect after successful authentication and onboarding completion
   useEffect(() => {
@@ -91,20 +91,20 @@ function AuthContent() {
                     <svg className="w-5 h-5 text-blue-600" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                       <path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M13 10V3L4 14h7v7l9-11h-7z"></path>
                     </svg>
-                    <span className="text-sm font-medium text-blue-900">Redirecting to DAO Operations...</span>
+                    <span className="text-sm font-medium text-blue-900">Redirecting to Dashboard...</span>
                   </div>
                   <p className="text-sm text-blue-800">
-                    Taking you to the governance portal in a moment.
+                    Taking you to your personal dashboard in a moment.
                   </p>
                 </div>
               </div>
 
               <div className="space-y-4">
                 <Link 
-                  href="/governance"
+                  href="/dashboard"
                   className="block w-full px-4 py-2 text-center bg-gradient-to-r from-green-600 to-blue-600 text-white rounded-md hover:from-green-700 hover:to-blue-700 transition-colors font-medium"
                 >
-                  Go to DAO Operations Now
+                  Go to Dashboard Now
                 </Link>
                 
                 <Link 
@@ -178,7 +178,7 @@ function AuthContent() {
         isOpen={showOnboarding}
         onComplete={() => {
           setShowOnboarding(false);
-          // After onboarding completion, user will be auto-redirected to governance
+          // After onboarding completion, user will be auto-redirected to dashboard
           // via the useEffect hook when needsAcceptance becomes false
         }}
         onClose={() => setShowOnboarding(false)}
