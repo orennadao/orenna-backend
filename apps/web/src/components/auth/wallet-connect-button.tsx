@@ -3,9 +3,18 @@
 import { useState, useEffect } from 'react'
 import { Button } from '@/components/ui/button'
 import { useAuth } from '@/hooks/use-auth'
+import { useRouter } from 'next/navigation'
+import { cn } from '@/lib/utils'
 
-export function WalletConnectButton() {
+interface WalletConnectButtonProps {
+  className?: string;
+  size?: 'sm' | 'default' | 'lg';
+  children?: React.ReactNode;
+}
+
+export function WalletConnectButton({ className, size = 'sm', children }: WalletConnectButtonProps = {}) {
   const { user, isAuthenticated, signIn, signOut, isAuthenticating, isConnected } = useAuth()
+  const router = useRouter()
   const isPending = false
   const connectors = [] // Simplified for testing
   
@@ -16,9 +25,34 @@ export function WalletConnectButton() {
     setMounted(true)
   }, [])
 
+  const handleConnect = async () => {
+    try {
+      setShowConnectors(false)
+      // For now, directly trigger SIWE auth process
+      await signIn()
+      
+      // After successful auth, check if user needs onboarding
+      // This would normally check if user exists in DB
+      const needsOnboarding = !localStorage.getItem('orenna_onboarding_complete')
+      
+      if (needsOnboarding) {
+        router.push('/onboarding')
+      } else {
+        router.push('/dashboard')
+      }
+    } catch (error) {
+      console.error('Authentication error:', error)
+    }
+  }
+
   if (!mounted) {
     return (
-      <Button variant="outline" size="sm" disabled>
+      <Button 
+        variant="outline" 
+        size={size} 
+        disabled 
+        className={cn(className)}
+      >
         Loading...
       </Button>
     )
@@ -28,10 +62,11 @@ export function WalletConnectButton() {
   if (isConnected && !isAuthenticated) {
     return (
       <Button
-        onClick={signIn}
+        onClick={handleConnect}
         disabled={isAuthenticating}
         variant="default"
-        size="sm"
+        size={size}
+        className={cn(className)}
       >
         {isAuthenticating ? 'Signing In...' : 'Sign In'}
       </Button>
@@ -43,12 +78,13 @@ export function WalletConnectButton() {
     return (
       <div className="flex items-center space-x-3">
         <div className="text-sm text-gray-600">
-          {user.ensName || `${user.address.slice(0, 6)}...${user.address.slice(-4)}`}
+          {user.ensName || user.address ? `${user.address?.slice(0, 6)}...${user.address?.slice(-4)}` : 'User'}
         </div>
         <Button
           onClick={signOut}
           variant="outline"
-          size="sm"
+          size={size}
+          className={cn(className)}
         >
           Sign Out
         </Button>
@@ -62,11 +98,12 @@ export function WalletConnectButton() {
       <div className="relative">
         <Button
           onClick={() => setShowConnectors(!showConnectors)}
-          disabled={isPending}
+          disabled={isPending || isAuthenticating}
           variant="outline"
-          size="sm"
+          size={size}
+          className={cn(className)}
         >
-          {isPending ? 'Connecting...' : 'Connect Wallet'}
+          {isAuthenticating ? 'Connecting...' : (children || 'Connect Wallet')}
         </Button>
         
         {showConnectors && (
@@ -75,16 +112,17 @@ export function WalletConnectButton() {
               <h3 className="font-medium text-gray-900 mb-3">Connect a wallet</h3>
               <div className="space-y-2">
                 <button
-                  onClick={() => {
-                    alert('Wallet connection temporarily disabled for testing')
-                    setShowConnectors(false)
-                  }}
-                  className="w-full flex items-center space-x-3 p-3 text-left hover:bg-gray-50 rounded-md border border-gray-200"
+                  onClick={handleConnect}
+                  disabled={isAuthenticating}
+                  className="w-full flex items-center space-x-3 p-3 text-left hover:bg-gray-50 rounded-md border border-gray-200 disabled:opacity-50"
                 >
-                  <div className="w-8 h-8 bg-gray-200 rounded-full flex items-center justify-center">
-                    <span className="text-xs font-medium">WC</span>
+                  <div className="w-8 h-8 bg-blue-100 rounded-full flex items-center justify-center">
+                    <span className="text-xs font-medium text-blue-600">W</span>
                   </div>
-                  <span className="font-medium">WalletConnect (Demo)</span>
+                  <div>
+                    <span className="font-medium">Connect Wallet</span>
+                    <p className="text-xs text-gray-500">Sign in with Ethereum</p>
+                  </div>
                 </button>
               </div>
             </div>
@@ -104,9 +142,10 @@ export function WalletConnectButton() {
 
   return (
     <Button
-      onClick={() => alert('Disconnect temporarily disabled for testing')}
+      onClick={signOut}
       variant="outline"
-      size="sm"
+      size={size}
+      className={cn(className)}
     >
       Disconnect
     </Button>

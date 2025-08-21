@@ -37,13 +37,6 @@ const guestNavigationItems = [
     description: 'Explore regenerative finance projects'
   },
   {
-    id: 'marketplace',
-    label: 'Marketplace',
-    href: '/marketplace',
-    icon: TrendingUp,
-    description: 'View marketplace offerings'
-  },
-  {
     id: 'forwards',
     label: 'Lift Forwards',
     href: '/marketplace/forwards',
@@ -56,13 +49,6 @@ const guestNavigationItems = [
     href: '/marketplace/lift-tokens',
     icon: Coins,
     description: 'View lift tokens'
-  },
-  {
-    id: 'analytics',
-    label: 'Public Analytics',
-    href: '/analytics',
-    icon: BarChart3,
-    description: 'Platform metrics and statistics'
   },
   {
     id: 'governance',
@@ -200,25 +186,7 @@ export function GuestSidebar({ onHelpClick }: GuestSidebarProps) {
 
         {/* Connect Wallet Section */}
         <div className="border-t border-gray-200 p-4">
-          <div className="space-y-3">
-            <WalletConnectButton className="w-full" />
-            <Link
-              href="/auth"
-              className={cn(
-                "flex items-center w-full px-3 py-2 text-sm rounded-lg transition-colors text-gray-700 hover:bg-gray-100 hover:text-gray-900"
-              )}
-              title={isCollapsed ? "Sign In" : "Sign in or create account"}
-            >
-              <LogIn className={cn(
-                "flex-shrink-0",
-                isCollapsed ? "h-5 w-5" : "h-4 w-4 mr-3",
-                "text-gray-500"
-              )} />
-              {!isCollapsed && (
-                <span className="flex-1 font-medium">Sign In</span>
-              )}
-            </Link>
-          </div>
+          <WalletConnectButton className="w-full" />
         </div>
       </aside>
 
