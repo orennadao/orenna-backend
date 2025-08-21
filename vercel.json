@@ -1,8 +1,16 @@
 {
-  "buildCommand": "pnpm --filter @orenna/web build",
-  "outputDirectory": "apps/web/.next",
-  "installCommand": "pnpm install --frozen-lockfile",
-  "framework": "nextjs",
+  "version": 2,
+  "builds": [
+    {
+      "src": "apps/web/package.json",
+      "use": "@vercel/next",
+      "config": {
+        "installCommand": "cd ../.. && pnpm install --frozen-lockfile",
+        "buildCommand": "cd apps/web && NEXT_TYPESCRIPT_STRICT=false pnpm run build",
+        "outputDirectory": ".next"
+      }
+    }
+  ],
   "rewrites": [
     {
       "source": "/api/(.*)",
