@@ -1,6 +1,6 @@
 'use client'
 
-import React, { useState } from 'react'
+import React, { useState, useEffect } from 'react'
 import Link from 'next/link'
 import { MainLayout } from '@/components/layout/main-layout'
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card'
@@ -23,25 +23,41 @@ import {
   Filter,
   Wallet,
   AlertCircle,
-  BarChart3
+  BarChart3,
+  Clock,
+  CheckCircle2,
+  XCircle,
+  Hourglass,
+  Settings,
+  FileText,
+  Shield,
+  AlertTriangle,
+  DollarSign,
+  Calendar,
+  ExternalLink
 } from 'lucide-react'
 
 const PROPOSAL_STATUSES = [
-  { value: '', label: 'All Proposals' },
-  { value: 'PENDING', label: 'Pending' },
-  { value: 'ACTIVE', label: 'Active' },
-  { value: 'SUCCEEDED', label: 'Succeeded' },
-  { value: 'DEFEATED', label: 'Defeated' },
-  { value: 'EXECUTED', label: 'Executed' },
+  { value: '', label: 'All Proposals', icon: Filter },
+  { value: 'PENDING', label: 'Pending', icon: Clock },
+  { value: 'ACTIVE', label: 'Active', icon: Vote },
+  { value: 'SUCCEEDED', label: 'Succeeded', icon: CheckCircle2 },
+  { value: 'DEFEATED', label: 'Defeated', icon: XCircle },
+  { value: 'QUEUED', label: 'Queued', icon: Hourglass },
+  { value: 'EXECUTED', label: 'Executed', icon: CheckCircle2 },
 ]
 
 const PROPOSAL_TYPES = [
-  { value: '', label: 'All Types' },
-  { value: 'STANDARD', label: 'Standard' },
-  { value: 'ECOSYSTEM_PARAMETER', label: 'Ecosystem' },
-  { value: 'METHOD_REGISTRY', label: 'Method Registry' },
-  { value: 'FINANCE_PLATFORM', label: 'Finance' },
-  { value: 'LIFT_TOKEN_GOVERNANCE', label: 'Lift Token' },
+  { value: '', label: 'All Types', icon: Filter },
+  { value: 'STANDARD', label: 'Standard', icon: FileText },
+  { value: 'ECOSYSTEM_PARAMETER', label: 'Ecosystem', icon: Settings },
+  { value: 'METHOD_REGISTRY', label: 'Method Registry', icon: Shield },
+  { value: 'PROTOCOL_UPGRADE', label: 'Protocol Upgrade', icon: AlertTriangle },
+  { value: 'TREASURY_ALLOCATION', label: 'Treasury', icon: DollarSign },
+  { value: 'LIFT_TOKEN_GOVERNANCE', label: 'Lift Forward', icon: TrendingUp },
+  { value: 'FINANCE_PLATFORM', label: 'Finance', icon: BarChart3 },
+  { value: 'FEE_ADJUSTMENT', label: 'Fee Adjustment', icon: Settings },
+  { value: 'EMERGENCY', label: 'Emergency', icon: AlertTriangle },
 ]
 
 export default function GovernancePage() {
@@ -156,6 +172,24 @@ export default function GovernancePage() {
         </p>
       </div>
 
+      {/* DAO Ops Status Banner */}
+      <Card className="mb-6 bg-gradient-to-r from-green-50 to-blue-50 border-green-200">
+        <CardContent className="pt-6">
+          <div className="flex items-center justify-between">
+            <div className="flex items-center gap-4">
+              <div className="w-12 h-12 bg-green-100 rounded-full flex items-center justify-center">
+                <CheckCircle2 className="h-6 w-6 text-green-600" />
+              </div>
+              <div>
+                <h3 className="font-semibold text-green-900">DAO Ops Implementation Status</h3>
+                <p className="text-sm text-green-800">Backend governance system is production-ready. Frontend features are being implemented.</p>
+              </div>
+            </div>
+            <Badge className="bg-green-100 text-green-800 border-green-200">v1.0 Ready</Badge>
+          </div>
+        </CardContent>
+      </Card>
+
       {/* Stats Overview */}
       <div className="grid grid-cols-1 md:grid-cols-4 gap-6 mb-8">
         <Card>
@@ -172,11 +206,11 @@ export default function GovernancePage() {
         <Card>
           <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
             <CardTitle className="text-sm font-medium">Active Proposals</CardTitle>
-            <TrendingUp className="h-4 w-4 text-muted-foreground" />
+            <Clock className="h-4 w-4 text-muted-foreground" />
           </CardHeader>
           <CardContent>
             <div className="text-2xl font-bold">{activeProposals}</div>
-            <p className="text-xs text-muted-foreground">Currently voting</p>
+            <p className="text-xs text-muted-foreground">7-day voting window</p>
           </CardContent>
         </Card>
 
@@ -187,7 +221,7 @@ export default function GovernancePage() {
           </CardHeader>
           <CardContent>
             <div className="text-2xl font-bold">{totalProposals}</div>
-            <p className="text-xs text-muted-foreground">All time</p>
+            <p className="text-xs text-muted-foreground">All proposal types</p>
           </CardContent>
         </Card>
 
@@ -201,19 +235,61 @@ export default function GovernancePage() {
               {delegate ? (delegate.toLowerCase() === address?.toLowerCase() ? 'Self' : 'Delegated') : 'None'}
             </div>
             <p className="text-xs text-muted-foreground">
-              {delegate ? 'Can vote' : 'Cannot vote'}
+              {delegate ? 'Can participate' : 'Setup required'}
             </p>
           </CardContent>
         </Card>
       </div>
 
+      {/* DAO Ops Playbooks */}
+      <Card className="mb-8">
+        <CardHeader>
+          <CardTitle className="flex items-center gap-2">
+            <FileText className="h-5 w-5" />
+            DAO Operations Playbooks
+          </CardTitle>
+        </CardHeader>
+        <CardContent>
+          <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-4">
+            <Button asChild variant="outline" size="sm" className="h-auto p-4">
+              <Link href="/governance/playbooks/author" className="flex flex-col items-center gap-2">
+                <FileText className="h-5 w-5" />
+                <span className="text-xs font-medium">Author Proposal (A)</span>
+                <span className="text-xs text-muted-foreground">A.1-A.9 Template</span>
+              </Link>
+            </Button>
+            <Button asChild variant="outline" size="sm" className="h-auto p-4">
+              <Link href="/governance/playbooks/sponsorship" className="flex flex-col items-center gap-2">
+                <Users className="h-5 w-5" />
+                <span className="text-xs font-medium">Sponsorship (B)</span>
+                <span className="text-xs text-muted-foreground">Anti-spam & Approval</span>
+              </Link>
+            </Button>
+            <Button asChild variant="outline" size="sm" className="h-auto p-4">
+              <Link href="/governance/playbooks/voting" className="flex flex-col items-center gap-2">
+                <Vote className="h-5 w-5" />
+                <span className="text-xs font-medium">Voting Ops (C)</span>
+                <span className="text-xs text-muted-foreground">7-day Window</span>
+              </Link>
+            </Button>
+            <Button asChild variant="outline" size="sm" className="h-auto p-4">
+              <Link href="/governance/playbooks/execution" className="flex flex-col items-center gap-2">
+                <Settings className="h-5 w-5" />
+                <span className="text-xs font-medium">Execution (D)</span>
+                <span className="text-xs text-muted-foreground">Timelock & Implementation</span>
+              </Link>
+            </Button>
+          </div>
+        </CardContent>
+      </Card>
+
       {/* Quick Actions */}
-      <div className="grid grid-cols-1 md:grid-cols-3 gap-6 mb-8">
+      <div className="grid grid-cols-1 md:grid-cols-4 gap-6 mb-8">
         <Button asChild size="lg" className="h-auto p-6">
-          <Link href="/governance/proposals/create" className="flex flex-col items-center gap-2">
+          <Link href="/governance/proposals/create-dao-ops" className="flex flex-col items-center gap-2">
             <Plus className="h-6 w-6" />
             <span className="font-medium">Create Proposal</span>
-            <span className="text-xs opacity-75">Submit new governance proposal</span>
+            <span className="text-xs opacity-75">Use DAO Ops template</span>
           </Link>
         </Button>
 
@@ -226,15 +302,23 @@ export default function GovernancePage() {
           <div className="flex flex-col items-center gap-2">
             <Users className="h-6 w-6" />
             <span className="font-medium">Manage Delegation</span>
-            <span className="text-xs opacity-75">Delegate your voting power</span>
+            <span className="text-xs opacity-75">Required for voting</span>
           </div>
+        </Button>
+
+        <Button asChild variant="outline" size="lg" className="h-auto p-6">
+          <Link href="/governance/lift-forward" className="flex flex-col items-center gap-2">
+            <TrendingUp className="h-6 w-6" />
+            <span className="font-medium">Lift Forward</span>
+            <span className="text-xs opacity-75">Escrow & milestones</span>
+          </Link>
         </Button>
 
         <Button asChild variant="outline" size="lg" className="h-auto p-6">
           <Link href="/governance/analytics" className="flex flex-col items-center gap-2">
             <BarChart3 className="h-6 w-6" />
-            <span className="font-medium">View Analytics</span>
-            <span className="text-xs opacity-75">Governance metrics and trends</span>
+            <span className="font-medium">Analytics</span>
+            <span className="text-xs opacity-75">Metrics & reporting</span>
           </Link>
         </Button>
       </div>

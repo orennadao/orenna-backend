@@ -15,7 +15,16 @@ model User {
   createdAt DateTime @default(now())
   updatedAt DateTime @updatedAt
 
-  sessions Session[]
+  sessions              Session[]
+  governanceTokens      GovernanceToken[]
+  proposalsCreated      GovernanceProposal[] @relation("ProposalProposer")
+  votes                 GovernanceVote[]
+  sponsorships          GovernanceSponsorship[]
+  liftForwardsAsFunder  LiftForward[]
+  milestoneChallenges   MilestoneChallenge[]
+  disputesAsClaimant    Dispute[] @relation("DisputeClaimant")
+  disputesAsRespondent  Dispute[] @relation("DisputeRespondent")
+  treasurySignatures    TreasurySignature[]
 }
 
 model Session {
@@ -39,10 +48,19 @@ model Project {
   description     String?
   ownerAddress    String?
   chainId         Int?
-  createdAt       DateTime @default(now()) @map("createdAt")
-  updatedAt       DateTime @updatedAt @map("updatedAt")
+  
+  // Project NFT fields - to maintain consistency with blockchain
+  projectNftId    Int?     // The token ID from Project NFT contract
+  projectNftChainId Int?   // Chain where Project NFT exists
+  tokenURI        String?  // IPFS URI for project metadata
+  registryDataURI String?  // Registry data URI
+  dataHash        String?  // Data hash for integrity
+  nftState        Int?     // State from Project NFT contract
+  
   contractAddress String?
   meta            Json?
+  createdAt       DateTime @default(now()) @map("createdAt")
+  updatedAt       DateTime @updatedAt @map("updatedAt")
 
   // Relations - match actual database structure
   liftTokens            LiftToken[]
@@ -50,6 +68,8 @@ model Project {
   Payment               Payment[]
   ProjectPaymentConfig  ProjectPaymentConfig?
 
+  @@unique([projectNftId, projectNftChainId])
+  @@index([projectNftId, projectNftChainId])
   @@map("Project")
 }
 
@@ -434,3 +454,562 @@ model EvidenceFile {
   @@index([processed])
   @@map("EvidenceFile")
 }
+
+// ============================================================================
+// GOVERNANCE SCHEMA
+// ============================================================================
+
+enum ProposalType {
+  STANDARD
+  MAJOR  
+  EMERGENCY
+  ECOSYSTEM_PARAMETER
+  METHOD_REGISTRY
+  PROTOCOL_UPGRADE
+  TREASURY_ALLOCATION
+  LIFT_TOKEN_GOVERNANCE
+  FINANCE_PLATFORM
+  FEE_ADJUSTMENT
+}
+
+enum ProposalStatus {
+  DRAFT
+  PENDING_SPONSORSHIP
+  PENDING
+  ACTIVE
+  CANCELED
+  DEFEATED
+  SUCCEEDED
+  QUEUED
+  EXPIRED
+  EXECUTED
+}
+
+enum VoteSupport {
+  AGAINST
+  FOR
+  ABSTAIN
+}
+
+enum LiftForwardStatus {
+  DRAFT
+  APPROVED
+  FUNDED
+  ACTIVE
+  MILESTONE_SUBMITTED
+  MILESTONE_ACCEPTED
+  MILESTONE_CHALLENGED
+  COMPLETED
+  DEFAULTED
+  CANCELLED
+}
+
+enum MilestoneStatus {
+  PENDING
+  SUBMITTED
+  UNDER_REVIEW
+  ACCEPTED
+  CHALLENGED
+  REJECTED
+  APPEALED
+}
+
+enum ChallengeStatus {
+  PENDING
+  UNDER_REVIEW
+  UPHELD
+  REJECTED
+  APPEALED
+}
+
+enum DisputeStatus {
+  OPEN
+  UNDER_MEDIATION
+  UNDER_REVIEW
+  RESOLVED
+  APPEALED
+  CLOSED
+}
+
+enum TreasuryTransactionType {
+  DISBURSEMENT
+  ALLOCATION
+  TRANSFER
+  REPAYMENT
+  CLAWBACK
+  EMERGENCY_WITHDRAWAL
+}
+
+model GovernanceToken {
+  id              Int      @id @default(autoincrement())
+  userId          Int
+  tokenAddress    String
+  chainId         Int
+  balance         String   @default("0")
+  votingPower     String   @default("0")
+  delegatedTo     String?
+  delegatedAmount String?
+  lastSyncAt      DateTime @default(now())
+  createdAt       DateTime @default(now())
+  updatedAt       DateTime @updatedAt
+
+  user User @relation(fields: [userId], references: [id], onDelete: Cascade)
+  delegations GovernanceDelegation[]
+
+  @@unique([userId, tokenAddress, chainId])
+  @@index([tokenAddress, chainId])
+  @@index([delegatedTo])
+  @@map("GovernanceToken")
+}
+
+model GovernanceDelegation {
+  id                Int      @id @default(autoincrement())
+  tokenId           Int
+  delegatorAddress  String
+  delegateeAddress  String
+  amount            String
+  txHash            String?
+  blockNumber       Int?
+  active            Boolean  @default(true)
+  createdAt         DateTime @default(now())
+  revokedAt         DateTime?
+
+  token GovernanceToken @relation(fields: [tokenId], references: [id], onDelete: Cascade)
+
+  @@unique([tokenId, delegatorAddress, active])
+  @@index([delegatorAddress])
+  @@index([delegateeAddress])
+  @@index([active])
+  @@map("GovernanceDelegation")
+}
+
+model GovernanceProposal {
+  id                    Int            @id @default(autoincrement())
+  proposalId            String         @unique
+  chainId               Int
+  title                 String
+  description           String
+  proposalType          ProposalType
+  status                ProposalStatus @default(DRAFT)
+  
+  // Proposal execution data
+  targets               String         // JSON array of addresses
+  values                String         // JSON array of values
+  calldatas             String         // JSON array of call data
+  
+  // Proposal metadata
+  ecosystemData         Json?
+  methodRegistryData    Json?
+  financeData           Json?
+  liftTokenData         Json?
+  
+  // IPFS metadata
+  ipfsHash              String?
+  metadataUri           String?
+  
+  // Proposer information
+  proposerAddress       String
+  proposerUserId        Int?
+  
+  // Voting data
+  forVotes              String         @default("0")
+  againstVotes          String         @default("0")
+  abstainVotes          String         @default("0")
+  quorumRequired        String?
+  
+  // Timing
+  startBlock            Int?
+  endBlock              Int?
+  snapshotBlock         Int?
+  queuedAt              DateTime?
+  executedAt            DateTime?
+  cancelledAt           DateTime?
+  
+  // Anti-spam deposit
+  antispamDeposit       String?        @default("250")
+  depositPaid           Boolean        @default(false)
+  depositRefunded       Boolean        @default(false)
+  
+  // Timelock execution
+  timelockEta           DateTime?
+  timelockDelay         Int?           // seconds
+  
+  createdAt             DateTime       @default(now())
+  updatedAt             DateTime       @updatedAt
+
+  proposer User? @relation("ProposalProposer", fields: [proposerUserId], references: [id], onDelete: SetNull)
+  votes    GovernanceVote[]
+  events   GovernanceEvent[]
+  sponsorships GovernanceSponsorship[]
+  liftForward  LiftForward?
+
+  @@index([chainId])
+  @@index([status])
+  @@index([proposalType])
+  @@index([proposerAddress])
+  @@index([startBlock])
+  @@index([endBlock])
+  @@map("GovernanceProposal")
+}
+
+model GovernanceSponsorship {
+  id           Int      @id @default(autoincrement())
+  proposalId   Int
+  sponsorAddress String
+  sponsorUserId Int?
+  votingPower  String
+  txHash       String?
+  blockNumber  Int?
+  createdAt    DateTime @default(now())
+
+  proposal GovernanceProposal @relation(fields: [proposalId], references: [id], onDelete: Cascade)
+  sponsor  User? @relation(fields: [sponsorUserId], references: [id], onDelete: SetNull)
+
+  @@unique([proposalId, sponsorAddress])
+  @@index([proposalId])
+  @@index([sponsorAddress])
+  @@map("GovernanceSponsorship")
+}
+
+model GovernanceVote {
+  id           Int         @id @default(autoincrement())
+  proposalId   Int
+  voterAddress String
+  voterUserId  Int?
+  support      VoteSupport
+  votingPower  String
+  reason       String?
+  txHash       String?
+  blockNumber  Int?
+  votedAt      DateTime    @default(now())
+
+  proposal GovernanceProposal @relation(fields: [proposalId], references: [id], onDelete: Cascade)
+  voter    User? @relation(fields: [voterUserId], references: [id], onDelete: SetNull)
+
+  @@unique([proposalId, voterAddress])
+  @@index([proposalId])
+  @@index([voterAddress])
+  @@index([support])
+  @@map("GovernanceVote")
+}
+
+model GovernanceEvent {
+  id          Int      @id @default(autoincrement())
+  proposalId  Int
+  eventType   String
+  txHash      String?
+  blockNumber Int?
+  eventData   Json?
+  createdAt   DateTime @default(now())
+
+  proposal GovernanceProposal @relation(fields: [proposalId], references: [id], onDelete: Cascade)
+
+  @@index([proposalId])
+  @@index([eventType])
+  @@index([txHash])
+  @@map("GovernanceEvent")
+}
+
+model GovernanceParameter {
+  id            Int      @id @default(autoincrement())
+  parameterKey  String   @unique
+  category      String
+  currentValue  String
+  previousValue String?
+  dataType      String   // "string", "number", "boolean", "json"
+  description   String?
+  lastChangedBy String?  // proposal ID or address
+  lastChangedAt DateTime?
+  createdAt     DateTime @default(now())
+  updatedAt     DateTime @updatedAt
+
+  changeHistory GovernanceParameterChange[]
+
+  @@index([category])
+  @@map("GovernanceParameter")
+}
+
+model GovernanceParameterChange {
+  id               Int       @id @default(autoincrement())
+  parameterId      Int
+  proposalId       String?
+  oldValue         String
+  newValue         String
+  implementedBy    String?
+  emergencyOverride Boolean  @default(false)
+  emergencyReason  String?
+  implementedAt    DateTime @default(now())
+  createdAt        DateTime @default(now())
+
+  parameter GovernanceParameter @relation(fields: [parameterId], references: [id], onDelete: Cascade)
+
+  @@index([parameterId])
+  @@index([proposalId])
+  @@index([implementedAt])
+  @@map("GovernanceParameterChange")
+}
+
+// ============================================================================
+// LIFT FORWARD ESCROW & MILESTONE TRACKING
+// ============================================================================
+
+model LiftForward {
+  id                Int               @id @default(autoincrement())
+  proposalId        Int               @unique
+  projectNftId      Int?              // Reference to Project NFT token ID
+  projectNftChainId Int?              // Chain where Project NFT exists
+  status            LiftForwardStatus @default(DRAFT)
+  
+  // Contract details
+  escrowContract    String?
+  escrowChainId     Int?
+  
+  // Financial details
+  totalAmount       String
+  currency          String            @default("USDC")
+  funderAddress     String
+  funderUserId      Int?
+  
+  // Template and configuration
+  template          String            // standardized template name
+  verifierAddress   String?
+  challengeWindow   Int               @default(14) // days
+  
+  // Timing
+  approvedAt        DateTime?
+  fundedAt          DateTime?
+  completedAt       DateTime?
+  defaultedAt       DateTime?
+  
+  createdAt         DateTime          @default(now())
+  updatedAt         DateTime          @updatedAt
+
+  proposal   GovernanceProposal @relation(fields: [proposalId], references: [id], onDelete: Cascade)
+  funder     User? @relation(fields: [funderUserId], references: [id], onDelete: SetNull)
+  milestones LiftForwardMilestone[]
+  events     LiftForwardEvent[]
+
+  @@index([status])
+  @@index([funderAddress])
+  @@index([escrowContract])
+  @@index([projectNftId, projectNftChainId])
+  @@map("LiftForward")
+}
+
+model LiftForwardMilestone {
+  id               Int             @id @default(autoincrement())
+  liftForwardId    Int
+  milestoneNumber  Int
+  name             String
+  description      String?
+  amount           String
+  status           MilestoneStatus @default(PENDING)
+  
+  // Evidence requirements
+  evidenceTypes    String          // JSON array of required evidence types
+  evidenceSubmitted Json?
+  
+  // MRV Bundle
+  mrvBundleHash    String?
+  mrvBundleIpfs    String?
+  
+  // Timing
+  deadline         DateTime?
+  submittedAt      DateTime?
+  acceptedAt       DateTime?
+  rejectedAt       DateTime?
+  challengedAt     DateTime?
+  challengeWindowEnd DateTime?
+  
+  // Verification
+  verifierAddress  String?
+  verifierNotes    String?
+  
+  createdAt        DateTime        @default(now())
+  updatedAt        DateTime        @updatedAt
+
+  liftForward LiftForward @relation(fields: [liftForwardId], references: [id], onDelete: Cascade)
+  challenges  MilestoneChallenge[]
+
+  @@unique([liftForwardId, milestoneNumber])
+  @@index([status])
+  @@index([deadline])
+  @@map("LiftForwardMilestone")
+}
+
+model MilestoneChallenge {
+  id                 Int             @id @default(autoincrement())
+  milestoneId        Int
+  challengerAddress  String
+  challengerUserId   Int?
+  status             ChallengeStatus @default(PENDING)
+  
+  // Challenge details
+  challengeReason    String
+  evidenceHash       String?
+  evidenceIpfs       String?
+  bondAmount         String?         @default("100") // USDC
+  bondPaid           Boolean         @default(false)
+  
+  // Resolution
+  reviewerPanel      String?         // JSON array of reviewer addresses
+  resolution         String?         // "UPHOLD", "MODIFY", "REJECT"
+  resolutionNotes    String?
+  resolutionAt       DateTime?
+  
+  // Appeal
+  appealSubmitted    Boolean         @default(false)
+  appealEvidence     String?
+  appealResolution   String?
+  appealedAt         DateTime?
+  
+  createdAt          DateTime        @default(now())
+  updatedAt          DateTime        @updatedAt
+
+  milestone  LiftForwardMilestone @relation(fields: [milestoneId], references: [id], onDelete: Cascade)
+  challenger User? @relation(fields: [challengerUserId], references: [id], onDelete: SetNull)
+
+  @@index([milestoneId])
+  @@index([challengerAddress])
+  @@index([status])
+  @@map("MilestoneChallenge")
+}
+
+model LiftForwardEvent {
+  id            Int      @id @default(autoincrement())
+  liftForwardId Int
+  eventType     String
+  eventData     Json?
+  txHash        String?
+  blockNumber   Int?
+  createdAt     DateTime @default(now())
+
+  liftForward LiftForward @relation(fields: [liftForwardId], references: [id], onDelete: Cascade)
+
+  @@index([liftForwardId])
+  @@index([eventType])
+  @@map("LiftForwardEvent")
+}
+
+// ============================================================================
+// DISPUTE RESOLUTION
+// ============================================================================
+
+model Dispute {
+  id              Int           @id @default(autoincrement())
+  ticketNumber    String        @unique
+  title           String
+  description     String
+  category        String        // "treasury", "parameter", "conflict", "procurement"
+  status          DisputeStatus @default(OPEN)
+  severity        String        @default("normal") // "normal", "high", "critical"
+  
+  // Parties
+  claimantAddress String
+  claimantUserId  Int?
+  respondentAddress String?
+  respondentUserId  Int?
+  
+  // Evidence
+  evidenceHash    String?
+  evidenceIpfs    String?
+  requestedRemedy String
+  
+  // Mediation
+  mediatorAddress String?
+  mediationNotes  String?
+  mediationEnd    DateTime?
+  
+  // Resolution
+  resolutionProposalId String?
+  resolutionNotes     String?
+  resolutionAt        DateTime?
+  
+  createdAt       DateTime      @default(now())
+  updatedAt       DateTime      @updatedAt
+
+  claimant   User? @relation("DisputeClaimant", fields: [claimantUserId], references: [id], onDelete: SetNull)
+  respondent User? @relation("DisputeRespondent", fields: [respondentUserId], references: [id], onDelete: SetNull)
+  events     DisputeEvent[]
+
+  @@index([status])
+  @@index([category])
+  @@index([claimantAddress])
+  @@map("Dispute")
+}
+
+model DisputeEvent {
+  id         Int      @id @default(autoincrement())
+  disputeId  Int
+  eventType  String
+  eventData  Json?
+  performedBy String?
+  createdAt  DateTime @default(now())
+
+  dispute Dispute @relation(fields: [disputeId], references: [id], onDelete: Cascade)
+
+  @@index([disputeId])
+  @@index([eventType])
+  @@map("DisputeEvent")
+}
+
+// ============================================================================
+// TREASURY CONTROLS
+// ============================================================================
+
+model TreasuryTransaction {
+  id                Int                      @id @default(autoincrement())
+  transactionId     String                   @unique
+  type              TreasuryTransactionType
+  amount            String
+  currency          String
+  fromAddress       String?
+  toAddress         String?
+  
+  // Authorization
+  proposalId        String?
+  authorizingDocument String?
+  requiredSignatures  Int                   @default(1)
+  collectedSignatures Int                   @default(0)
+  
+  // Execution
+  txHash            String?
+  blockNumber       Int?
+  chainId           Int?
+  executedAt        DateTime?
+  
+  // Metadata
+  description       String?
+  category          String?               // "grant", "operational", "emergency"
+  vendorInfo        Json?
+  
+  status            String                @default("pending") // "pending", "approved", "executed", "failed", "cancelled"
+  createdAt         DateTime              @default(now())
+  updatedAt         DateTime              @updatedAt
+
+  signatures TreasurySignature[]
+
+  @@index([type])
+  @@index([status])
+  @@index([proposalId])
+  @@index([executedAt])
+  @@map("TreasuryTransaction")
+}
+
+model TreasurySignature {
+  id            Int      @id @default(autoincrement())
+  transactionId Int
+  signerAddress String
+  signerUserId  Int?
+  signature     String?
+  signedAt      DateTime @default(now())
+
+  transaction TreasuryTransaction @relation(fields: [transactionId], references: [id], onDelete: Cascade)
+  signer      User? @relation(fields: [signerUserId], references: [id], onDelete: SetNull)
+
+  @@unique([transactionId, signerAddress])
+  @@index([transactionId])
+  @@index([signerAddress])
+  @@map("TreasurySignature")
+}
+

@@ -57,6 +57,23 @@ const DelegationRequestSchema = Type.Object({
   })),
 });
 
+const SponsorshipRequestSchema = Type.Object({
+  proposalId: Type.String(),
+  chainId: Type.Optional(Type.Integer({ minimum: 1, default: 1 })),
+  signature: Type.Optional(Type.Object({
+    v: Type.Integer(),
+    r: Type.String(),
+    s: Type.String(),
+  })),
+});
+
+const AntiSpamDepositSchema = Type.Object({
+  proposalId: Type.String(),
+  txHash: Type.String({ pattern: '^0x[a-fA-F0-9]{64}$' }),
+  amount: Type.String(),
+  chainId: Type.Optional(Type.Integer({ minimum: 1, default: 1 })),
+});
+
 export async function governanceRoutes(fastify: FastifyInstance) {
   const prisma = fastify.prisma as PrismaClient;
   const governanceService = createGovernanceService(fastify, prisma);
@@ -425,6 +442,433 @@ export async function governanceRoutes(fastify: FastifyInstance) {
       return {
         success: false,
         error: 'Failed to upload metadata to IPFS',
+      };
+    }
+  });
+
+  // Submit sponsorship for a proposal
+  fastify.post('/governance/proposals/:proposalId/sponsor', {
+    schema: {
+      params: Type.Object({
+        proposalId: Type.String(),
+      }),
+      body: SponsorshipRequestSchema,
+    },
+    preHandler: [requireAuth],
+  }, async (request, reply) => {
+    const { proposalId } = request.params;
+    const sponsorshipData = request.body;
+    const userAddress = request.user.address;
+
+    try {
+      const chainId = sponsorshipData.chainId || 1;
+
+      const result = await governanceService.submitSponsorship(
+        userAddress as any,
+        proposalId,
+        chainId
+      );
+
+      return {
+        success: true,
+        data: result,
+      };
+    } catch (error) {
+      fastify.log.error(error, 'Failed to submit sponsorship');
+      
+      if (error.message.includes('not found') || error.message.includes('not accepting')) {
+        reply.code(400);
+        return {
+          success: false,
+          error: error.message,
+        };
+      }
+      
+      reply.code(500);
+      return {
+        success: false,
+        error: 'Failed to submit sponsorship',
+      };
+    }
+  });
+
+  // Submit anti-spam deposit for a proposal
+  fastify.post('/governance/proposals/:proposalId/deposit', {
+    schema: {
+      params: Type.Object({
+        proposalId: Type.String(),
+      }),
+      body: AntiSpamDepositSchema,
+    },
+    preHandler: [requireAuth],
+  }, async (request, reply) => {
+    const { proposalId } = request.params;
+    const depositData = request.body;
+    const userAddress = request.user.address;
+
+    try {
+      const result = await governanceService.recordAntiSpamDeposit(
+        userAddress as any,
+        proposalId,
+        depositData.txHash as any,
+        depositData.amount,
+        depositData.chainId || 1
+      );
+
+      return {
+        success: true,
+        data: result,
+      };
+    } catch (error) {
+      fastify.log.error(error, 'Failed to record anti-spam deposit');
+      
+      if (error.message.includes('not found')) {
+        reply.code(404);
+        return {
+          success: false,
+          error: error.message,
+        };
+      }
+      
+      reply.code(500);
+      return {
+        success: false,
+        error: 'Failed to record anti-spam deposit',
+      };
+    }
+  });
+
+  // Get proposal sponsorships
+  fastify.get('/governance/proposals/:proposalId/sponsorships', {
+    schema: {
+      params: Type.Object({
+        proposalId: Type.String(),
+      }),
+    },
+    preHandler: [requireAuth],
+  }, async (request, reply) => {
+    const { proposalId } = request.params;
+
+    try {
+      const sponsorships = await governanceService.getProposalSponsorships(proposalId);
+      
+      return {
+        success: true,
+        data: sponsorships,
+      };
+    } catch (error) {
+      fastify.log.error(error, 'Failed to get proposal sponsorships');
+      
+      if (error.message.includes('not found')) {
+        reply.code(404);
+        return {
+          success: false,
+          error: error.message,
+        };
+      }
+      
+      reply.code(500);
+      return {
+        success: false,
+        error: 'Failed to get proposal sponsorships',
+      };
+    }
+  });
+
+  // Retrieve proposal metadata from IPFS
+  fastify.get('/governance/proposals/:proposalId/metadata', {
+    schema: {
+      params: Type.Object({
+        proposalId: Type.String(),
+      }),
+    },
+    preHandler: [requireAuth],
+  }, async (request, reply) => {
+    const { proposalId } = request.params;
+
+    try {
+      const proposal = await governanceService.getProposal(proposalId);
+      
+      if (!proposal.ipfsHash) {
+        reply.code(404);
+        return {
+          success: false,
+          error: 'Proposal metadata not found',
+        };
+      }
+
+      const metadata = await governanceService.retrieveProposalMetadata(proposal.ipfsHash);
+      
+      return {
+        success: true,
+        data: metadata,
+      };
+    } catch (error) {
+      fastify.log.error(error, 'Failed to retrieve proposal metadata');
+      reply.code(500);
+      return {
+        success: false,
+        error: 'Failed to retrieve proposal metadata',
+      };
+    }
+  });
+
+  // Check proposal requirements
+  fastify.get('/governance/proposals/:proposalId/requirements', {
+    schema: {
+      params: Type.Object({
+        proposalId: Type.String(),
+      }),
+    },
+    preHandler: [requireAuth],
+  }, async (request, reply) => {
+    const { proposalId } = request.params;
+
+    try {
+      const requirements = await governanceService.getProposalRequirementsAndStatus(proposalId);
+      
+      return {
+        success: true,
+        data: requirements,
+      };
+    } catch (error) {
+      fastify.log.error(error, 'Failed to get proposal requirements');
+      reply.code(500);
+      return {
+        success: false,
+        error: 'Failed to get proposal requirements',
+      };
+    }
+  });
+
+  // Start voting period for a proposal
+  fastify.post('/governance/proposals/:proposalId/start-voting', {
+    schema: {
+      params: Type.Object({
+        proposalId: Type.String(),
+      }),
+      body: Type.Object({
+        chainId: Type.Optional(Type.Integer({ minimum: 1, default: 1 })),
+      }),
+    },
+    preHandler: [requireAuth],
+  }, async (request, reply) => {
+    const { proposalId } = request.params;
+    const { chainId = 1 } = request.body;
+
+    try {
+      const result = await governanceService.startVotingPeriod(proposalId, chainId);
+      
+      return {
+        success: true,
+        data: result,
+      };
+    } catch (error) {
+      fastify.log.error(error, 'Failed to start voting period');
+      
+      if (error.message.includes('not found') || error.message.includes('requirements') || error.message.includes('not in pending')) {
+        reply.code(400);
+        return {
+          success: false,
+          error: error.message,
+        };
+      }
+      
+      reply.code(500);
+      return {
+        success: false,
+        error: 'Failed to start voting period',
+      };
+    }
+  });
+
+  // Check proposal quorum status
+  fastify.get('/governance/proposals/:proposalId/quorum', {
+    schema: {
+      params: Type.Object({
+        proposalId: Type.String(),
+      }),
+      querystring: Type.Object({
+        chainId: Type.Optional(Type.Integer({ minimum: 1, default: 1 })),
+      }),
+    },
+    preHandler: [requireAuth],
+  }, async (request, reply) => {
+    const { proposalId } = request.params;
+    const { chainId = 1 } = request.query;
+
+    try {
+      const quorum = await governanceService.checkQuorum(proposalId, chainId);
+      
+      return {
+        success: true,
+        data: quorum,
+      };
+    } catch (error) {
+      fastify.log.error(error, 'Failed to check quorum');
+      
+      if (error.message.includes('not found')) {
+        reply.code(404);
+        return {
+          success: false,
+          error: error.message,
+        };
+      }
+      
+      reply.code(500);
+      return {
+        success: false,
+        error: 'Failed to check quorum',
+      };
+    }
+  });
+
+  // Finalize voting if period has ended
+  fastify.post('/governance/proposals/:proposalId/finalize', {
+    schema: {
+      params: Type.Object({
+        proposalId: Type.String(),
+      }),
+    },
+    preHandler: [requireAuth],
+  }, async (request, reply) => {
+    const { proposalId } = request.params;
+
+    try {
+      const result = await governanceService.finalizeVotingIfEnded(proposalId);
+      
+      return {
+        success: true,
+        data: result,
+      };
+    } catch (error) {
+      fastify.log.error(error, 'Failed to finalize voting');
+      
+      if (error.message.includes('not found')) {
+        reply.code(404);
+        return {
+          success: false,
+          error: error.message,
+        };
+      }
+      
+      reply.code(500);
+      return {
+        success: false,
+        error: 'Failed to finalize voting',
+      };
+    }
+  });
+
+  // Execute a proposal after timelock delay
+  fastify.post('/governance/proposals/:proposalId/execute', {
+    schema: {
+      params: Type.Object({
+        proposalId: Type.String(),
+      }),
+    },
+    preHandler: [requireAuth],
+  }, async (request, reply) => {
+    const { proposalId } = request.params;
+    const executorAddress = request.user.address;
+
+    try {
+      const result = await governanceService.executeProposal(proposalId, executorAddress as any);
+      
+      return {
+        success: true,
+        data: result,
+      };
+    } catch (error) {
+      fastify.log.error(error, 'Failed to execute proposal');
+      
+      if (error.message.includes('not found') || 
+          error.message.includes('not queued') || 
+          error.message.includes('Timelock not ready') ||
+          error.message.includes('expired')) {
+        reply.code(400);
+        return {
+          success: false,
+          error: error.message,
+        };
+      }
+      
+      reply.code(500);
+      return {
+        success: false,
+        error: 'Failed to execute proposal',
+      };
+    }
+  });
+
+  // Cancel a queued proposal
+  fastify.post('/governance/proposals/:proposalId/cancel', {
+    schema: {
+      params: Type.Object({
+        proposalId: Type.String(),
+      }),
+      body: Type.Object({
+        reason: Type.String({ minLength: 10, maxLength: 500 }),
+      }),
+    },
+    preHandler: [requireAuth],
+  }, async (request, reply) => {
+    const { proposalId } = request.params;
+    const { reason } = request.body;
+    const cancellerAddress = request.user.address;
+
+    try {
+      const result = await governanceService.cancelQueuedProposal(
+        proposalId,
+        cancellerAddress as any,
+        reason
+      );
+      
+      return {
+        success: true,
+        data: result,
+      };
+    } catch (error) {
+      fastify.log.error(error, 'Failed to cancel proposal');
+      
+      if (error.message.includes('not found') || 
+          error.message.includes('not queued') || 
+          error.message.includes('Insufficient permissions')) {
+        reply.code(400);
+        return {
+          success: false,
+          error: error.message,
+        };
+      }
+      
+      reply.code(500);
+      return {
+        success: false,
+        error: 'Failed to cancel proposal',
+      };
+    }
+  });
+
+  // Get proposals ready for execution
+  fastify.get('/governance/executable-proposals', {
+    preHandler: [requireAuth],
+  }, async (request, reply) => {
+    try {
+      const executableProposals = await governanceService.getExecutableProposals();
+      
+      return {
+        success: true,
+        data: {
+          proposals: executableProposals,
+          count: executableProposals.length,
+        },
+      };
+    } catch (error) {
+      fastify.log.error(error, 'Failed to get executable proposals');
+      reply.code(500);
+      return {
+        success: false,
+        error: 'Failed to get executable proposals',
       };
     }
   });
