@@ -1,75 +1,106 @@
-import { Metadata } from 'next'
-import { notFound } from 'next/navigation'
+'use client'
+
+import { useEffect, useState } from 'react'
 import { TocNav } from '@/components/governance/TocNav'
 import { GovParamTable } from '@/components/governance/GovParamTable'
 import { LinkCards } from '@/components/governance/LinkCards'
 import { LastUpdated } from '@/components/governance/LastUpdated'
 import { Badge } from '@/components/ui/badge'
-import { serializeMDX, MDXContent } from '@/lib/mdx'
+import { MDXRemote, MDXRemoteSerializeResult } from 'next-mdx-remote'
+import { serialize } from 'next-mdx-remote/serialize'
+import remarkGfm from 'remark-gfm'
+import rehypeSanitize from 'rehype-sanitize'
 import params from '../../../../content/governance/params.json'
-import { readFileSync } from 'fs'
-import path from 'path'
+import { RiskAccordion } from '@/components/governance/RiskAccordion'
+import { Callout } from '@/components/governance/Callout'
+import { IPFSDocLink } from '@/components/governance/IPFSDocLink'
 
-export const revalidate = 3600 // ISR hourly
-
-interface GovernancePageData {
-  title: string
-  status: string
-  lastUpdated: string
-  paramSetTag: string
-  ipfsHash?: string
-  description: string
-  content: string
+const mdxComponents = {
+  GovParamTable: () => <GovParamTable params={params} />,
+  RiskAccordion,
+  Callout,
+  IPFSDocLink,
+  // Add custom styling for markdown elements with anchor links
+  h1: (props: any) => {
+    const id = props.children?.toString().toLowerCase().replace(/[^a-z0-9]+/g, '-').replace(/(^-|-$)/g, '') || ''
+    return <h1 id={id} className="text-3xl font-bold mb-6 scroll-mt-24 group" {...props}>
+      {props.children}
+      <a href={`#${id}`} className="ml-2 opacity-0 group-hover:opacity-100 transition-opacity text-muted-foreground hover:text-foreground" aria-label="Link to this section">
+        #
+      </a>
+    </h1>
+  },
+  h2: (props: any) => {
+    const id = props.children?.toString().toLowerCase().replace(/[^a-z0-9]+/g, '-').replace(/(^-|-$)/g, '') || ''
+    return <h2 id={id} className="text-2xl font-semibold mb-4 mt-8 scroll-mt-24 group" {...props}>
+      {props.children}
+      <a href={`#${id}`} className="ml-2 opacity-0 group-hover:opacity-100 transition-opacity text-muted-foreground hover:text-foreground" aria-label="Link to this section">
+        #
+      </a>
+    </h2>
+  },
+  h3: (props: any) => {
+    const id = props.children?.toString().toLowerCase().replace(/[^a-z0-9]+/g, '-').replace(/(^-|-$)/g, '') || ''
+    return <h3 id={id} className="text-xl font-semibold mb-3 mt-6 scroll-mt-24 group" {...props}>
+      {props.children}
+      <a href={`#${id}`} className="ml-2 opacity-0 group-hover:opacity-100 transition-opacity text-muted-foreground hover:text-foreground" aria-label="Link to this section">
+        #
+      </a>
+    </h3>
+  },
+  h4: (props: any) => {
+    const id = props.children?.toString().toLowerCase().replace(/[^a-z0-9]+/g, '-').replace(/(^-|-$)/g, '') || ''
+    return <h4 id={id} className="text-lg font-semibold mb-2 mt-4 scroll-mt-24 group" {...props}>
+      {props.children}
+      <a href={`#${id}`} className="ml-2 opacity-0 group-hover:opacity-100 transition-opacity text-muted-foreground hover:text-foreground" aria-label="Link to this section">
+        #
+      </a>
+    </h4>
+  },
+  p: (props: any) => <p className="mb-4 leading-7" {...props} />,
+  ul: (props: any) => <ul className="mb-4 ml-6 list-disc" {...props} />,
+  ol: (props: any) => <ol className="mb-4 ml-6 list-decimal" {...props} />,
+  li: (props: any) => <li className="mb-2" {...props} />,
+  a: (props: any) => (
+    <a 
+      className="text-primary hover:underline" 
+      target={props.href?.startsWith('http') ? '_blank' : undefined}
+      rel={props.href?.startsWith('http') ? 'noopener noreferrer' : undefined}
+      {...props} 
+    />
+  ),
+  blockquote: (props: any) => (
+    <blockquote className="border-l-4 border-muted pl-6 italic mb-4" {...props} />
+  ),
+  code: (props: any) => (
+    <code className="bg-muted px-1.5 py-0.5 rounded text-sm font-mono" {...props} />
+  ),
+  pre: (props: any) => (
+    <pre className="bg-muted p-4 rounded-lg overflow-x-auto mb-4" {...props} />
+  ),
+  table: (props: any) => (
+    <div className="overflow-x-auto mb-4">
+      <table className="w-full border-collapse border border-border" {...props} />
+    </div>
+  ),
+  th: (props: any) => (
+    <th className="border border-border px-4 py-2 bg-muted font-semibold text-left" {...props} />
+  ),
+  td: (props: any) => (
+    <td className="border border-border px-4 py-2" {...props} />
+  ),
 }
 
-async function getGovernanceData(): Promise<GovernancePageData> {
-  try {
-    const contentPath = path.join(process.cwd(), 'content/governance/index.mdx')
-    const fileContent = readFileSync(contentPath, 'utf8')
-    
-    // Parse frontmatter (simple implementation)
-    const frontmatterRegex = /^---\n([\s\S]*?)\n---\n([\s\S]*)$/
-    const match = fileContent.match(frontmatterRegex)
-    
-    if (!match) {
-      throw new Error('Invalid MDX format')
-    }
-    
-    const frontmatter = match[1]
-    const content = match[2]
-    
-    // Parse frontmatter fields
-    const frontmatterData: any = {}
-    frontmatter.split('\n').forEach(line => {
-      const [key, ...values] = line.split(':')
-      if (key && values.length) {
-        frontmatterData[key.trim()] = values.join(':').trim().replace(/^["']|["']$/g, '')
-      }
-    })
-    
-    return {
-      title: frontmatterData.title || 'Orenna Governance Framework',
-      status: frontmatterData.status || 'Draft v1.0',
-      lastUpdated: frontmatterData.lastUpdated || new Date().toISOString(),
-      paramSetTag: frontmatterData.paramSetTag || params.version,
-      ipfsHash: frontmatterData.ipfsHash,
-      description: frontmatterData.description || 'DAO-wide governance policy, thresholds, and processes for Orenna.',
-      content
-    }
-  } catch (error) {
-    // Return default content if file doesn't exist
-    return {
-      title: 'Orenna Governance Framework',
-      status: 'Draft v1.0',
-      lastUpdated: new Date().toISOString(),
-      paramSetTag: params.version,
-      description: 'DAO-wide governance policy, thresholds, and processes for Orenna.',
-      content: `
+const defaultContent = `
 # Orenna Governance Framework
 
 ## 1. Introduction
 
 This document outlines the governance framework for the Orenna ecosystem, establishing the policies, procedures, and parameters that guide decentralized decision-making for environmental impact verification and carbon credit platforms.
+
+<Callout type="info" title="Living Document">
+This governance framework is designed to evolve with the ecosystem. Regular reviews and updates ensure the governance system remains effective and aligned with community needs.
+</Callout>
 
 ## 2. Governance Scope
 
@@ -83,7 +114,30 @@ The Orenna governance system oversees:
 
 ## 3. Proposal Types & Parameters
 
+The governance system recognizes three main categories of proposals, each with distinct requirements:
+
 <GovParamTable />
+
+### 3.1 Standard Proposals
+Standard proposals address routine governance matters including:
+- Minor parameter adjustments
+- Community initiatives and grants
+- Non-critical protocol updates
+- Ecosystem partnership approvals
+
+### 3.2 Major Proposals
+Major proposals involve significant changes with substantial impact:
+- Treasury allocations exceeding $100,000 USD
+- Core protocol modifications
+- Changes to verification methodologies
+- Strategic partnership agreements
+
+### 3.3 Emergency Proposals
+Emergency proposals address urgent matters requiring expedited action:
+- Security vulnerabilities
+- Critical system failures
+- Regulatory compliance requirements
+- Market instability responses
 
 ## 4. Participation Requirements
 
@@ -123,32 +177,50 @@ This framework is designed to evolve with the ecosystem. Regular reviews and upd
 ---
 
 *This document represents the current governance framework and may be updated through the established proposal process.*
-      `
-    }
-  }
-}
+`
 
-export async function generateMetadata(): Promise<Metadata> {
-  const data = await getGovernanceData()
+export default function GovernancePage() {
+  const [mdxSource, setMdxSource] = useState<MDXRemoteSerializeResult | null>(null)
+  const [loading, setLoading] = useState(true)
   
-  return {
-    title: `${data.title} | Orenna`,
-    description: data.description,
-    openGraph: {
-      title: `${data.title} | Orenna`,
-      description: data.description,
-      type: 'article',
-    },
-    robots: {
-      index: true,
-      follow: true,
-    },
+  const governanceData = {
+    title: 'Orenna Governance Framework',
+    status: 'Draft v1.0',
+    lastUpdated: '2024-08-21',
+    description: 'DAO-wide governance policy, thresholds, and processes for Orenna.'
   }
-}
 
-export default async function GovernancePage() {
-  const data = await getGovernanceData()
-  const mdxSource = await serializeMDX(data.content)
+  useEffect(() => {
+    async function loadContent() {
+      try {
+        const serialized = await serialize(defaultContent, {
+          mdxOptions: {
+            remarkPlugins: [remarkGfm],
+            rehypePlugins: [rehypeSanitize],
+            development: process.env.NODE_ENV === 'development',
+          },
+        })
+        setMdxSource(serialized)
+      } catch (error) {
+        console.error('Error loading MDX content:', error)
+      } finally {
+        setLoading(false)
+      }
+    }
+    
+    loadContent()
+  }, [])
+
+  if (loading) {
+    return (
+      <div className="min-h-screen bg-background flex items-center justify-center">
+        <div className="text-center">
+          <div className="w-8 h-8 border-4 border-primary border-t-transparent rounded-full animate-spin mx-auto mb-4"></div>
+          <p className="text-muted-foreground">Loading governance framework...</p>
+        </div>
+      </div>
+    )
+  }
 
   return (
     <div className="min-h-screen bg-background">
@@ -169,10 +241,10 @@ export default async function GovernancePage() {
             {/* Header */}
             <header className="mb-8 space-y-4 governance-header">
               <div className="space-y-2">
-                <h1 className="text-3xl font-semibold tracking-tight">{data.title}</h1>
+                <h1 className="text-3xl font-semibold tracking-tight">{governanceData.title}</h1>
                 <div className="flex flex-wrap items-center gap-3 text-sm text-muted-foreground">
-                  <Badge variant="outline">{data.status}</Badge>
-                  <LastUpdated date={data.lastUpdated} />
+                  <Badge variant="outline">{governanceData.status}</Badge>
+                  <LastUpdated date={governanceData.lastUpdated} />
                 </div>
               </div>
               <div className="link-cards">
@@ -191,7 +263,7 @@ export default async function GovernancePage() {
               role="main"
               aria-label="Governance framework documentation"
             >
-              <MDXContent source={mdxSource} />
+              {mdxSource && <MDXRemote {...mdxSource} components={mdxComponents} />}
             </article>
           </main>
         </div>
