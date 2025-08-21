@@ -1,17 +1,20 @@
 'use client';
 
-import React from 'react';
+import React, { useState } from 'react';
 import { Header } from '@/components/layout/header';
 import { Footer } from '@/components/layout/footer';
 import { useAuth } from '@/hooks/use-auth';
 import { ClientOnly } from '@/components/auth/client-only';
-import { TermsRequiredWrapper } from '@/components/auth/terms-required-wrapper';
+import { OnboardingFlow } from '@/components/auth/onboarding-flow';
+import { useTermsAcceptance } from '@/hooks/use-terms-acceptance';
 import Link from 'next/link';
 
 function AuthContent() {
   const { isLoading, isAuthenticated } = useAuth();
+  const { needsAcceptance, isLoading: termsLoading } = useTermsAcceptance();
+  const [showOnboarding, setShowOnboarding] = useState(false);
 
-  if (isLoading) {
+  if (isLoading || termsLoading) {
     return (
       <main className="container mx-auto px-4 py-6 sm:py-8">
         <div className="flex items-center justify-center min-h-[400px]">
@@ -35,12 +38,26 @@ function AuthContent() {
         </div>
 
         {isAuthenticated ? (
-          <TermsRequiredWrapper
-            onTermsDeclined={() => {
-              // Handle terms declined - could redirect to home or show message
-              window.location.href = '/';
-            }}
-          >
+          needsAcceptance ? (
+            <div className="bg-white rounded-lg border border-gray-200 p-6">
+              <div className="text-center mb-6">
+                <div className="w-12 h-12 bg-blue-100 rounded-full flex items-center justify-center mx-auto mb-4">
+                  <svg className="w-6 h-6 text-blue-600" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                    <path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M12 4.354a4 4 0 110 5.292M15 21H3v-1a6 6 0 0112 0v1zm0 0h6v-1a6 6 0 00-9-5.197m13.5-9a2.25 2.25 0 11-4.5 0 2.25 2.25 0 014.5 0z"></path>
+                  </svg>
+                </div>
+                <h2 className="text-xl font-semibold text-gray-900 mb-2">Welcome to Orenna!</h2>
+                <p className="text-gray-600 mb-6">Complete the onboarding process to access your dashboard and start participating in ecological restoration.</p>
+                
+                <button
+                  onClick={() => setShowOnboarding(true)}
+                  className="w-full px-6 py-3 bg-gradient-to-r from-green-600 to-blue-600 text-white rounded-md hover:from-green-700 hover:to-blue-700 transition-colors font-medium"
+                >
+                  Start Onboarding
+                </button>
+              </div>
+            </div>
+          ) : (
             <div className="bg-white rounded-lg border border-gray-200 p-6">
               <div className="text-center mb-6">
                 <div className="w-12 h-12 bg-green-100 rounded-full flex items-center justify-center mx-auto mb-4">
@@ -68,7 +85,7 @@ function AuthContent() {
                 </Link>
               </div>
             </div>
-          </TermsRequiredWrapper>
+          )
         ) : (
           <div className="bg-white rounded-lg border border-gray-200 p-6">
             <div className="text-center mb-6">
@@ -104,6 +121,17 @@ function AuthContent() {
           </div>
         )}
       </div>
+
+      {/* Onboarding Flow */}
+      <OnboardingFlow
+        isOpen={showOnboarding}
+        onComplete={() => {
+          setShowOnboarding(false);
+          // The page will automatically update to show the authenticated state
+          // since needsAcceptance will become false after onboarding completion
+        }}
+        onClose={() => setShowOnboarding(false)}
+      />
     </main>
   );
 }

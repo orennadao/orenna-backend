@@ -5,6 +5,7 @@ import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { Button } from '@/components/ui/button';
 import { Checkbox } from '@/components/ui/checkbox';
 import { Badge } from '@/components/ui/badge';
+import { TechTermTooltip } from '@/components/ui/tooltip';
 import { 
   AlertTriangle,
   Shield,
@@ -104,7 +105,12 @@ export function TermsOfServiceModal({
                   <div className="flex items-start gap-2">
                     <Scale className="w-4 h-4 text-purple-600 mt-0.5 flex-shrink-0" />
                     <div>
-                      <div className="font-medium text-gray-900">DAO Governance</div>
+                      <div className="font-medium text-gray-900">
+                        <TechTermTooltip 
+                          term="DAO Governance" 
+                          definition="Decentralized Autonomous Organization governance where token holders collectively make decisions through voting"
+                        />
+                      </div>
                       <div className="text-gray-600">Wyoming DAO LLC with token-based decisions</div>
                     </div>
                   </div>
