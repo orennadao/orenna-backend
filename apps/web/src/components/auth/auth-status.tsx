@@ -2,9 +2,10 @@
 
 import { useState, useEffect } from 'react'
 import { useAuth } from '@/hooks/use-auth'
+import { Button } from '@/components/ui/button'
 
 export function AuthStatus() {
-  const { user, isLoading, isAuthenticated, isConnected } = useAuth()
+  const { user, isLoading, isAuthenticated, isConnected, signOut } = useAuth()
   const [mounted, setMounted] = useState(false)
 
   useEffect(() => {
@@ -49,9 +50,24 @@ export function AuthStatus() {
 
   if (isAuthenticated && user) {
     return (
-      <div className="flex items-center space-x-2 text-sm text-green-600">
-        <div className="w-2 h-2 bg-green-400 rounded-full" />
-        <span>Authenticated as {user.ensName || `${user.address.slice(0, 6)}...${user.address.slice(-4)}`}</span>
+      <div className="flex items-center space-x-3">
+        <div className="flex items-center space-x-2 text-sm text-green-600">
+          <div className="w-2 h-2 bg-green-400 rounded-full" />
+          <span className="hidden sm:inline">
+            Authenticated as {user.ensName || `${user.address?.slice(0, 6)}...${user.address?.slice(-4)}`}
+          </span>
+          <span className="sm:hidden">
+            {user.ensName || `${user.address?.slice(0, 6)}...`}
+          </span>
+        </div>
+        <Button 
+          variant="outline" 
+          size="sm" 
+          onClick={signOut}
+          className="text-xs px-2 py-1 h-7"
+        >
+          Sign Out
+        </Button>
       </div>
     )
   }

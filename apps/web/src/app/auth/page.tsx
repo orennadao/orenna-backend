@@ -10,7 +10,7 @@ import { useTermsAcceptance } from '@/hooks/use-terms-acceptance';
 import Link from 'next/link';
 
 function AuthContent() {
-  const { isLoading, isAuthenticated } = useAuth();
+  const { isLoading, isAuthenticated, signIn, isAuthenticating } = useAuth();
   const { needsAcceptance, isLoading: termsLoading } = useTermsAcceptance();
   const [showOnboarding, setShowOnboarding] = useState(false);
 
@@ -108,6 +108,20 @@ function AuthContent() {
                 <li>3. Sign the message to authenticate</li>
                 <li>4. Start using the platform</li>
               </ol>
+            </div>
+
+            <div className="bg-yellow-50 border border-yellow-200 rounded-lg p-4 mb-6">
+              <h3 className="text-sm font-medium text-yellow-900 mb-2">For Testing:</h3>
+              <p className="text-sm text-yellow-800 mb-3">
+                Use the button below to simulate wallet connection and test the onboarding flow.
+              </p>
+              <button
+                onClick={signIn}
+                disabled={isAuthenticating}
+                className="w-full px-4 py-2 bg-yellow-600 text-white rounded-md hover:bg-yellow-700 disabled:bg-yellow-400 disabled:cursor-not-allowed transition-colors font-medium"
+              >
+                {isAuthenticating ? 'Connecting...' : 'Test Sign In'}
+              </button>
             </div>
 
             <div className="space-y-4">
