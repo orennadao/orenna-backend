@@ -48,7 +48,7 @@ export function RealtimeAnalyticsWrapper({
   return (
     <div className="space-y-6">
       {/* Real-time Updates Panel */}
-      {recentUpdates.length > 0 && (
+      {(recentUpdates || []).length > 0 && (
         <ChartContainer
           title="Real-time Updates"
           description="Live data updates from WebSocket events"

@@ -453,7 +453,7 @@ export function GlobalSearch({ isOpen, onClose }: GlobalSearchProps) {
 
     const handleKeyDown = (e: KeyboardEvent) => {
       const currentItems = showSuggestions ? suggestions : results;
-      const maxIndex = currentItems.length - 1;
+      const maxIndex = (currentItems || []).length - 1;
 
       switch (e.key) {
         case 'Escape':
@@ -695,7 +695,7 @@ export function GlobalSearch({ isOpen, onClose }: GlobalSearchProps) {
           )}
 
           {/* Search Suggestions */}
-          {!isLoading && showSuggestions && suggestions.length > 0 && (
+          {!isLoading && showSuggestions && (suggestions || []).length > 0 && (
             <div className="py-2">
               {query.trim() === '' && (
                 <div className="px-4 py-2 text-xs font-medium text-gray-500 uppercase tracking-wide">
@@ -731,7 +731,7 @@ export function GlobalSearch({ isOpen, onClose }: GlobalSearchProps) {
             </div>
           )}
 
-          {!isLoading && !showSuggestions && query.trim() && results.length === 0 && (
+          {!isLoading && !showSuggestions && query.trim() && (results || []).length === 0 && (
             <div className="p-6 text-center">
               <Search className="h-12 w-12 mx-auto mb-3 text-gray-300" />
               <p className="text-gray-600">No results found for "{query}"</p>
@@ -741,7 +741,7 @@ export function GlobalSearch({ isOpen, onClose }: GlobalSearchProps) {
             </div>
           )}
 
-          {!isLoading && !showSuggestions && results.length > 0 && (
+          {!isLoading && !showSuggestions && (results || []).length > 0 && (
             <div className="py-2">
               <div className="px-4 py-2 text-xs font-medium text-gray-500 uppercase tracking-wide">
                 Search Results
