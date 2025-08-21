@@ -372,7 +372,10 @@ export default function LiftTokensPage() {
   const totalRetired = mockLiftTokens.reduce((sum, token) => sum + token.retiredAmount, 0);
 
   return (
-    <ProtectedRoute>
+    <ProtectedRoute 
+      allowGuest={true}
+      guestMessage="Browse the Lift Token marketplace publicly. Connect your wallet to purchase and retire tokens."
+    >
       <MainLayout
         title="Lift Token Marketplace"
         description="Purchase and retire verified environmental impact tokens"

@@ -54,7 +54,7 @@ export default function LandingPage() {
                       Connect Wallet
                     </Button>
                   </Link>
-                  <Link href="/explore">
+                  <Link href="/projects">
                     <Button variant="outline" size="lg" className="min-w-[160px]" aria-label="Browse Orenna as a guest without connecting a wallet">
                       Browse as Guest
                     </Button>
@@ -198,7 +198,7 @@ export default function LandingPage() {
               <Link href="/projects">
                 <Button variant="outline">Browse Projects</Button>
               </Link>
-              <Link href="/lift-tokens">
+              <Link href="/marketplace/lift-tokens">
                 <Button variant="outline">Lift Tokens</Button>
               </Link>
               <Link href="/marketplace/forwards">

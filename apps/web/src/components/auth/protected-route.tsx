@@ -1,17 +1,24 @@
 'use client'
 
 import { ReactNode } from 'react'
+import { useAuth } from '@/hooks/use-auth'
+import { Button } from '@/components/ui/button'
+import Link from 'next/link'
 
 interface ProtectedRouteProps {
   children: ReactNode
   fallback?: ReactNode
+  allowGuest?: boolean // New prop to allow guest access
+  guestMessage?: string
 }
 
-export function ProtectedRoute({ children, fallback }: ProtectedRouteProps) {
-  // Temporarily simplified for testing - bypassing auth
-  const isAuthenticated = true
-  const isLoading = false
-  const isConnected = true
+export function ProtectedRoute({ 
+  children, 
+  fallback, 
+  allowGuest = false,
+  guestMessage = "This page requires authentication to access all features."
+}: ProtectedRouteProps) {
+  const { isAuthenticated, isLoading } = useAuth()
 
   if (isLoading) {
     return (
@@ -25,6 +32,33 @@ export function ProtectedRoute({ children, fallback }: ProtectedRouteProps) {
   }
 
   if (!isAuthenticated) {
+    // Allow guest access if specified
+    if (allowGuest) {
+      return (
+        <div>
+          {/* Guest notice banner */}
+          <div className="bg-blue-50 border-l-4 border-blue-400 p-4 mb-4">
+            <div className="flex">
+              <div className="flex-shrink-0">
+                <svg className="h-5 w-5 text-blue-400" viewBox="0 0 20 20" fill="currentColor">
+                  <path fillRule="evenodd" d="M8.257 3.099c.765-1.36 2.722-1.36 3.486 0l5.58 9.92c.75 1.334-.213 2.98-1.742 2.98H4.42c-1.53 0-2.493-1.646-1.743-2.98l5.58-9.92zM11 13a1 1 0 11-2 0 1 1 0 012 0zm-1-8a1 1 0 00-1 1v3a1 1 0 002 0V6a1 1 0 00-1-1z" clipRule="evenodd" />
+                </svg>
+              </div>
+              <div className="ml-3">
+                <p className="text-sm text-blue-700">
+                  <strong>Guest Mode:</strong> {guestMessage}
+                  <Link href="/auth" className="font-medium underline hover:text-blue-600 ml-2">
+                    Connect Wallet →
+                  </Link>
+                </p>
+              </div>
+            </div>
+          </div>
+          {children}
+        </div>
+      )
+    }
+
     if (fallback) {
       return <>{fallback}</>
     }
@@ -38,9 +72,18 @@ export function ProtectedRoute({ children, fallback }: ProtectedRouteProps) {
           <p className="text-gray-600 mb-6">
             Please connect your wallet and sign in to access this page.
           </p>
-          <p className="text-sm text-gray-500">
-            Authentication temporarily bypassed for testing
-          </p>
+          <div className="space-y-3">
+            <Link href="/auth">
+              <Button className="w-full">
+                Connect Wallet
+              </Button>
+            </Link>
+            <Link href="/projects">
+              <Button variant="outline" className="w-full">
+                Browse as Guest
+              </Button>
+            </Link>
+          </div>
         </div>
       </div>
     )

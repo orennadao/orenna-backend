@@ -23,7 +23,10 @@ export default function ProjectsPage() {
   };
 
   return (
-    <ProtectedRoute>
+    <ProtectedRoute 
+      allowGuest={true}
+      guestMessage="Browse projects publicly. Connect your wallet to create projects and access advanced features."
+    >
       <MainLayout
         title="Projects"
         description="Browse and manage regenerative finance projects"

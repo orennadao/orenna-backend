@@ -218,7 +218,10 @@ export default function ForwardsPage() {
   const totalRaised = mockForwards.reduce((sum, forward) => sum + forward.funding.raised, 0);
 
   return (
-    <ProtectedRoute>
+    <ProtectedRoute 
+      allowGuest={true}
+      guestMessage="Browse Lift Forwards publicly. Connect your wallet to back projects and access investment features."
+    >
       <MainLayout
         title="Lift Forwards"
         description="Back regenerative projects before they deliver verified outcomes"

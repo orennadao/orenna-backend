@@ -5,10 +5,13 @@ import { MainLayout } from "@/components/layout/main-layout";
 import { LiftTokensDashboard } from "@/components/lift-tokens/lift-tokens-dashboard";
 export default function LiftTokensPage() {
   return (
-    <ProtectedRoute>
+    <ProtectedRoute 
+      allowGuest={true}
+      guestMessage="Browse available Lift Tokens publicly. Connect your wallet to purchase tokens and manage your portfolio."
+    >
       <MainLayout
-        title="My Lift Tokens"
-        description="View and manage your ecosystem function lift tokens representing verified environmental improvements"
+        title="Lift Tokens"
+        description="View ecosystem function lift tokens representing verified environmental improvements"
       >
         <LiftTokensDashboard />
       </MainLayout>
