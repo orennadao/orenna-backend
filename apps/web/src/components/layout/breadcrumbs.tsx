@@ -16,7 +16,7 @@ interface BreadcrumbsProps {
 }
 
 export function Breadcrumbs({ items, className }: BreadcrumbsProps) {
-  if (!items.length) return null;
+  if (!items || !items.length) return null;
 
   return (
     <nav 

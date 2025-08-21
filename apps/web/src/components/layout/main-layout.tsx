@@ -39,13 +39,13 @@ export function MainLayout({
   
   // Extract user roles from auth
   const allUserRoles = [
-    ...(user?.roles?.projectRoles || []),
-    ...(user?.roles?.systemRoles || [])
+    ...((user?.roles?.projectRoles || []) || []),
+    ...((user?.roles?.systemRoles || []) || [])
   ];
   
   // Generate breadcrumbs
   const breadcrumbs = customBreadcrumbs || (
-    pathname !== '/' ? generateBreadcrumbs(pathname, BREADCRUMB_LABELS) : []
+    pathname !== '/' ? generateBreadcrumbs(pathname, BREADCRUMB_LABELS) || [] : []
   );
 
   // Handle keyboard shortcuts
@@ -122,8 +122,8 @@ export function MainLayout({
             <div className="flex items-center justify-between">
               <div className="flex-1">
                 {/* Breadcrumbs */}
-                {breadcrumbs.length > 0 && (
-                  <Breadcrumbs items={breadcrumbs} className="mb-2" />
+                {(breadcrumbs || []).length > 0 && (
+                  <Breadcrumbs items={breadcrumbs || []} className="mb-2" />
                 )}
                 
                 {/* Page Title */}
