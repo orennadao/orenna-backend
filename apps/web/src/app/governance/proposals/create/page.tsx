@@ -37,7 +37,7 @@ export default function CreateProposalPage() {
                 Please connect your wallet to create governance proposals
               </p>
               <Button asChild>
-                <Link href="/auth">Connect Wallet</Link>
+                <Link href="/auth?redirect=/governance/proposals/create">Connect Wallet</Link>
               </Button>
             </CardContent>
           </Card>
@@ -58,7 +58,7 @@ export default function CreateProposalPage() {
                 Please authenticate to create governance proposals
               </p>
               <Button asChild>
-                <Link href="/auth">Sign In</Link>
+                <Link href="/auth?redirect=/governance/proposals/create">Sign In</Link>
               </Button>
             </CardContent>
           </Card>

@@ -131,7 +131,7 @@ export default function GovernancePage() {
               <p className="text-muted-foreground mb-4">
                 Please connect your wallet to participate in governance
               </p>
-              <Link href="/auth">
+              <Link href="/auth?redirect=/governance">
                 <Button>Connect Wallet</Button>
               </Link>
             </CardContent>
@@ -152,7 +152,7 @@ export default function GovernancePage() {
               <p className="text-muted-foreground mb-4">
                 Please authenticate to access governance features
               </p>
-              <Link href="/auth">
+              <Link href="/auth?redirect=/governance">
                 <Button>Sign In</Button>
               </Link>
             </CardContent>

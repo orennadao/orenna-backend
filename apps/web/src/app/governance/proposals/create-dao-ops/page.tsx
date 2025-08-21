@@ -38,7 +38,7 @@ export default function CreateDAOOpsProposalPage() {
                 Please connect your wallet to create governance proposals
               </p>
               <Button asChild>
-                <Link href="/auth">Connect Wallet</Link>
+                <Link href="/auth?redirect=/governance/proposals/create-dao-ops">Connect Wallet</Link>
               </Button>
             </CardContent>
           </Card>
@@ -59,7 +59,7 @@ export default function CreateDAOOpsProposalPage() {
                 Please authenticate to create governance proposals
               </p>
               <Button asChild>
-                <Link href="/auth">Sign In</Link>
+                <Link href="/auth?redirect=/governance/proposals/create-dao-ops">Sign In</Link>
               </Button>
             </CardContent>
           </Card>

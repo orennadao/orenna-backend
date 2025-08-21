@@ -1,6 +1,7 @@
 'use client';
 
-import React, { useState } from 'react';
+import React, { useState, useEffect } from 'react';
+import { useRouter, useSearchParams } from 'next/navigation';
 import { Header } from '@/components/layout/header';
 import { Footer } from '@/components/layout/footer';
 import { useAuth } from '@/hooks/use-auth';
@@ -13,6 +14,23 @@ function AuthContent() {
   const { isLoading, isAuthenticated, signIn, isAuthenticating } = useAuth();
   const { needsAcceptance, isLoading: termsLoading } = useTermsAcceptance();
   const [showOnboarding, setShowOnboarding] = useState(false);
+  const router = useRouter();
+  const searchParams = useSearchParams();
+
+  // Get redirect parameter or default to governance portal
+  const redirectTo = searchParams.get('redirect') || '/governance';
+
+  // Auto-redirect after successful authentication and onboarding completion
+  useEffect(() => {
+    if (isAuthenticated && !needsAcceptance && !isLoading && !termsLoading) {
+      // Delay to allow user to see success state briefly
+      const timer = setTimeout(() => {
+        router.push(redirectTo);
+      }, 1500);
+      
+      return () => clearTimeout(timer);
+    }
+  }, [isAuthenticated, needsAcceptance, isLoading, termsLoading, router, redirectTo]);
 
   if (isLoading || termsLoading) {
     return (
@@ -66,13 +84,32 @@ function AuthContent() {
                   </svg>
                 </div>
                 <h2 className="text-xl font-semibold text-gray-900 mb-2">Successfully Authenticated</h2>
-                <p className="text-gray-600">Your wallet is connected and you are authenticated.</p>
+                <p className="text-gray-600 mb-4">Your wallet is connected and you are authenticated.</p>
+                
+                <div className="bg-blue-50 border border-blue-200 rounded-lg p-4 mb-4">
+                  <div className="flex items-center gap-2 mb-2">
+                    <svg className="w-5 h-5 text-blue-600" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                      <path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M13 10V3L4 14h7v7l9-11h-7z"></path>
+                    </svg>
+                    <span className="text-sm font-medium text-blue-900">Redirecting to DAO Operations...</span>
+                  </div>
+                  <p className="text-sm text-blue-800">
+                    Taking you to the governance portal in a moment.
+                  </p>
+                </div>
               </div>
 
               <div className="space-y-4">
                 <Link 
+                  href="/governance"
+                  className="block w-full px-4 py-2 text-center bg-gradient-to-r from-green-600 to-blue-600 text-white rounded-md hover:from-green-700 hover:to-blue-700 transition-colors font-medium"
+                >
+                  Go to DAO Operations Now
+                </Link>
+                
+                <Link 
                   href="/auth/profile"
-                  className="block w-full px-4 py-2 text-center bg-primary-600 text-white rounded-md hover:bg-primary-700 transition-colors"
+                  className="block w-full px-4 py-2 text-center border border-gray-300 text-gray-700 rounded-md hover:bg-gray-50 transition-colors"
                 >
                   View Profile
                 </Link>
@@ -141,8 +178,8 @@ function AuthContent() {
         isOpen={showOnboarding}
         onComplete={() => {
           setShowOnboarding(false);
-          // The page will automatically update to show the authenticated state
-          // since needsAcceptance will become false after onboarding completion
+          // After onboarding completion, user will be auto-redirected to governance
+          // via the useEffect hook when needsAcceptance becomes false
         }}
         onClose={() => setShowOnboarding(false)}
       />

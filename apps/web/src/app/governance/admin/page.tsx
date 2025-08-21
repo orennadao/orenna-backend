@@ -429,7 +429,7 @@ export default function GovernanceAdminPage() {
                   Please connect your wallet to access governance administration
                 </p>
                 <Button asChild>
-                  <Link href="/auth">Connect Wallet</Link>
+                  <Link href="/auth?redirect=/governance/admin">Connect Wallet</Link>
                 </Button>
               </CardContent>
             </Card>
