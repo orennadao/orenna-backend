@@ -28,18 +28,11 @@ export function WalletConnectButton({ className, size = 'sm', children }: Wallet
   const handleConnect = async () => {
     try {
       setShowConnectors(false)
-      // For now, directly trigger SIWE auth process
+      // Trigger SIWE auth process
       await signIn()
       
-      // After successful auth, check if user needs onboarding
-      // This would normally check if user exists in DB
-      const needsOnboarding = !localStorage.getItem('orenna_onboarding_complete')
-      
-      if (needsOnboarding) {
-        router.push('/onboarding')
-      } else {
-        router.push('/dashboard')
-      }
+      // After successful SIWE connection, always redirect to dashboard
+      router.push('/dashboard')
     } catch (error) {
       console.error('Authentication error:', error)
     }

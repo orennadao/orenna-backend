@@ -46,12 +46,12 @@ export default function LandingPage() {
             {!isAuthenticated ? (
               <div className="mb-8">
                 <p className="text-lg text-muted-foreground mb-6">
-                  You're viewing the <strong>public</strong> landing page. You can <strong>Browse as Guest</strong> to explore Orenna or <strong>Connect Wallet</strong> to access the full dApp.
+                  You're viewing the <strong>public</strong> landing page. You can <strong>Browse as Guest</strong> to explore Orenna or <strong>Start Onboarding</strong> to access the full dApp.
                 </p>
                 <div className="flex flex-col sm:flex-row gap-4 justify-center">
-                  <Link href="/auth/connect">
-                    <Button size="lg" className="min-w-[160px]" aria-label="Connect your wallet to access the full dApp">
-                      Connect Wallet
+                  <Link href="/onboarding">
+                    <Button size="lg" className="min-w-[160px]" aria-label="Start onboarding to access the full dApp">
+                      Onboarding
                     </Button>
                   </Link>
                   <Link href="/projects">
@@ -265,8 +265,8 @@ export default function LandingPage() {
           </div>
 
           <div className="text-center">
-            <Link href="/auth/connect">
-              <Button size="lg" aria-label="Connect your wallet to unlock all platform features">Connect Wallet</Button>
+            <Link href="/onboarding">
+              <Button size="lg" aria-label="Start onboarding to unlock all platform features">Onboarding</Button>
             </Link>
           </div>
         </Section>
