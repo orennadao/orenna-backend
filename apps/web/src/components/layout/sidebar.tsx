@@ -85,7 +85,7 @@ const navigationItems = [
   {
     id: 'governance',
     label: 'ORNA',
-    href: '/governance',
+    href: '/orna/governance',
     icon: Building2,
     description: 'Governance portal'
   }

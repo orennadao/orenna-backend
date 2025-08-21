@@ -1,0 +1,284 @@
+---
+title: "Orenna Governance Framework"
+status: "Draft v1.0"
+lastUpdated: "2024-08-21"
+paramSetTag: "gov-params-1.0.0"
+description: "DAO-wide governance policy, thresholds, and processes for Orenna."
+---
+
+# Orenna Governance Framework
+
+## 1. Introduction
+
+This document outlines the governance framework for the Orenna ecosystem, establishing the policies, procedures, and parameters that guide decentralized decision-making for environmental impact verification and carbon credit platforms.
+
+<Callout type="info" title="Living Document">
+This governance framework is designed to evolve with the ecosystem. Regular reviews and updates ensure the governance system remains effective and aligned with community needs.
+</Callout>
+
+## 2. Governance Scope
+
+The Orenna governance system oversees:
+
+- **Platform Parameters**: Technical configurations and operational thresholds
+- **Verification Standards**: Methodologies for environmental impact measurement
+- **Treasury Management**: Allocation of community funds and resources
+- **Protocol Upgrades**: Updates to smart contracts and system architecture
+- **Partnership Approvals**: Integration with external verification bodies and carbon markets
+
+## 3. Proposal Types & Parameters
+
+The governance system recognizes three main categories of proposals, each with distinct requirements:
+
+<GovParamTable />
+
+### 3.1 Standard Proposals
+Standard proposals address routine governance matters including:
+- Minor parameter adjustments
+- Community initiatives and grants
+- Non-critical protocol updates
+- Ecosystem partnership approvals
+
+### 3.2 Major Proposals
+Major proposals involve significant changes with substantial impact:
+- Treasury allocations exceeding $100,000 USD
+- Core protocol modifications
+- Changes to verification methodologies
+- Strategic partnership agreements
+
+### 3.3 Emergency Proposals
+Emergency proposals address urgent matters requiring expedited action:
+- Security vulnerabilities
+- Critical system failures
+- Regulatory compliance requirements
+- Market instability responses
+
+## 4. Participation Requirements
+
+### 4.1 Token Holdings
+Participation in governance requires holding ORNA tokens, which represent voting power proportional to stake in the ecosystem. Token holders may participate through:
+
+- **Direct Voting**: Personal participation in governance decisions
+- **Delegation**: Appointing representatives to vote on their behalf
+- **Proposal Submission**: Creating new governance proposals
+
+### 4.2 Delegation System
+The delegation system enables efficient governance participation:
+
+- Token holders may delegate voting power to any Ethereum address
+- Delegation is reversible at any time without penalty
+- Delegates may re-delegate to other addresses
+- Self-delegation is required to participate in voting directly
+
+### 4.3 Proposal Submission
+Any token holder meeting the minimum sponsorship requirements may submit proposals. Sponsorship requirements vary by proposal type and ensure community support before formal voting begins.
+
+## 5. Voting Process
+
+### 5.1 Proposal Lifecycle
+
+1. **Drafting Phase**
+   - Community discussion and proposal refinement
+   - Feedback collection and iteration
+   - Technical feasibility assessment
+
+2. **Sponsorship Phase**
+   - Gathering required token holder support
+   - Verification of sponsorship thresholds
+   - Final proposal preparation
+
+3. **Voting Period**
+   - Active voting by eligible participants
+   - Real-time vote tracking and transparency
+   - Community discussion and analysis
+
+4. **Execution Phase**
+   - Implementation of approved proposals
+   - Progress monitoring and reporting
+   - Community feedback collection
+
+### 5.2 Voting Methods
+
+- **Simple Majority**: Standard proposals require >50.01% approval
+- **Supermajority**: Major changes require 66.67% approval
+- **Emergency Procedures**: Expedited voting with 60% threshold
+
+### 5.3 Quorum Requirements
+
+All proposals must meet minimum participation thresholds to ensure legitimacy:
+- Standard: 8% of total voting power
+- Major: 15% of total voting power  
+- Emergency: 5% of total voting power
+
+## 6. Implementation & Enforcement
+
+### 6.1 Execution Mechanisms
+Approved proposals are implemented through:
+
+- **On-chain Execution**: Smart contract changes via timelock mechanisms
+- **Off-chain Coordination**: Development team coordination for infrastructure updates
+- **Community Implementation**: Volunteer-driven initiatives and programs
+
+### 6.2 Timelock Security
+All on-chain changes include mandatory timelock periods:
+- Standard proposals: 48-hour delay
+- Major proposals: 72-hour delay
+- Emergency proposals: 12-hour delay
+
+### 6.3 Monitoring & Compliance
+The community maintains oversight through:
+- Regular progress reporting
+- Public audit mechanisms  
+- Transparency requirements
+- Accountability measures
+
+## 7. Governance Risks & Safeguards
+
+<RiskAccordion items={[
+  {
+    title: "Voter Apathy and Low Participation",
+    risk: "Insufficient community engagement may lead to decisions made by a small subset of token holders, potentially compromising the democratic nature of governance.",
+    safeguards: [
+      "Minimum quorum requirements for all proposal types",
+      "Delegation system to enable indirect participation",
+      "Community education and engagement programs",
+      "Incentive mechanisms for governance participation"
+    ]
+  },
+  {
+    title: "Whale Attack and Token Concentration",
+    risk: "Large token holders may disproportionately influence governance decisions, potentially acting against broader community interests.",
+    safeguards: [
+      "Quadratic voting considerations for future implementation",
+      "Multiple wallet sponsorship requirements",
+      "Delegation encourages distribution of voting power",
+      "Transparency in voting patterns and large holder activities"
+    ]
+  },
+  {
+    title: "Technical Implementation Failures",
+    risk: "Approved proposals may fail during implementation due to technical constraints, bugs, or unforeseen complications.",
+    safeguards: [
+      "Mandatory technical review process for all proposals",
+      "Testnet deployment requirements before mainnet changes",
+      "Rollback procedures for failed implementations",
+      "Professional audit requirements for major changes"
+    ]
+  },
+  {
+    title: "Regulatory and Legal Risks",
+    risk: "Governance decisions may inadvertently violate regulatory requirements or create legal liabilities for participants or the protocol.",
+    safeguards: [
+      "Legal review process for significant proposals",
+      "Compliance monitoring and reporting systems",
+      "Jurisdictional risk assessment procedures",
+      "Emergency response protocols for regulatory challenges"
+    ]
+  },
+  {
+    title: "Economic Attack Vectors",
+    risk: "Malicious actors may attempt to manipulate governance through economic incentives, vote buying, or coordinated attacks.",
+    safeguards: [
+      "Time-weighted voting power calculations",
+      "Multiple signature requirements for treasury actions",
+      "Transparent voting mechanisms with audit trails",
+      "Community monitoring and alert systems"
+    ]
+  }
+]} />
+
+## 8. Treasury Management
+
+### 8.1 Treasury Oversight
+The community treasury is managed through governance with strict controls:
+- All expenditures require governance approval
+- Major allocations (>$100k) require supermajority approval
+- Transparent reporting and accounting practices
+- Regular audit and compliance reviews
+
+### 8.2 Funding Categories
+Treasury funds may be allocated to:
+- Development and maintenance
+- Community grants and initiatives
+- Marketing and ecosystem growth
+- Security audits and insurance
+- Operational expenses
+
+## 9. Amendment Process
+
+### 9.1 Framework Updates
+This governance framework may be amended through the standard major proposal process, requiring:
+- Supermajority approval (66.67%)
+- Extended discussion period (minimum 14 days)
+- Technical and legal review
+- Community impact assessment
+
+### 9.2 Parameter Updates
+Individual governance parameters may be updated through standard proposals, with changes taking effect after the appropriate timelock period.
+
+## 10. Emergency Procedures
+
+### 10.1 Emergency Situations
+Emergency procedures may be activated for:
+- Security vulnerabilities requiring immediate action
+- Regulatory compliance requirements
+- Critical system failures
+- Extreme market conditions threatening system stability
+
+### 10.2 Emergency Powers
+During emergencies, the community may:
+- Expedite proposal voting (12-hour timelock)
+- Reduce quorum requirements (5% minimum)
+- Implement temporary protective measures
+- Coordinate with external security experts
+
+<Callout type="warning" title="Emergency Use Only">
+Emergency procedures should only be used for genuine emergencies. Misuse of emergency powers may result in community sanctions and governance reforms.
+</Callout>
+
+## 11. Community Standards
+
+### 11.1 Participation Guidelines
+Community members are expected to:
+- Engage constructively in governance discussions
+- Consider ecosystem-wide impacts of proposals
+- Respect diverse viewpoints and opinions
+- Maintain professional and respectful communication
+
+### 11.2 Conflict Resolution
+Disputes and conflicts are resolved through:
+- Community mediation processes
+- Transparent discussion forums
+- Appeal mechanisms for contested decisions
+- External arbitration for significant disputes
+
+## 12. Future Enhancements
+
+### 12.1 Planned Improvements
+The governance system will evolve to include:
+- Quadratic voting mechanisms
+- Liquid democracy features
+- Cross-chain governance coordination
+- Advanced delegation systems
+- Automated compliance monitoring
+
+### 12.2 Research and Development
+Ongoing research areas include:
+- Governance token economics optimization
+- Participation incentive mechanisms
+- Sybil resistance improvements
+- Integration with emerging governance technologies
+
+---
+
+## Changelog
+
+### Version 1.0 (August 2024)
+- Initial framework establishment
+- Basic proposal types and voting mechanisms
+- Treasury management procedures
+- Emergency response protocols
+
+---
+
+*This document represents the current governance framework for the Orenna ecosystem. For questions, suggestions, or proposed amendments, please engage with the community through official governance channels.*

@@ -75,7 +75,7 @@ export function OnboardingFlow({
     <>
       {/* Progress Indicator */}
       {isOpen && (
-        <div className="fixed top-4 left-1/2 transform -translate-x-1/2 z-50 px-4">
+        <div className="fixed top-4 left-1/2 transform -translate-x-1/2 z-[110] px-4">
           <div className="bg-white rounded-full px-3 py-2 shadow-lg border border-gray-200 max-w-xs">
             <div className="flex items-center gap-2">
               <div className="flex items-center gap-1">

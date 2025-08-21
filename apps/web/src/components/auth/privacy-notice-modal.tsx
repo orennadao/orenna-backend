@@ -26,8 +26,11 @@ export function PrivacyNoticeModal({ isOpen, onAccept, onBack, onClose }: Privac
   if (!isOpen) return null;
 
   return (
-    <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/50 backdrop-blur-sm">
-      <div className="w-full max-w-3xl mx-4 max-h-[90vh] bg-white rounded-lg shadow-xl overflow-y-auto">
+    <div 
+      className="fixed inset-0 z-[100] flex items-center justify-center bg-black/50 backdrop-blur-sm p-4"
+      onClick={(e) => e.target === e.currentTarget && onClose()}
+    >
+      <div className="w-full max-w-3xl max-h-[95vh] bg-white rounded-lg shadow-xl overflow-hidden flex flex-col">
         {/* Header */}
         <div className="flex items-center justify-between p-6 border-b border-gray-200 bg-blue-50">
           <div className="flex items-center gap-3">
@@ -45,7 +48,7 @@ export function PrivacyNoticeModal({ isOpen, onAccept, onBack, onClose }: Privac
         </div>
 
         {/* Content */}
-        <div className="p-6">
+        <div className="p-6 overflow-y-auto flex-1">
           {/* Introduction */}
           <div className="text-center mb-8">
             <div className="w-16 h-16 bg-green-100 rounded-full flex items-center justify-center mx-auto mb-4">

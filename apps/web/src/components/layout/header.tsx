@@ -14,7 +14,7 @@ const NAV_ITEMS = [
   { href: "/projects", label: "Projects" },
   { href: "/lift-tokens", label: "Lift Tokens" },
   { href: "/mint-requests", label: "Mint Requests" },
-  { href: "/blockchain", label: "ORNA" },
+  { href: "/orna/governance", label: "ORNA" },
 ] as const;
 
 export function Header() {

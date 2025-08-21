@@ -1,6 +1,6 @@
 'use client';
 
-import { useState } from 'react';
+import { useState, useEffect, useRef } from 'react';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { Button } from '@/components/ui/button';
 import { Checkbox } from '@/components/ui/checkbox';
@@ -36,6 +36,28 @@ export function TermsOfServiceModal({
   const [hasAcceptedRisks, setHasAcceptedRisks] = useState(false);
   const [showFullTerms, setShowFullTerms] = useState(false);
   const [scrolledToBottom, setScrolledToBottom] = useState(false);
+  const modalRef = useRef<HTMLDivElement>(null);
+
+  // Focus management
+  useEffect(() => {
+    if (isOpen && modalRef.current) {
+      modalRef.current.focus();
+    }
+  }, [isOpen]);
+
+  // Keyboard navigation
+  useEffect(() => {
+    const handleKeyDown = (e: KeyboardEvent) => {
+      if (!isOpen) return;
+      
+      if (e.key === 'Escape') {
+        onDecline();
+      }
+    };
+
+    document.addEventListener('keydown', handleKeyDown);
+    return () => document.removeEventListener('keydown', handleKeyDown);
+  }, [isOpen, onDecline]);
 
   const handleScroll = (e: React.UIEvent<HTMLDivElement>) => {
     const { scrollTop, scrollHeight, clientHeight } = e.currentTarget;
@@ -57,16 +79,26 @@ export function TermsOfServiceModal({
   if (!isOpen) return null;
 
   return (
-    <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/50 backdrop-blur-sm">
-      <div className="w-full max-w-4xl mx-4 max-h-[90vh] bg-white rounded-lg shadow-xl">
+    <div 
+      className="fixed inset-0 z-[100] flex items-center justify-center bg-black/50 backdrop-blur-sm p-4"
+      onClick={(e) => e.target === e.currentTarget && onDecline()}
+    >
+      <div 
+        ref={modalRef}
+        tabIndex={-1}
+        className="w-full max-w-6xl max-h-[95vh] bg-white rounded-lg shadow-xl overflow-hidden flex flex-col focus:outline-none"
+        role="dialog"
+        aria-modal="true"
+        aria-labelledby="terms-title"
+      >
         {/* Header */}
-        <div className="flex items-center justify-between p-6 border-b border-gray-200">
+        <div className="flex items-center justify-between p-6 border-b border-gray-200 flex-shrink-0">
           <div className="flex items-center gap-3">
             <div className="w-10 h-10 bg-blue-100 rounded-full flex items-center justify-center">
               <Scale className="w-5 h-5 text-blue-600" />
             </div>
             <div>
-              <h2 className="text-xl font-bold text-gray-900">Terms of Service</h2>
+              <h2 id="terms-title" className="text-xl font-bold text-gray-900">Terms of Service</h2>
               <p className="text-sm text-gray-600">Please review and accept to continue</p>
             </div>
           </div>
@@ -75,10 +107,10 @@ export function TermsOfServiceModal({
           </Button>
         </div>
 
-        <div className="flex flex-col lg:flex-row">
+        <div className="flex flex-col xl:flex-row min-h-0 flex-1">
           {/* Quick Summary Sidebar */}
           {showSummary && (
-            <div className="lg:w-80 p-6 bg-blue-50 border-r border-gray-200">
+            <div className="xl:w-80 xl:flex-shrink-0 p-6 bg-blue-50 border-r border-gray-200 overflow-y-auto">
               <div className="space-y-4">
                 <div className="flex items-center gap-2 mb-4">
                   <Info className="w-4 h-4 text-blue-600" />
@@ -149,7 +181,7 @@ export function TermsOfServiceModal({
           )}
 
           {/* Main Content */}
-          <div className="flex-1 p-6">
+          <div className="flex-1 p-6 overflow-y-auto min-h-0">
             {!showFullTerms ? (
               /* Condensed View */
               <div className="space-y-6">
@@ -384,7 +416,7 @@ export function TermsOfServiceModal({
             </div>
 
             {/* Action Buttons */}
-            <div className="flex flex-col sm:flex-row gap-3 mt-6">
+            <div className="flex flex-col sm:flex-row gap-3 mt-6 pt-6 border-t border-gray-200 bg-white sticky bottom-0">
               <Button 
                 onClick={handleAccept}
                 disabled={!canProceed}

@@ -80,3 +80,164 @@
     overflow: hidden;
   }
 }
+
+/* Print Styles for Governance Page */
+@media print {
+  /* Hide navigation and interactive elements */
+  .toc-nav,
+  .link-cards,
+  button,
+  .governance-actions {
+    display: none !important;
+  }
+  
+  /* Ensure content flows properly */
+  .governance-content {
+    max-width: none !important;
+    margin: 0 !important;
+    padding: 0 !important;
+  }
+  
+  /* Page breaks */
+  h1, h2, h3 {
+    page-break-after: avoid;
+    page-break-inside: avoid;
+  }
+  
+  /* Table formatting */
+  table {
+    page-break-inside: avoid;
+    border-collapse: collapse;
+  }
+  
+  /* Ensure links show URLs in print */
+  a[href]:after {
+    content: " (" attr(href) ")";
+    font-size: 0.8em;
+    color: #666;
+  }
+  
+  /* Remove box shadows and backgrounds */
+  * {
+    box-shadow: none !important;
+    background: white !important;
+    color: black !important;
+  }
+  
+  /* Header styling for print */
+  .governance-header {
+    border-bottom: 2px solid black;
+    margin-bottom: 24px;
+    padding-bottom: 12px;
+  }
+  
+  /* Font sizing for print */
+  body {
+    font-size: 12pt;
+    line-height: 1.4;
+  }
+  
+  h1 { font-size: 18pt; }
+  h2 { font-size: 16pt; }
+  h3 { font-size: 14pt; }
+  h4 { font-size: 13pt; }
+}
+
+/* Accessibility improvements */
+@layer base {
+  /* Focus styles for keyboard navigation */
+  .focus-visible {
+    @apply outline-none ring-2 ring-ring ring-offset-2 ring-offset-background;
+  }
+  
+  /* Skip link for screen readers */
+  .skip-link {
+    position: absolute;
+    top: -40px;
+    left: 6px;
+    background: hsl(var(--primary));
+    color: hsl(var(--primary-foreground));
+    padding: 8px;
+    text-decoration: none;
+    border-radius: 4px;
+    z-index: 1000;
+  }
+  
+  .skip-link:focus {
+    top: 6px;
+  }
+  
+  /* Ensure interactive elements have adequate touch targets */
+  button, a, input, select, textarea {
+    min-height: 44px;
+    min-width: 44px;
+  }
+  
+  /* High contrast mode support */
+  @media (prefers-contrast: high) {
+    :root {
+      --border: 0 0% 0%;
+      --muted: 0 0% 90%;
+      --muted-foreground: 0 0% 20%;
+    }
+  }
+  
+  /* Reduced motion support */
+  @media (prefers-reduced-motion: reduce) {
+    *, 
+    *::before, 
+    *::after {
+      animation-duration: 0.01ms !important;
+      animation-iteration-count: 1 !important;
+      transition-duration: 0.01ms !important;
+      scroll-behavior: auto !important;
+    }
+  }
+}
+
+/* Modal and onboarding improvements */
+@layer utilities {
+  /* Prevent scroll when modal is open */
+  .modal-open {
+    overflow: hidden;
+  }
+  
+  /* Modal backdrop for better mobile interaction */
+  .modal-backdrop {
+    backdrop-filter: blur(4px);
+    -webkit-backdrop-filter: blur(4px);
+  }
+  
+  /* Better touch targets for mobile */
+  @media (max-width: 768px) {
+    .modal-content {
+      margin: 0.5rem;
+      max-height: 95vh;
+    }
+    
+    .modal-sidebar {
+      max-height: 40vh;
+      overflow-y: auto;
+    }
+    
+    /* Larger checkboxes and buttons on mobile */
+    input[type="checkbox"], .checkbox {
+      min-width: 20px;
+      min-height: 20px;
+    }
+    
+    /* Better spacing for form elements */
+    .modal-form-group {
+      margin-bottom: 1.5rem;
+    }
+  }
+  
+  /* Ensure proper z-index stacking */
+  .modal-progress {
+    z-index: 110;
+  }
+  
+  .modal-container {
+    z-index: 100;
+  }
+}

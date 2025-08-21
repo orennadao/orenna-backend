@@ -1,0 +1,37 @@
+{
+  "version": "gov-params-1.0.0",
+  "votingPeriodDays": 7,
+  "treasuryMajorThresholdUSD": 100000,
+  "proposalDepositUSDC": 250,
+  "quorum": { 
+    "standard": 0.08, 
+    "major": 0.15, 
+    "emergency": 0.05 
+  },
+  "approval": { 
+    "standard": 0.5001, 
+    "major": 0.6667, 
+    "emergency": 0.60 
+  },
+  "sponsorship": {
+    "standard": { 
+      "pct": 0.002, 
+      "wallets": 5, 
+      "perWalletMinPct": 0.0002 
+    },
+    "major": { 
+      "pct": 0.005, 
+      "wallets": 10, 
+      "perWalletMinPct": 0.0003 
+    },
+    "emergency": { 
+      "pct": 0.001, 
+      "wallets": 3 
+    }
+  },
+  "timelockHours": { 
+    "standard": 48, 
+    "major": 72, 
+    "emergency": 12 
+  }
+}
