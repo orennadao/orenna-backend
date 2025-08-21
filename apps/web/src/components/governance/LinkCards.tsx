@@ -29,7 +29,7 @@ const links = [
     href: '/governance',
     icon: Vote,
     title: 'Governance Portal',
-    description: 'Active proposals and voting'
+    description: 'Connect wallet to vote on proposals'
   }
 ]
 
@@ -38,16 +38,22 @@ export function LinkCards() {
     <div className="grid grid-cols-2 lg:grid-cols-4 gap-4 mb-6">
       {links.map((link) => {
         const Icon = link.icon
+        const isGovernancePortal = link.href === '/governance'
         
         return (
-          <Card key={link.href} className="hover:shadow-md transition-shadow">
+          <Card key={link.href} className={`hover:shadow-md transition-shadow ${isGovernancePortal ? 'ring-2 ring-primary/20' : ''}`}>
             <CardContent className="p-4">
               <Button asChild variant="ghost" className="w-full h-auto p-0 flex flex-col items-center gap-2">
                 <Link href={link.href}>
-                  <Icon className="h-6 w-6 text-primary" />
+                  <Icon className={`h-6 w-6 ${isGovernancePortal ? 'text-primary' : 'text-primary'}`} />
                   <div className="text-center">
                     <div className="font-medium text-sm">{link.title}</div>
                     <div className="text-xs text-muted-foreground">{link.description}</div>
+                    {isGovernancePortal && (
+                      <div className="text-xs text-primary font-medium mt-1">
+                        🗳️ Interactive Portal
+                      </div>
+                    )}
                   </div>
                 </Link>
               </Button>
