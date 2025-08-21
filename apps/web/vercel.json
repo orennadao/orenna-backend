@@ -1,0 +1,13 @@
+{
+  "installCommand": "cd ../.. && pnpm install --frozen-lockfile",
+  "buildCommand": "cd ../.. && pnpm --filter @orenna/web build",
+  "devCommand": "cd ../.. && pnpm --filter @orenna/web dev",
+  "outputDirectory": ".next",
+  "framework": "nextjs",
+  "rewrites": [
+    {
+      "source": "/api/(.*)",
+      "destination": "https://orenna-backend-production.up.railway.app/api/$1"
+    }
+  ]
+}
