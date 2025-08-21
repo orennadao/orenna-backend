@@ -141,7 +141,7 @@ function GovernancePageContent() {
   }
 
   // Filter proposals
-  const filteredProposals = proposals.filter((proposal: GovernanceProposal) => {
+  const filteredProposals = (proposals || []).filter((proposal: GovernanceProposal) => {
     const matchesSearch = proposal.title.toLowerCase().includes(searchQuery.toLowerCase()) ||
                          proposal.description.toLowerCase().includes(searchQuery.toLowerCase())
     const matchesStatus = !statusFilter || getStateNumber(proposal).toString() === statusFilter
@@ -151,8 +151,8 @@ function GovernancePageContent() {
   })
 
   // Calculate stats
-  const activeProposals = proposals.filter((p: GovernanceProposal) => getStateNumber(p) === 1).length
-  const totalProposals = proposals.length
+  const activeProposals = (proposals || []).filter((p: GovernanceProposal) => getStateNumber(p) === 1).length
+  const totalProposals = (proposals || []).length
   const myVotingPower = formatTokenAmount(votingPower)
 
   if (!isConnected) {
@@ -464,7 +464,7 @@ function GovernancePageContent() {
               </div>
             </CardContent>
           </Card>
-        ) : filteredProposals.length === 0 ? (
+        ) : (filteredProposals || []).length === 0 ? (
           <Card>
             <CardContent className="pt-6 text-center">
               <Vote className="h-12 w-12 mx-auto mb-4 text-muted-foreground" />
@@ -484,7 +484,7 @@ function GovernancePageContent() {
           </Card>
         ) : (
           <div className="grid gap-6">
-            {filteredProposals.map((proposal) => (
+            {(filteredProposals || []).map((proposal) => (
               <ProposalCard 
                 key={proposal.id} 
                 proposal={proposal}
