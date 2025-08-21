@@ -2,6 +2,7 @@
 
 import { useState } from 'react';
 import { MainLayout } from '@/components/layout/main-layout';
+import { ProtectedRoute } from "@/components/auth/protected-route";
 import { MarketplaceDashboard } from "@/components/marketplace/marketplace-dashboard";
 import { MarketplaceItemDetails } from "@/components/marketplace/marketplace-item-details";
 
@@ -128,19 +129,27 @@ export default function MarketplacePage() {
   };
 
   return (
-    <MainLayout>
-      {selectedItem ? (
-        <MarketplaceItemDetails
-          item={selectedItem}
-          onBack={handleBack}
-          onPurchase={handlePurchase}
-        />
-      ) : (
-        <MarketplaceDashboard 
-          onViewItem={handleViewItem}
-          onPurchase={handlePurchase}
-        />
-      )}
-    </MainLayout>
+    <ProtectedRoute 
+      allowGuest={true}
+      guestMessage="Browse marketplace items publicly. Connect your wallet to make purchases and access advanced features."
+    >
+      <MainLayout 
+        title="Marketplace"
+        description="Browse and purchase regenerative finance assets"
+      >
+        {selectedItem ? (
+          <MarketplaceItemDetails
+            item={selectedItem}
+            onBack={handleBack}
+            onPurchase={handlePurchase}
+          />
+        ) : (
+          <MarketplaceDashboard 
+            onViewItem={handleViewItem}
+            onPurchase={handlePurchase}
+          />
+        )}
+      </MainLayout>
+    </ProtectedRoute>
   );
 }

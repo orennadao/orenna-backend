@@ -2,6 +2,7 @@
 
 import React, { useState } from 'react';
 import { MainLayout } from '@/components/layout/main-layout';
+import { ProtectedRoute } from "@/components/auth/protected-route";
 import { useDashboardAnalytics, usePaymentAnalytics, useBlockchainAnalytics, useLiftTokenAnalytics } from '@/hooks/use-analytics';
 import { ChartContainer } from '@/components/analytics/chart-container';
 import { RealtimeAnalyticsWrapper, LiveMetric } from '@/components/analytics/real-time-analytics';
@@ -39,8 +40,15 @@ export default function AnalyticsPage() {
   };
 
   return (
-    <MainLayout>
-      <div className="mb-6 sm:mb-8">
+    <ProtectedRoute 
+      allowGuest={true}
+      guestMessage="View public platform analytics and metrics. Connect your wallet for detailed insights and data export features."
+    >
+      <MainLayout 
+        title="Platform Analytics"
+        description="View platform metrics and activity insights"
+      >
+        <div className="mb-6 sm:mb-8">
         <h1 className="text-2xl sm:text-3xl font-bold text-gray-900 mb-2">Analytics Dashboard</h1>
         <p className="text-sm sm:text-base text-gray-600">
           Comprehensive analytics for payments, blockchain metrics, and platform performance
@@ -269,6 +277,7 @@ export default function AnalyticsPage() {
             </ChartContainer>
           </div>
         )}
-    </MainLayout>
+      </MainLayout>
+    </ProtectedRoute>
   );
 }

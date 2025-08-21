@@ -4,6 +4,7 @@ import { useState, useEffect } from 'react';
 import { usePathname } from 'next/navigation';
 import { cn } from '@/lib/utils';
 import { Sidebar } from './sidebar';
+import { GuestSidebar } from './guest-sidebar';
 import { Breadcrumbs, generateBreadcrumbs, BREADCRUMB_LABELS, type BreadcrumbItem } from './breadcrumbs';
 import { WalletConnectButton } from '@/components/auth/wallet-connect-button';
 import { GlobalSearch } from '@/components/search/global-search';
@@ -90,7 +91,8 @@ export function MainLayout({
     );
   }
   
-  if (hideNavigation || (!isAuthenticated && !isPublicRoute)) {
+  // Special case: no navigation for certain pages
+  if (hideNavigation) {
     return (
       <div className="min-h-screen bg-gray-50">
         {children}
@@ -101,20 +103,26 @@ export function MainLayout({
   return (
     <div className="min-h-screen bg-gray-50">
       {/* Sidebar */}
-      {isAuthenticated && (
+      {isAuthenticated ? (
         <Sidebar 
           userRoles={allUserRoles}
           onSearchClick={handleSearchClick}
           onNotificationsClick={handleNotificationsClick}
           onHelpClick={handleHelpClick}
         />
+      ) : (
+        !isPublicRoute && (
+          <GuestSidebar 
+            onHelpClick={handleHelpClick}
+          />
+        )
       )}
 
       {/* Main Content */}
       <div className={cn(
         "flex flex-col min-h-screen",
-        isAuthenticated ? "lg:pl-64" : "",
-        isAuthenticated ? "pb-16 lg:pb-0" : "" // Account for mobile bottom nav
+        (isAuthenticated || !isPublicRoute) ? "lg:pl-64" : "",
+        (isAuthenticated || !isPublicRoute) ? "pb-16 lg:pb-0" : "" // Account for mobile bottom nav
       )}>
         {/* Top Bar for authenticated users */}
         {isAuthenticated && (
@@ -140,6 +148,35 @@ export function MainLayout({
               </div>
 
               {/* Actions */}
+              <div className="flex items-center space-x-3">
+                {actions}
+                <div className="hidden lg:block">
+                  <WalletConnectButton />
+                </div>
+              </div>
+            </div>
+          </header>
+        )}
+
+        {/* Top Bar for guest users */}
+        {!isAuthenticated && !isPublicRoute && (title || description) && (
+          <header className="bg-white border-b border-gray-200 px-4 lg:px-6 py-4">
+            <div className="flex items-center justify-between">
+              <div className="flex-1">
+                {/* Page Title for guests */}
+                {title && (
+                  <div>
+                    <h1 className="text-2xl lg:text-3xl font-bold text-gray-900">
+                      {title}
+                    </h1>
+                    {description && (
+                      <p className="text-gray-600 mt-1">{description}</p>
+                    )}
+                  </div>
+                )}
+              </div>
+
+              {/* Connect Wallet for guests */}
               <div className="flex items-center space-x-3">
                 {actions}
                 <div className="hidden lg:block">

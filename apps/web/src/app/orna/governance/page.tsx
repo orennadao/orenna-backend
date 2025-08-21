@@ -1,6 +1,7 @@
 'use client'
 
 import { useEffect, useState } from 'react'
+import { ProtectedRoute } from "@/components/auth/protected-route"
 import { TocNav } from '@/components/governance/TocNav'
 import { GovParamTable } from '@/components/governance/GovParamTable'
 import { LinkCards } from '@/components/governance/LinkCards'
@@ -223,11 +224,15 @@ export default function GovernancePage() {
   }
 
   return (
-    <div className="min-h-screen bg-background">
-      {/* Skip to content link for accessibility */}
-      <a href="#main-content" className="skip-link">
-        Skip to main content
-      </a>
+    <ProtectedRoute 
+      allowGuest={true}
+      guestMessage="View governance framework and proposals publicly. Connect your wallet to participate in voting and submit proposals."
+    >
+      <div className="min-h-screen bg-background">
+        {/* Skip to content link for accessibility */}
+        <a href="#main-content" className="skip-link">
+          Skip to main content
+        </a>
       
       <div className="mx-auto max-w-7xl px-4 py-8">
         <div className="grid grid-cols-12 gap-6">
@@ -268,6 +273,7 @@ export default function GovernancePage() {
           </main>
         </div>
       </div>
-    </div>
+      </div>
+    </ProtectedRoute>
   )
 }
