@@ -1,5 +1,7 @@
 'use client'
 
+export const dynamic = 'force-dynamic'
+
 import React, { useState, useEffect } from 'react'
 import Link from 'next/link'
 import { MainLayout } from '@/components/layout/main-layout'
@@ -88,6 +90,7 @@ export default function GovernancePage() {
   } = useGovernance()
 
   const { formatTokenAmount } = useGovernanceUtils()
+
 
   // Helper function to get state number from status
   const getStateNumber = (proposal: GovernanceProposal): number => {
