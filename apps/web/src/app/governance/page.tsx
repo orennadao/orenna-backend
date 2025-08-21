@@ -1,11 +1,15 @@
-import dynamic from 'next/dynamic'
+import dynamicImport from 'next/dynamic'
 import { Suspense } from 'react'
 import { MainLayout } from '@/components/layout/main-layout'
 import { Card, CardContent } from '@/components/ui/card'
 import { Loader2 } from 'lucide-react'
 
+// Force dynamic rendering to prevent SSG issues with Web3 providers
+export const dynamic = 'force-dynamic'
+export const runtime = 'nodejs'
+
 // Dynamic import with no SSR to prevent build errors
-const GovernancePageClient = dynamic(
+const GovernancePageClient = dynamicImport(
   () => import('@/components/governance/governance-page-client').then(mod => ({ default: mod.GovernancePageClient })),
   { 
     ssr: false,

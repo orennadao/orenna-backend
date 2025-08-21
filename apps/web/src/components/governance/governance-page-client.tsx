@@ -61,6 +61,40 @@ const PROPOSAL_TYPES = [
 ]
 
 export function GovernancePageClient() {
+  const [isClient, setIsClient] = useState(false)
+
+  useEffect(() => {
+    setIsClient(true)
+  }, [])
+
+  // SSG protection - show loading state during server-side rendering
+  if (!isClient) {
+    return (
+      <MainLayout>
+        <div className="container mx-auto px-4 py-8">
+          <div className="max-w-6xl mx-auto">
+            <div className="mb-8">
+              <div className="h-9 w-80 bg-muted rounded mb-2 animate-pulse" />
+              <div className="h-5 w-64 bg-muted rounded animate-pulse" />
+            </div>
+            <div className="grid grid-cols-1 lg:grid-cols-4 gap-6">
+              <div className="lg:col-span-3 space-y-4">
+                {Array.from({ length: 3 }).map((_, i) => (
+                  <div key={i} className="h-48 bg-muted rounded animate-pulse" />
+                ))}
+              </div>
+              <div className="h-96 bg-muted rounded animate-pulse" />
+            </div>
+          </div>
+        </div>
+      </MainLayout>
+    )
+  }
+
+  return <GovernancePageContent />
+}
+
+function GovernancePageContent() {
   const [searchQuery, setSearchQuery] = useState('')
   const [statusFilter, setStatusFilter] = useState('')
   const [typeFilter, setTypeFilter] = useState('')

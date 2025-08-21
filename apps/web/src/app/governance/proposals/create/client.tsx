@@ -1,6 +1,6 @@
 'use client'
 
-import React from 'react'
+import React, { useState, useEffect } from 'react'
 import Link from 'next/link'
 import { useRouter } from 'next/navigation'
 import { Card, CardContent } from '@/components/ui/card'
@@ -12,6 +12,32 @@ import { useAuth } from '@/hooks/use-auth'
 import { ArrowLeft, Wallet, AlertCircle } from 'lucide-react'
 
 export default function CreateProposalClient() {
+  const [isClient, setIsClient] = useState(false)
+  
+  useEffect(() => {
+    setIsClient(true)
+  }, [])
+
+  // SSG protection - show loading state during server-side rendering
+  if (!isClient) {
+    return (
+      <div className="container mx-auto px-4 py-8">
+        <div className="max-w-4xl mx-auto">
+          <div className="mb-8">
+            <div className="h-10 w-32 bg-muted rounded mb-4 animate-pulse" />
+            <div className="h-9 w-80 bg-muted rounded mb-2 animate-pulse" />
+            <div className="h-5 w-64 bg-muted rounded animate-pulse" />
+          </div>
+          <div className="h-96 bg-muted rounded animate-pulse" />
+        </div>
+      </div>
+    )
+  }
+
+  return <CreateProposalContent />
+}
+
+function CreateProposalContent() {
   const router = useRouter()
   const { address, isConnected } = useAccount()
   const { user } = useAuth()

@@ -2,6 +2,10 @@ import type { Metadata } from "next";
 import "./globals.css";
 import { AppProviders } from "@/components/providers/app-providers";
 
+// Force dynamic rendering globally to prevent SSG issues with Web3 providers
+export const dynamic = 'force-dynamic'
+export const runtime = 'nodejs'
+
 export const metadata: Metadata = {
   title: "Orenna DAO",
   description: "Regenerative finance platform for OrennaDAO",

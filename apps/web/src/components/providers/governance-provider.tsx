@@ -177,6 +177,50 @@ interface GovernanceProviderProps {
 }
 
 export function GovernanceProvider({ children, chainId = 1 }: GovernanceProviderProps) {
+  // Add client-side check for SSG safety
+  const [isClient, setIsClient] = useState(false)
+  
+  useEffect(() => {
+    setIsClient(true)
+  }, [])
+
+  // SSG fallback - return minimal provider during server-side rendering
+  if (!isClient) {
+    const fallbackValue: GovernanceContextValue = {
+      token: null,
+      tokenLoading: false,
+      tokenError: null,
+      proposals: [],
+      proposalsLoading: false,
+      proposalsError: null,
+      votingPower: '0',
+      hasVotingPower: false,
+      delegate: null,
+      delegateVotes: async () => {},
+      createProposal: async () => {},
+      castVote: async () => {},
+      refreshToken: async () => {},
+      refreshProposals: async () => {},
+      getProposal: async () => null,
+      isDelegating: false,
+      isCreatingProposal: false,
+      isVoting: false,
+      chainId: 1,
+      contracts: null
+    }
+    
+    return (
+      <GovernanceContext.Provider value={fallbackValue}>
+        {children}
+      </GovernanceContext.Provider>
+    )
+  }
+
+  // Client-side implementation
+  return <GovernanceProviderClient chainId={chainId}>{children}</GovernanceProviderClient>
+}
+
+function GovernanceProviderClient({ children, chainId = 1 }: GovernanceProviderProps) {
   const { address, isConnected } = useAccount()
   const { user } = useAuth()
   
