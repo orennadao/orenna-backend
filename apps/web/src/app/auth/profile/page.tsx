@@ -4,6 +4,7 @@ import React, { useState } from 'react';
 import { MainLayout } from '@/components/layout/main-layout';
 import { useAuth } from '@/hooks/use-auth';
 import { ClientOnly } from '@/components/auth/client-only';
+import { TermsRequiredWrapper } from '@/components/auth/terms-required-wrapper';
 import { ProfileTabs } from '@/components/profile/profile-tabs';
 import { ProfileOverview } from '@/components/profile/profile-overview';
 import { ProfileWallets } from '@/components/profile/profile-wallets';
@@ -76,7 +77,11 @@ function ProfileContent() {
   }
 
   return (
-    <>
+    <TermsRequiredWrapper
+      onTermsDeclined={() => {
+        window.location.href = '/';
+      }}
+    >
       {/* Header */}
       <div className="mb-6 lg:mb-8">
         <div className="flex items-center gap-2 text-sm text-gray-500 mb-2">
@@ -125,7 +130,7 @@ function ProfileContent() {
           <ProfileSidebar user={user} />
         </div>
       </div>
-    </>
+    </TermsRequiredWrapper>
   );
 }
 

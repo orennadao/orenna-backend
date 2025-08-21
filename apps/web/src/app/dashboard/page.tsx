@@ -2,6 +2,7 @@
 
 import { MainLayout } from "@/components/layout/main-layout";
 import { useAuth } from "@/hooks/use-auth";
+import { TermsRequiredWrapper } from "@/components/auth/terms-required-wrapper";
 import { Button } from "@/components/ui/button";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Badge } from "@/components/ui/badge";
@@ -117,7 +118,12 @@ export default function DashboardPage() {
       title="Dashboard"
       description="Welcome back to Orenna DAO"
     >
-      <div className="space-y-8">
+      <TermsRequiredWrapper
+        onTermsDeclined={() => {
+          window.location.href = '/';
+        }}
+      >
+        <div className="space-y-8">
         {/* Welcome Header */}
         <div className="flex items-center justify-between">
           <div>
@@ -325,6 +331,7 @@ export default function DashboardPage() {
           </div>
         </div>
       </div>
+      </TermsRequiredWrapper>
     </MainLayout>
   );
 }

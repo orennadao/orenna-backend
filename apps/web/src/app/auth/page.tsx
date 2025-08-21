@@ -5,6 +5,7 @@ import { Header } from '@/components/layout/header';
 import { Footer } from '@/components/layout/footer';
 import { useAuth } from '@/hooks/use-auth';
 import { ClientOnly } from '@/components/auth/client-only';
+import { TermsRequiredWrapper } from '@/components/auth/terms-required-wrapper';
 import Link from 'next/link';
 
 function AuthContent() {
@@ -34,33 +35,40 @@ function AuthContent() {
         </div>
 
         {isAuthenticated ? (
-          <div className="bg-white rounded-lg border border-gray-200 p-6">
-            <div className="text-center mb-6">
-              <div className="w-12 h-12 bg-green-100 rounded-full flex items-center justify-center mx-auto mb-4">
-                <svg className="w-6 h-6 text-green-600" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                  <path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M5 13l4 4L19 7"></path>
-                </svg>
+          <TermsRequiredWrapper
+            onTermsDeclined={() => {
+              // Handle terms declined - could redirect to home or show message
+              window.location.href = '/';
+            }}
+          >
+            <div className="bg-white rounded-lg border border-gray-200 p-6">
+              <div className="text-center mb-6">
+                <div className="w-12 h-12 bg-green-100 rounded-full flex items-center justify-center mx-auto mb-4">
+                  <svg className="w-6 h-6 text-green-600" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                    <path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M5 13l4 4L19 7"></path>
+                  </svg>
+                </div>
+                <h2 className="text-xl font-semibold text-gray-900 mb-2">Successfully Authenticated</h2>
+                <p className="text-gray-600">Your wallet is connected and you are authenticated.</p>
               </div>
-              <h2 className="text-xl font-semibold text-gray-900 mb-2">Successfully Authenticated</h2>
-              <p className="text-gray-600">Your wallet is connected and you are authenticated.</p>
-            </div>
 
-            <div className="space-y-4">
-              <Link 
-                href="/auth/profile"
-                className="block w-full px-4 py-2 text-center bg-primary-600 text-white rounded-md hover:bg-primary-700 transition-colors"
-              >
-                View Profile
-              </Link>
-              
-              <Link 
-                href="/dashboard"
-                className="block w-full px-4 py-2 text-center border border-gray-300 text-gray-700 rounded-md hover:bg-gray-50 transition-colors"
-              >
-                Go to Dashboard
-              </Link>
+              <div className="space-y-4">
+                <Link 
+                  href="/auth/profile"
+                  className="block w-full px-4 py-2 text-center bg-primary-600 text-white rounded-md hover:bg-primary-700 transition-colors"
+                >
+                  View Profile
+                </Link>
+                
+                <Link 
+                  href="/dashboard"
+                  className="block w-full px-4 py-2 text-center border border-gray-300 text-gray-700 rounded-md hover:bg-gray-50 transition-colors"
+                >
+                  Go to Dashboard
+                </Link>
+              </div>
             </div>
-          </div>
+          </TermsRequiredWrapper>
         ) : (
           <div className="bg-white rounded-lg border border-gray-200 p-6">
             <div className="text-center mb-6">
