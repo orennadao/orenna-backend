@@ -7,7 +7,7 @@ import {
   Zap,
   PlayCircle, 
   Globe,
-  MessageCircleQuestion,
+  HelpCircle,
   Headphones,
   ChevronRight,
   BookOpen,
@@ -53,7 +53,7 @@ const navigationItems: NavigationItem[] = [
   {
     id: 'faq',
     title: 'FAQ',
-    icon: MessageCircleQuestion,
+    icon: HelpCircle,
     href: '#faq',
     description: 'Frequently asked questions and answers',
     badge: 'Popular'

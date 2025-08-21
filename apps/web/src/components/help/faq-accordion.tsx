@@ -2,7 +2,7 @@
 
 import { useState } from 'react';
 import { Card, CardContent } from '@/components/ui/card';
-import { ChevronDown, MessageCircleQuestion } from 'lucide-react';
+import { ChevronDown, HelpCircle } from 'lucide-react';
 import { cn } from '@/lib/utils';
 
 interface FAQItem {
@@ -157,7 +157,7 @@ export function FAQAccordion() {
     <section id="faq" className="scroll-mt-8">
       <div className="mb-8">
         <div className="flex items-center gap-2 mb-3">
-          <MessageCircleQuestion className="h-5 w-5 text-blue-600" />
+          <HelpCircle className="h-5 w-5 text-blue-600" />
           <h2 className="text-2xl font-bold text-gray-900">Frequently Asked Questions</h2>
         </div>
         <p className="text-gray-600">
