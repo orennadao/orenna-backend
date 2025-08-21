@@ -56,9 +56,9 @@ const navigationItems = [
   {
     id: 'lift-tokens',
     label: 'Lift Tokens',
-    href: '/lift-tokens',
+    href: '/marketplace/lift-tokens',
     icon: Coins,
-    description: 'Manage your tokens'
+    description: 'Lift Tokens marketplace'
   },
   {
     id: 'mint-requests',

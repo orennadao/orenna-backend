@@ -118,19 +118,19 @@ export function LiftTokensDashboard() {
         </Card>
         <Card className="p-4">
           <div className="text-2xl font-bold text-green-600">
-            {liftTokens.filter(t => t.status === 'ISSUED').length}
+            {(liftTokens || []).filter(t => t.status === 'ISSUED').length}
           </div>
           <div className="text-sm text-gray-600">Issued</div>
         </Card>
         <Card className="p-4">
           <div className="text-2xl font-bold text-blue-600">
-            {liftTokens.filter(t => t.status === 'CREATED').length}
+            {(liftTokens || []).filter(t => t.status === 'CREATED').length}
           </div>
           <div className="text-sm text-gray-600">Created</div>
         </Card>
         <Card className="p-4">
           <div className="text-2xl font-bold text-gray-600">
-            {liftTokens.filter(t => t.status === 'RETIRED').length}
+            {(liftTokens || []).filter(t => t.status === 'RETIRED').length}
           </div>
           <div className="text-sm text-gray-600">Retired</div>
         </Card>
@@ -140,10 +140,10 @@ export function LiftTokensDashboard() {
       <div className="space-y-4">
         {isLoading ? (
           <LoadingState title="Loading lift tokens..." />
-        ) : liftTokens.length === 0 ? (
+        ) : (liftTokens || []).length === 0 ? (
           <NoLiftTokensEmpty />
         ) : (
-          liftTokens.map((token: LiftToken) => (
+          (liftTokens || []).map((token: LiftToken) => (
             <Card key={token.id} className="p-6 hover:shadow-md transition-shadow">
               <div className="flex justify-between items-start mb-4">
                 <div>

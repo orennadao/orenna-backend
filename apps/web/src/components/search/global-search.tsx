@@ -256,7 +256,7 @@ const searchItems = async (query: string, filter?: SearchFilter): Promise<Search
           project.description?.toLowerCase().includes(query.toLowerCase()) ||
           project.slug?.toLowerCase().includes(query.toLowerCase());
         
-        const matchesStatus = !filter || filter.status.length === 0 || 
+        const matchesStatus = !filter || !filter.status || filter.status.length === 0 || 
           filter.status.includes(project.status || 'Active');
         
         return matchesQuery && matchesStatus;
@@ -284,7 +284,7 @@ const searchItems = async (query: string, filter?: SearchFilter): Promise<Search
         const matchesQuery = request.title?.toLowerCase().includes(query.toLowerCase()) ||
           request.description?.toLowerCase().includes(query.toLowerCase());
         
-        const matchesStatus = !filter || filter.status.length === 0 || 
+        const matchesStatus = !filter || !filter.status || filter.status.length === 0 || 
           filter.status.includes(request.status);
         
         return matchesQuery && matchesStatus;
@@ -313,7 +313,7 @@ const searchItems = async (query: string, filter?: SearchFilter): Promise<Search
         const matchesQuery = token.tokenId?.toLowerCase().includes(query.toLowerCase()) ||
           token.project?.name?.toLowerCase().includes(query.toLowerCase());
         
-        const matchesStatus = !filter || filter.status.length === 0 || 
+        const matchesStatus = !filter || !filter.status || filter.status.length === 0 || 
           filter.status.includes(token.status);
         
         return matchesQuery && matchesStatus;

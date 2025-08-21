@@ -171,17 +171,17 @@ export function VerificationQueue({ userRoles = [] }: VerificationQueueProps) {
           </div>
           
           <div className="text-sm text-gray-600">
-            {mintRequests.length} request{mintRequests.length !== 1 ? 's' : ''}
+            {(mintRequests || []).length} request{(mintRequests || []).length !== 1 ? 's' : ''}
           </div>
         </div>
       </Card>
 
       {/* Request List */}
       <div className="space-y-4">
-        {mintRequests.length === 0 ? (
+        {(mintRequests || []).length === 0 ? (
           <VerificationQueueEmpty statusFilter={statusFilter} />
         ) : (
-          mintRequests.map((request) => (
+          (mintRequests || []).map((request) => (
             <Card key={request.id} className="p-6 hover:shadow-md transition-shadow">
               <div className="space-y-4">
                 {/* Header */}
