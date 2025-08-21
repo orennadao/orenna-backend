@@ -26,6 +26,8 @@ const nextConfig = {
   eslint: {
     ignoreDuringBuilds: true,
   },
+  // Disable static optimization to prevent SSR issues with hooks
+  output: 'standalone',
   env: {
     API_URL: process.env.API_URL || 'http://localhost:3000',
   },
