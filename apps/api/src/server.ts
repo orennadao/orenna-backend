@@ -118,7 +118,7 @@ await app.register(jwt, {
 });
 await app.register(websocket);
 
-app.decorate("authenticate", async function (req, reply) {
+app.decorate("authenticate", async function (req: any, reply: any) {
   try {
     await req.jwtVerify();
   } catch (err) {

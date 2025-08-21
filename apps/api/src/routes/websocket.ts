@@ -13,10 +13,10 @@ export default async function websocketRoutes(app: FastifyInstance) {
   app.register(async function (app) {
     app.get('/ws', { websocket: true }, (connection, req) => {
       app.log.info('New WebSocket connection established');
-      if (connection && connection.socket) {
-        wsManager.addConnection(connection.socket);
+      if (connection) {
+        wsManager.addConnection(connection);
       } else {
-        app.log.error('WebSocket connection or socket is undefined');
+        app.log.error('WebSocket connection is undefined');
       }
     });
   });
@@ -154,7 +154,7 @@ export default async function websocketRoutes(app: FastifyInstance) {
       });
 
       return { success: true, message: 'Verification notification sent' };
-    } catch (error) {
+    } catch (error: any) {
       app.log.error('Failed to send verification notification:', error);
       return reply.code(500).send({
         success: false,
@@ -187,7 +187,7 @@ export default async function websocketRoutes(app: FastifyInstance) {
       wsManager.emitAnalyticsEvent('analytics_update', { type, data });
 
       return { success: true, message: 'Analytics notification sent' };
-    } catch (error) {
+    } catch (error: any) {
       app.log.error('Failed to send analytics notification:', error);
       return reply.code(500).send({
         success: false,

@@ -146,7 +146,7 @@ model MintRequest {
   requestHash  String   @unique
   amount       String
   recipient    String
-  status       String
+  status       MintRequestStatus @default(PENDING)
   createdAt    DateTime @default(now())
   updatedAt    DateTime @updatedAt
 
@@ -160,7 +160,7 @@ model MintRequest {
 model MintRequestEvent {
   id            Int      @id @default(autoincrement())
   mintRequestId Int
-  eventType     String
+  eventType     MintRequestEventType
   txHash        String
   blockNumber   Int
   logIndex      Int
@@ -1011,5 +1011,29 @@ model TreasurySignature {
   @@index([transactionId])
   @@index([signerAddress])
   @@map("TreasurySignature")
+}
+
+// ============================================================================
+// AUDIT TRAIL & SYSTEM EVENTS
+// ============================================================================
+
+model AuditEvent {
+  id            Int      @id @default(autoincrement())
+  eventType     String
+  entityType    String   // e.g., "User", "Payment", "Project", etc.
+  entityId      String   // ID of the affected entity
+  userId        String?  // User who triggered the event
+  userAddress   String?  // Wallet address of the user
+  details       Json?    // Event-specific data
+  ipAddress     String?
+  userAgent     String?
+  sessionId     String?
+  createdAt     DateTime @default(now())
+
+  @@index([eventType])
+  @@index([entityType, entityId])
+  @@index([userId])
+  @@index([createdAt])
+  @@map("AuditEvent")
 }
 

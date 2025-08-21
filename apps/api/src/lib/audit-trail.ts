@@ -397,7 +397,7 @@ export class AuditTrailService {
   private async getLatestEvent(entityType: string, entityId: string): Promise<AuditEvent | null> {
     const result = await this.app.prisma.auditEvent.findFirst({
       where: { entityType, entityId },
-      orderBy: { timestamp: 'desc' }
+      orderBy: { createdAt: 'desc' }
     });
 
     return result ? this.mapDatabaseEventToAuditEvent(result) : null;
@@ -406,20 +406,15 @@ export class AuditTrailService {
   private async storeAuditEvent(event: AuditEvent): Promise<void> {
     await this.app.prisma.auditEvent.create({
       data: {
-        eventId: event.id,
-        timestamp: event.timestamp,
         eventType: event.eventType,
-        action: event.action,
         entityType: event.entityType,
         entityId: event.entityId,
-        actor: event.actor,
-        source: event.source,
+        userId: event.actor?.userId || null,
+        userAddress: event.actor?.address || null,
         details: event.details,
-        eventHash: event.eventHash,
-        previousEventHash: event.previousEventHash,
-        blockchainTxHash: event.blockchainTxHash,
-        ipfsHash: event.ipfsHash,
-        signature: event.signature
+        ipAddress: event.source?.ipAddress || null,
+        userAgent: event.source?.userAgent || null,
+        sessionId: event.source?.sessionId || null
       }
     });
   }

@@ -123,12 +123,12 @@ export default async function whiteLabelRoutes(app: FastifyInstance) {
       
       const organization = await whiteLabelService.createWhiteLabelOrganization({
         ...body,
-        customization: body.customization || {
-          reportTemplates: {},
-          workflowTemplates: {},
-          emailTemplates: {},
-          webhookEndpoints: [],
-          customFields: {}
+        customization: {
+          reportTemplates: body.customization?.reportTemplates || {},
+          workflowTemplates: body.customization?.workflowTemplates || {},
+          emailTemplates: body.customization?.emailTemplates || {},
+          webhookEndpoints: body.customization?.webhookEndpoints || [],
+          customFields: body.customization?.customFields || {}
         },
         expiresAt: body.expiresAt ? new Date(body.expiresAt) : undefined
       });

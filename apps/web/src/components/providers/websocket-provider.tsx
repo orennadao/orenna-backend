@@ -118,6 +118,20 @@ export function WebSocketProvider({ children, wsUrl }: WebSocketProviderProps) {
 export function useWebSocketContext(): WebSocketContextValue {
   const context = useContext(WebSocketContext);
   if (!context) {
+    // Return a fallback during SSG/SSR to prevent errors
+    if (typeof window === 'undefined') {
+      return {
+        isConnected: false,
+        isConnecting: false,
+        error: null,
+        subscribe: () => {},
+        unsubscribe: () => {},
+        reconnect: () => {},
+        onPaymentEvent: () => () => {},
+        onIndexerEvent: () => () => {},
+        recentMessages: []
+      };
+    }
     throw new Error('useWebSocketContext must be used within a WebSocketProvider');
   }
   return context;

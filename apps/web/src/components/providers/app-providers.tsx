@@ -5,9 +5,14 @@ import { ReactQueryDevtools } from '@tanstack/react-query-devtools';
 import { GovernanceProvider } from './governance-provider';
 import { Web3Provider } from './web3-provider';
 import { WebSocketProvider } from './websocket-provider';
-import { useState } from 'react';
+import { useState, useEffect } from 'react';
 
 export function AppProviders({ children }: { children: React.ReactNode }) {
+  const [isClient, setIsClient] = useState(false);
+  
+  useEffect(() => {
+    setIsClient(true);
+  }, []);
   const [queryClient] = useState(
     () =>
       new QueryClient({
@@ -26,6 +31,11 @@ export function AppProviders({ children }: { children: React.ReactNode }) {
         },
       })
   );
+
+  if (!isClient) {
+    // Render children without context providers during SSR/SSG
+    return <>{children}</>;
+  }
 
   return (
     <QueryClientProvider client={queryClient}>

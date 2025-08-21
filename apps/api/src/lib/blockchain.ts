@@ -107,10 +107,26 @@ export class BlockchainService {
     });
 
     const [name, symbol, decimals, totalSupply] = await Promise.all([
-      contract.read.name(),
-      contract.read.symbol(),
-      contract.read.decimals(),
-      contract.read.totalSupply(),
+      publicClient.readContract({
+        address: env.ORNA_TOKEN_ADDRESS as Address,
+        abi: ORNA_ABI,
+        functionName: 'name',
+      }),
+      publicClient.readContract({
+        address: env.ORNA_TOKEN_ADDRESS as Address,
+        abi: ORNA_ABI,
+        functionName: 'symbol',
+      }),
+      publicClient.readContract({
+        address: env.ORNA_TOKEN_ADDRESS as Address,
+        abi: ORNA_ABI,
+        functionName: 'decimals',
+      }),
+      publicClient.readContract({
+        address: env.ORNA_TOKEN_ADDRESS as Address,
+        abi: ORNA_ABI,
+        functionName: 'totalSupply',
+      }),
     ]);
 
     return { name, symbol, decimals, totalSupply: totalSupply.toString() };
@@ -128,7 +144,12 @@ export class BlockchainService {
       client: publicClient,
     });
 
-    const balance = await contract.read.balanceOf([address]);
+    const balance = await publicClient.readContract({
+      address: env.ORNA_TOKEN_ADDRESS as Address,
+      abi: ORNA_ABI,
+      functionName: 'balanceOf',
+      args: [address],
+    });
     return balance.toString();
   }
 
@@ -145,8 +166,18 @@ export class BlockchainService {
     });
 
     const votes = blockNumber 
-      ? await contract.read.getPastVotes([address, blockNumber])
-      : await contract.read.getVotes([address]);
+      ? await publicClient.readContract({
+          address: env.ORNA_TOKEN_ADDRESS as Address,
+          abi: ORNA_ABI,
+          functionName: 'getPastVotes',
+          args: [address, blockNumber],
+        })
+      : await publicClient.readContract({
+          address: env.ORNA_TOKEN_ADDRESS as Address,
+          abi: ORNA_ABI,
+          functionName: 'getVotes',
+          args: [address],
+        });
     
     return votes.toString();
   }
@@ -165,9 +196,24 @@ export class BlockchainService {
     });
 
     const [uri, totalSupply, maxSupply] = await Promise.all([
-      contract.read.uri([BigInt(tokenId)]).catch(() => ''),
-      contract.read.totalSupply([BigInt(tokenId)]).catch(() => 0n),
-      contract.read.maxSupply([BigInt(tokenId)]).catch(() => 0n),
+      publicClient.readContract({
+        address: env.LIFT_TOKENS_ADDRESS as Address,
+        abi: LIFT_TOKENS_ABI,
+        functionName: 'uri',
+        args: [BigInt(tokenId)],
+      }).catch(() => ''),
+      publicClient.readContract({
+        address: env.LIFT_TOKENS_ADDRESS as Address,
+        abi: LIFT_TOKENS_ABI,
+        functionName: 'totalSupply',
+        args: [BigInt(tokenId)],
+      }).catch(() => 0n),
+      publicClient.readContract({
+        address: env.LIFT_TOKENS_ADDRESS as Address,
+        abi: LIFT_TOKENS_ABI,
+        functionName: 'maxSupply',
+        args: [BigInt(tokenId)],
+      }).catch(() => 0n),
     ]);
 
     return {
@@ -190,7 +236,12 @@ export class BlockchainService {
       client: publicClient,
     });
 
-    const balance = await contract.read.balanceOf([address, BigInt(tokenId)]);
+    const balance = await publicClient.readContract({
+      address: env.LIFT_TOKENS_ADDRESS as Address,
+      abi: LIFT_TOKENS_ABI,
+      functionName: 'balanceOf',
+      args: [address, BigInt(tokenId)],
+    });
     return balance.toString();
   }
 
@@ -209,7 +260,12 @@ export class BlockchainService {
     const addresses = tokenIds.map(() => address);
     const ids = tokenIds.map(id => BigInt(id));
     
-    const balances = await contract.read.balanceOfBatch([addresses, ids]);
+    const balances = await publicClient.readContract({
+      address: env.LIFT_TOKENS_ADDRESS as Address,
+      abi: LIFT_TOKENS_ABI,
+      functionName: 'balanceOfBatch',
+      args: [addresses, ids],
+    });
     return balances.map(b => b.toString());
   }
 

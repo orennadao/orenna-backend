@@ -43,17 +43,23 @@ export type {
   // Note: Only export types that actually exist in schema.prisma
 } from '@prisma/client';
 
-// Re-export enums via the Prisma namespace to avoid runtime import errors
-export const {
-  // These enums are defined in schema.prisma
-  // MintRequestStatus, // Commented out - schema mismatch
-  // MintRequestEventType, // Commented out - schema mismatch
+// Import and re-export enums directly from generated client
+import { 
+  PaymentType,
+  PaymentStatus, 
+  PaymentEventType,
+  VerificationStatus,
+  MintRequestStatus,
+  MintRequestEventType
+} from '@prisma/client';
+
+// Re-export enums that actually exist in the generated client
+export {
   PaymentType,
   PaymentStatus,
   PaymentEventType,
-
-
-  // Verification enum
-  VerificationStatus
-} = Prisma;
+  VerificationStatus,
+  MintRequestStatus,
+  MintRequestEventType
+};
 

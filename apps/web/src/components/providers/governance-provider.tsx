@@ -467,6 +467,31 @@ export function GovernanceProvider({ children, chainId = 1 }: GovernanceProvider
 export function useGovernance() {
   const context = useContext(GovernanceContext)
   if (context === undefined) {
+    // Return a fallback during SSG/SSR to prevent errors
+    if (typeof window === 'undefined') {
+      return {
+        token: null,
+        tokenLoading: false,
+        tokenError: null,
+        proposals: [],
+        proposalsLoading: false,
+        proposalsError: null,
+        votingPower: '0',
+        hasVotingPower: false,
+        delegate: null,
+        delegateVotes: async () => {},
+        createProposal: async () => {},
+        castVote: async () => {},
+        refreshToken: async () => {},
+        refreshProposals: async () => {},
+        getProposal: async () => null,
+        isDelegating: false,
+        isCreatingProposal: false,
+        isVoting: false,
+        chainId: 1,
+        contracts: null
+      };
+    }
     throw new Error('useGovernance must be used within a GovernanceProvider')
   }
   return context
