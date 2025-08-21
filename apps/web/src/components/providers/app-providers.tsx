@@ -13,6 +13,11 @@ export function AppProviders({ children }: { children: React.ReactNode }) {
   useEffect(() => {
     setIsClient(true);
   }, []);
+
+  // During SSG/SSR, don't render providers that cause context issues
+  if (!isClient) {
+    return <>{children}</>;
+  }
   const [queryClient] = useState(
     () =>
       new QueryClient({

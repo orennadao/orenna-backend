@@ -1,6 +1,7 @@
 'use client';
 
 export const dynamic = 'force-dynamic';
+export const runtime = 'nodejs';
 
 import { useState } from 'react';
 import { Button, Card, CardContent, CardHeader, CardTitle } from '@orenna/ui';

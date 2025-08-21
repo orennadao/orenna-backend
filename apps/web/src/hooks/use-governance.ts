@@ -73,6 +73,25 @@ export interface GovernanceConfig {
 
 // Hook for governance token information
 export function useGovernanceToken(chainId: number = 1) {
+  const [isClient, setIsClient] = useState(false)
+  
+  useEffect(() => {
+    setIsClient(true)
+  }, [])
+
+  // SSG safety: return default values during SSG
+  if (!isClient) {
+    return {
+      balance: '0',
+      votingPower: '0',
+      delegate: null,
+      hasVotingPower: false,
+      tokenInfo: { name: '', symbol: '', decimals: 18 },
+      contracts: null,
+      isReady: false,
+    }
+  }
+
   const { address } = useAccount()
   const { user } = useAuth()
   const contracts = getContractAddresses(chainId)
@@ -136,6 +155,22 @@ export function useGovernanceToken(chainId: number = 1) {
 
 // Hook for proposal operations
 export function useGovernanceProposals(chainId: number = 1) {
+  const [isClient, setIsClient] = useState(false)
+  
+  useEffect(() => {
+    setIsClient(true)
+  }, [])
+
+  // SSG safety: return default values during SSG
+  if (!isClient) {
+    return {
+      proposals: [],
+      proposalsLoading: false,
+      proposalsError: null,
+      refetchProposals: () => Promise.resolve(),
+    }
+  }
+
   const { user } = useAuth()
   const queryClient = useQueryClient()
 
@@ -206,6 +241,20 @@ export function useGovernanceProposals(chainId: number = 1) {
 
 // Hook for voting operations
 export function useGovernanceVoting(chainId: number = 1) {
+  const [isClient, setIsClient] = useState(false)
+  
+  useEffect(() => {
+    setIsClient(true)
+  }, [])
+
+  // SSG safety: return default values during SSG
+  if (!isClient) {
+    return {
+      castVote: () => Promise.resolve(),
+      hasVoted: () => Promise.resolve(false),
+    }
+  }
+
   const { address } = useAccount()
   const queryClient = useQueryClient()
   const contracts = getContractAddresses(chainId)
@@ -286,6 +335,20 @@ export function useGovernanceVoting(chainId: number = 1) {
 
 // Hook for delegation operations
 export function useGovernanceDelegation(chainId: number = 1) {
+  const [isClient, setIsClient] = useState(false)
+  
+  useEffect(() => {
+    setIsClient(true)
+  }, [])
+
+  // SSG safety: return default values during SSG
+  if (!isClient) {
+    return {
+      delegateVotes: () => Promise.resolve(),
+      isDelegating: false,
+    }
+  }
+
   const { address } = useAccount()
   const queryClient = useQueryClient()
   const contracts = getContractAddresses(chainId)
@@ -340,6 +403,21 @@ export function useGovernanceDelegation(chainId: number = 1) {
 
 // Hook for governance parameters
 export function useGovernanceParameters(category?: string) {
+  const [isClient, setIsClient] = useState(false)
+  
+  useEffect(() => {
+    setIsClient(true)
+  }, [])
+
+  // SSG safety: return default values during SSG
+  if (!isClient) {
+    return {
+      parameters: [],
+      parametersLoading: false,
+      parametersError: null,
+    }
+  }
+
   const { user } = useAuth()
 
   const {
