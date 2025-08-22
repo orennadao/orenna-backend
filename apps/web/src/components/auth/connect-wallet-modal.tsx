@@ -48,8 +48,10 @@ export function ConnectWalletModal({ isOpen, onClose }: ConnectWalletModalProps)
   // Handle wallet connection with proper state management and request deduplication
   const handleConnect = async (connector: any) => {
     try {
+      console.log('🟢 HANDLE CONNECT FUNCTION ENTERED!!!');
+      console.warn('🟢 HANDLE CONNECT FUNCTION ENTERED!!!');
       console.error('🟢 HANDLE CONNECT FUNCTION ENTERED!!!');
-      console.error('🟢 Function parameters:', { connector, isConnecting, isPending, isAuthenticating });
+      console.log('🟢 Function parameters:', { connector, isConnecting, isPending, isAuthenticating });
       
       // Prevent simultaneous connection attempts
       if (isConnecting || isPending || isAuthenticating) {
@@ -139,11 +141,14 @@ export function ConnectWalletModal({ isOpen, onClose }: ConnectWalletModalProps)
   const error = connectError || authError;
   
   // Debug logging for modal render and connectors
+  console.log('MODAL COMPONENT RENDERING - isOpen:', isOpen);
   if (isOpen) {
+    console.log('🚨 MODAL IS OPEN AND RENDERING!!! 🚨');
+    console.warn('🚨 MODAL IS OPEN AND RENDERING!!! 🚨');
     console.error('🚨 MODAL IS OPEN AND RENDERING!!! 🚨');
   }
   
-  console.error('🔍 AVAILABLE CONNECTORS:', connectors.map(c => ({
+  console.log('🔍 AVAILABLE CONNECTORS:', connectors.map(c => ({
     name: c.name,
     id: c.id,
     type: c.type,
@@ -217,19 +222,41 @@ export function ConnectWalletModal({ isOpen, onClose }: ConnectWalletModalProps)
                       className="w-full justify-start"
                       onClick={(e) => {
                         try {
+                          console.log('🚨🚨🚨 BUTTON CLICK DETECTED!!! 🚨🚨🚨');
+                          console.warn('🚨🚨🚨 BUTTON CLICK DETECTED!!! 🚨🚨🚨');
+                          console.info('🚨🚨🚨 BUTTON CLICK DETECTED!!! 🚨🚨🚨');
                           console.error('🚨🚨🚨 BUTTON CLICK DETECTED!!! 🚨🚨🚨');
-                          alert('BUTTON CLICKED - CHECK CONSOLE');
-                          console.error('Event:', e);
-                          console.error('Target:', e.target);
-                          console.error('🚨 BUTTON CLICKED FOR:', connector.name, 'Type:', connector.type, 'ID:', connector.id);
-                          console.error('🚨 CONNECTOR OBJECT:', connector);
-                          console.error('🚨 CURRENT STATE - isPending:', isPending, 'isAuthenticating:', isAuthenticating, 'isConnecting:', isConnecting);
-                          console.error('🔥 ABOUT TO CALL HANDLE CONNECT!!!');
-                          handleConnect(connector);
-                          console.error('🔥 HANDLE CONNECT CALL COMPLETED!!!');
+                          
+                          // Try different ways to output to see if console is filtered
+                          if (typeof window !== 'undefined') {
+                            (window as any).debugInfo = {
+                              connector: connector.name,
+                              isPending,
+                              isAuthenticating, 
+                              isConnecting,
+                              timestamp: new Date().toISOString()
+                            };
+                          }
+                          
+                          alert(`BUTTON CLICKED FOR: ${connector.name}
+States: isPending=${isPending}, isAuth=${isAuthenticating}, isConn=${isConnecting}
+Check all console tabs (Console/Network/etc)
+Also check window.debugInfo in console`);
+                          
+                          console.log('Event:', e);
+                          console.log('Target:', e.target);
+                          console.log('🚨 BUTTON CLICKED FOR:', connector.name, 'Type:', connector.type, 'ID:', connector.id);
+                          console.log('🚨 CONNECTOR OBJECT:', connector);
+                          console.log('🚨 CURRENT STATE - isPending:', isPending, 'isAuthenticating:', isAuthenticating, 'isConnecting:', isConnecting);
+                          console.log('🔥 ABOUT TO CALL HANDLE CONNECT!!!');
+                          
+                          const result = handleConnect(connector);
+                          console.log('🔥 HANDLE CONNECT RETURNED:', result);
+                          
                         } catch (error) {
                           console.error('🚨 ERROR IN CLICK HANDLER:', error);
-                          console.error('🚨 ERROR STACK:', error.stack);
+                          console.log('🚨 ERROR IN CLICK HANDLER:', error);
+                          alert('ERROR IN CLICK HANDLER: ' + error.message);
                         }
                       }}
                       disabled={isDisabled}
