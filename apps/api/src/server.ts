@@ -135,7 +135,7 @@ await app.register(swagger);
 await app.register(readiness);
 await app.register(healthRoutes);
 //await app.register(echoRoutes);
-await app.register(authRoutes);
+await app.register(authRoutes, { prefix: '/api' });
 await app.register(projectsRoutes, { prefix: '/api' });
 await app.register(liftTokenRoutes, { prefix: '/api' });
 await app.register(blockchainRoutes, { prefix: '/api' });
