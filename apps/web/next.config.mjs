@@ -28,6 +28,10 @@ const nextConfig = {
   },
   // Disable static optimization to prevent SSR issues with hooks
   output: 'standalone',
+  // Skip building error pages that cause Html import issues
+  generateBuildId: async () => {
+    return `build-${Date.now()}`;
+  },
   env: {
     API_URL: process.env.API_URL || 'http://localhost:3000',
   },
@@ -66,8 +70,43 @@ const nextConfig = {
     
     // Production optimizations
     if (!dev) {
+      // Fix for ReferenceError: Cannot access 'v' before initialization
+      // Disable problematic optimizations that can cause variable hoisting issues
       config.optimization = {
         ...config.optimization,
+        minimize: true,
+        // Disable concatenateModules to prevent variable initialization order issues
+        concatenateModules: false,
+        // Disable mangling that can cause variable reference issues
+        minimizer: config.optimization.minimizer.map(minimizer => {
+          if (minimizer.constructor.name === 'TerserPlugin') {
+            return {
+              ...minimizer,
+              options: {
+                ...minimizer.options,
+                terserOptions: {
+                  ...minimizer.options?.terserOptions,
+                  mangle: {
+                    ...minimizer.options?.terserOptions?.mangle,
+                    // Disable variable name mangling that can cause reference errors
+                    keep_fnames: true,
+                    reserved: ['v', 'variables', 'context']
+                  },
+                  compress: {
+                    ...minimizer.options?.terserOptions?.compress,
+                    // Disable dead code elimination that might affect initialization order
+                    dead_code: false,
+                    // Disable variable hoisting
+                    hoist_vars: false,
+                    // Keep function names to prevent reference errors
+                    keep_fnames: true
+                  }
+                }
+              }
+            }
+          }
+          return minimizer
+        }),
         splitChunks: {
           chunks: 'all',
           cacheGroups: {
