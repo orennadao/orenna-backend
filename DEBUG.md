@@ -129,10 +129,15 @@ at d (common-a17767a3fa9f5b72.js)
 at f (page-e13e9a3b41f28a89.js) 
 at React render pipeline...
 ```
-**Status**: **ISOLATED TO WEB3 STACK**  
-**Root Cause**: Confirmed to be in wagmi/auth system (not React/Next.js)  
-**Evidence**: Minimal app (271 modules) works fine, full app (3816+ modules) fails  
-**Next Step**: Systematic component reintroduction to find exact culprit
+**Status**: **ISOLATED TO PRODUCTION BUILD/BUNDLING**  
+**Root Cause**: Development works perfectly, production build fails  
+**Evidence**: 
+- ✅ Minimal app (271 modules): Works in dev
+- ✅ + Web3Provider (3,657 modules): Works in dev
+- ✅ + GovernanceProvider (7,524 modules): Works in dev  
+- ✅ Full app (7,808 modules): **Works perfectly in development**
+- ❌ Production build/deployment: ReferenceError
+**Conclusion**: Issue is in webpack bundling/minification, NOT component logic
 
 ### **Legacy Auth Hook Usage** 
 **Issue**: Some components still using old patterns  
