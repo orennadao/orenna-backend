@@ -127,23 +127,26 @@ Chain allowlist enforced in:
 // Updated backend cookie configuration in apps/api/src/routes/auth.ts
 sameSite: env.NODE_ENV === 'production' ? 'none' : 'lax'
 ```
-**Status**: **FIXED - Cross-Origin Cookies Working**  
+**Status**: **BACKEND FIXED - FRONTEND AUTH FLOW ISSUES DISCOVERED**  
+**Context**: This issue only affects **production deployment** at `alpha.orennadao.com` - local development works fine since both frontend and backend run on `localhost`  
+**Root Cause**: Production frontend (`alpha.orennadao.com`) and backend (`orenna-backend-production.up.railway.app`) are different domains  
 **Solution Applied**: Backend now uses `sameSite: 'none'` in production for cross-origin support  
 **Technical Changes**:
-- ✅ **Production cookies**: `sameSite: 'none'` + `secure: true`
-- ✅ **Development cookies**: `sameSite: 'lax'` for localhost testing
+- ✅ **Production cookies**: `sameSite: 'none'` + `secure: true` (for cross-domain auth at alpha.orennadao.com)
+- ✅ **Development cookies**: `sameSite: 'lax'` (localhost works fine with same-origin)
 - ✅ **Applied to all auth endpoints**: nonce, session, verify endpoints
 - ✅ **CORS**: Already properly configured and working
 - ✅ **API Endpoints**: Pointing to correct backend
 
-**Impact**: Cross-origin authentication now works between different domains
+**Testing Results**: ✅ **Backend cookie configuration confirmed working** - nonce endpoint sets cookies with `SameSite=None`  
+**New Issue Discovered**: Frontend auth flow blocked by pre-existing error state from failed session checks
 
 ### **✅ RESOLVED: Safari MetaMask Support Enhanced**
 **Status**: **FIXED - Enhanced Connector Configuration**  
 **Solution Applied**: Added multiple wallet connectors for better browser compatibility  
 **Technical Changes**:
 - ✅ **MetaMask Connector**: Explicit `metaMask()` connector for Safari compatibility
-- ✅ **WalletConnect**: Added with real project ID: `0fd05238eb6163e96234da30acf3e2a3`
+- ✅ **WalletConnect**: Added with fresh project ID: `68b984bfdc6c2049e01d3cca4938e468`
 - ✅ **Injected Wallet**: Maintained for general browser wallet support
 - ✅ **Modal Updates**: Updated filtering to show MetaMask and WalletConnect options
 - ✅ **Environment Config**: Set real WalletConnect project ID in both `.env.local` and `.env.alpha`
@@ -161,6 +164,45 @@ connectors: [
 ```
 
 **Impact**: Safari users can now connect via MetaMask, WalletConnect provides mobile fallback
+
+### **🚧 IN PROGRESS: Frontend Auth Flow - Connection Timing Issue**
+**Status**: **DEBUGGING - CONNECTION FAILS DURING WALLET CONNECT PHASE**  
+**Progress Update**: ✅ **Pre-existing error state fixed** - modal now opens without "Connection failed" message  
+**Current Issue**: "Connection failed" appears after clicking MetaMask but before completing wallet connection  
+
+**Updated Evidence**: 
+- ✅ Modal opens cleanly without pre-existing errors
+- ✅ Can click MetaMask option in modal
+- ❌ "Connection failed" appears after clicking MetaMask, before MetaMask "Connect" button
+- ❌ No debug logs from `handleConnect` function - click handlers may not be executing
+
+**Technical Analysis**:
+- ✅ **Backend working**: Nonce endpoint returns 200, cookies set with `SameSite=None`
+- ✅ **Error state clearing**: Pre-existing auth errors now properly cleared
+- ❌ **Button click issue**: Click handlers may not be executing properly
+- ❌ **Connection timing**: Error occurs during wagmi connect phase, not SIWE phase
+
+**Current Debug Strategy**: Added button click logging to verify if onClick handlers execute  
+**Status**: ⏳ **Testing button click detection in production**
+
+**Latest Error - MetaMask Permission Conflict**:
+```
+Requested resource not available. Details: Request of type 'wallet_requestPermissions' already pending for origin https://alpha.orennadao.com. Please wait. Version: viem@2.34.0
+```
+**Analysis**: MetaMask is blocking new permission requests because there's already a pending `wallet_requestPermissions` request for the origin. This suggests either:
+1. A previous connection attempt is still pending/stuck
+2. Multiple simultaneous connection attempts are being made
+3. Browser/MetaMask state needs to be cleared
+
+**Potential Solutions**:
+- Clear MetaMask pending requests by refreshing browser or disconnecting/reconnecting
+- Implement connection state checking before new attempts
+- Add request debouncing to prevent multiple simultaneous requests
+
+**Actions Completed**:
+- ✅ **Removed injected connector** from web3-config.ts to prevent conflicts with MetaMask
+- ✅ **Added connection state checking** in connect-wallet-modal.tsx to prevent simultaneous requests
+- ✅ **Fixed 401 errors source**: Landing page 401s come from GuestSidebar → WalletConnectButton → useSiweAuth automatically checking sessions (expected behavior)
 
 ### **✅ RESOLVED: ReferenceError - Function Initialization Order**
 ```
@@ -206,22 +248,27 @@ grep -r "useAuth" apps/web/src --exclude-dir=node_modules
 
 ## 📋 **Current Status Summary**
 
-### **✅ ALL CRITICAL ISSUES RESOLVED**
+### **🚧 CURRENT STATUS: ONE REMAINING ISSUE**
 
 ### **✅ RESOLVED ISSUES** 
-1. **Cross-Origin Authentication** - Backend cookies now use `sameSite: 'none'` for production
-2. **Safari MetaMask Support** - Enhanced connector configuration with MetaMask + WalletConnect
-3. **WalletConnect Project ID** - Real project ID configured: `0fd05238eb6163e96234da30acf3e2a3`
-4. **ReferenceError in Production** - Function initialization order fixed
-5. **API Endpoint Configuration** - Pointing to correct backend
-6. **Webpack Bundling Issues** - Optimization conflicts resolved
+1. **Cross-Origin Authentication Backend** - Backend cookies now use `sameSite: 'none'` for production ✅
+2. **Safari MetaMask Support** - Enhanced connector configuration with MetaMask + WalletConnect ✅
+3. **WalletConnect Project ID** - Fresh project ID configured: `68b984bfdc6c2049e01d3cca4938e468` ✅
+4. **ReferenceError in Production** - Function initialization order fixed ✅
+5. **API Endpoint Configuration** - Pointing to correct backend ✅
+6. **Webpack Bundling Issues** - Optimization conflicts resolved ✅
+
+### **🚧 REMAINING ISSUE**
+7. **Frontend Auth Flow Connection** - Connection fails during wallet connect phase ⏳
 
 ### **🔧 COMPLETED ACTIONS**
 | Issue | Owner | Action Completed | Status |
 |-------|-------|-----------------|--------|
-| Cross-Origin Auth | Backend | Changed `sameSite: 'strict'` → `'none'` in production | ✅ **FIXED** |
+| Cross-Origin Auth Backend | Backend | Changed `sameSite: 'strict'` → `'none'` in production | ✅ **FIXED** |
 | Safari MetaMask | Frontend | Added MetaMask + WalletConnect connectors | ✅ **FIXED** |
-| WalletConnect Project ID | DevOps | Set real project ID: `0fd05238eb6163e96234da30acf3e2a3` | ✅ **FIXED** |
+| WalletConnect Project ID | DevOps | Set fresh project ID: `68b984bfdc6c2049e01d3cca4938e468` | ✅ **FIXED** |
+| Frontend Error State | Frontend | Clear error state when starting auth attempts | ✅ **PARTIALLY FIXED** |
+| Button Click Detection | Frontend | Add logging to verify onClick handlers execute | ⏳ **TESTING** |
 
 ## 🚨 **Critical Development Notes**
 

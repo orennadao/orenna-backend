@@ -30,6 +30,7 @@ export function ConnectWalletModal({ isOpen, onClose }: ConnectWalletModalProps)
   const [activeTab, setActiveTab] = useState('browser');
   const [watchAddress, setWatchAddress] = useState('');
   const [isWatchMode, setIsWatchMode] = useState(false);
+  const [isConnecting, setIsConnecting] = useState(false);
   
   const { connect, connectors, error: connectError, isPending } = useConnect();
   const { isConnected } = useAccount();
@@ -44,10 +45,18 @@ export function ConnectWalletModal({ isOpen, onClose }: ConnectWalletModalProps)
     }
   }, [isOpen, authError]);
 
-  // Handle wallet connection with proper state management
+  // Handle wallet connection with proper state management and request deduplication
   const handleConnect = async (connector: any) => {
+    // Prevent simultaneous connection attempts
+    if (isConnecting || isPending || isAuthenticating) {
+      console.log('Connection already in progress, ignoring request');
+      return;
+    }
+    
     console.error('🚨 MODAL HANDLE CONNECT CALLED!!! 🚨');
     console.error('Connector:', connector.name, connector.id);
+    
+    setIsConnecting(true);
     try {
       // Always disconnect first to ensure clean state
       if (isConnected) {
@@ -87,6 +96,8 @@ export function ConnectWalletModal({ isOpen, onClose }: ConnectWalletModalProps)
           console.error('Direct SIWE failed:', siweError);
         }
       }
+    } finally {
+      setIsConnecting(false);
     }
   };
 
@@ -146,15 +157,11 @@ export function ConnectWalletModal({ isOpen, onClose }: ConnectWalletModalProps)
             <div className="space-y-2">
               {connectors
                 .filter(connector => 
-                  connector.type === 'injected' || 
                   connector.type === 'metaMask' ||
                   connector.id === 'metaMask'
                 )
                 .map((connector) => {
-                  const isConnectorConnected = isConnected && (
-                    connector.id === 'injected' || 
-                    connector.id === 'metaMask'
-                  );
+                  const isConnectorConnected = isConnected && connector.id === 'metaMask';
                   return (
                     <Button
                       key={connector.id}
@@ -164,7 +171,7 @@ export function ConnectWalletModal({ isOpen, onClose }: ConnectWalletModalProps)
                         console.error('🚨 BUTTON CLICKED FOR:', connector.name);
                         handleConnect(connector);
                       }}
-                      disabled={isPending || isAuthenticating}
+                      disabled={isPending || isAuthenticating || isConnecting}
                     >
                       {(isPending || isAuthenticating) && (
                         <Loader2 className="h-4 w-4 mr-2 animate-spin" />
@@ -201,7 +208,7 @@ export function ConnectWalletModal({ isOpen, onClose }: ConnectWalletModalProps)
                       console.error('🚨 MOBILE BUTTON CLICKED FOR:', connector.name);
                       handleConnect(connector);
                     }}
-                    disabled={isPending || isAuthenticating}
+                    disabled={isPending || isAuthenticating || isConnecting}
                   >
                     {isPending && (
                       <Loader2 className="h-4 w-4 mr-2 animate-spin" />
@@ -309,11 +316,11 @@ export function ConnectWalletModal({ isOpen, onClose }: ConnectWalletModalProps)
         )}
 
         {/* Loading State */}
-        {(isPending || isAuthenticating) && (
+        {(isPending || isAuthenticating || isConnecting) && (
           <div className="text-center py-4">
             <Loader2 className="h-6 w-6 animate-spin mx-auto mb-2" />
             <p className="text-sm text-muted-foreground">
-              {isPending ? 'Connecting wallet...' : 'Signing in...'}
+              {isConnecting || isPending ? 'Connecting wallet...' : 'Signing in...'}
             </p>
           </div>
         )}

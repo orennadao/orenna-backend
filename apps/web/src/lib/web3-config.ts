@@ -46,8 +46,8 @@ function createServerConfig(): Config {
       [sepolia.id]: http(),
     },
     connectors: [
-      injected({ 
-        shimDisconnect: true,
+      metaMask({ 
+        dappMetadata: { name: 'Orenna DAO' }
       }),
     ],
     ssr: true,
@@ -60,11 +60,7 @@ function createClientConfig(): Config {
     console.log('Creating wagmi config with NODE_ENV:', process.env.NODE_ENV);
     
     const connectors = [
-      // Primary injected connector for basic browser wallet support
-      injected({ 
-        shimDisconnect: false,
-      }),
-      // Explicit MetaMask connector for Safari and better compatibility
+      // MetaMask connector for better compatibility (removed injected to prevent conflicts)
       metaMask({ 
         dappMetadata: { name: 'Orenna DAO' }
       }),
