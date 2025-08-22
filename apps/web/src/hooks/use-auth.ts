@@ -1,5 +1,28 @@
-// Re-export SIWE auth as the main auth hook
-export { useSiweAuth as useAuth } from './use-siwe-auth';
+// Use NextAuth session instead of custom SIWE
+import { useSession } from 'next-auth/react';
+
+export function useAuth() {
+  const { data: session, status } = useSession();
+  
+  return {
+    user: session?.user ? {
+      address: (session as any).address || session.user.id,
+      ensName: null,
+      roles: { projectRoles: [], systemRoles: [] }
+    } : null,
+    isAuthenticated: !!session,
+    isAuthenticating: status === 'loading',
+    isLoading: status === 'loading',
+    error: null,
+    signOut: async () => {
+      const { signOut } = await import('next-auth/react');
+      await signOut();
+    },
+    refetch: async () => {
+      // NextAuth handles session refetching automatically
+    }
+  };
+}
 
 // Export the User interface from SIWE auth
 export type User = {

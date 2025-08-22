@@ -1,7 +1,7 @@
 'use client';
 
 import { MainLayout } from "@/components/layout/main-layout";
-import { useSiweAuth } from "@/hooks/use-siwe-auth";
+import { useAuth } from "@/hooks/use-auth";
 import { TermsRequiredWrapper } from "@/components/auth/terms-required-wrapper";
 import { Button } from "@/components/ui/button";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
@@ -21,7 +21,7 @@ import {
 import Link from "next/link";
 
 export default function DashboardPage() {
-  const { user, isAuthenticated, isLoading } = useSiweAuth();
+  const { user, isAuthenticated, isLoading } = useAuth();
   
   if (isLoading) {
     return (
