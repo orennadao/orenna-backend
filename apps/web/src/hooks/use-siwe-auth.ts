@@ -44,17 +44,22 @@ export function useSiweAuth() {
     checkSession();
   }, []);
 
-  // Clear auth state when wallet disconnects
+  // Sync auth state with wallet connection state
   useEffect(() => {
     if (!isConnected && state.isAuthenticated) {
+      // Wallet disconnected but user still appears authenticated - clear auth state
       setState(prev => ({
         ...prev,
         user: null,
         isAuthenticated: false,
         error: null,
       }));
+    } else if (isConnected && !state.isAuthenticated && !state.isAuthenticating && !state.isLoading) {
+      // Wallet connected but no auth - this might be from a previous session
+      // Check if we have a valid session
+      checkSession();
     }
-  }, [isConnected, state.isAuthenticated]);
+  }, [isConnected, state.isAuthenticated, state.isAuthenticating, state.isLoading, checkSession]);
 
   const checkSession = useCallback(async () => {
     try {
@@ -86,12 +91,28 @@ export function useSiweAuth() {
   }, []);
 
   const signIn = useCallback(async () => {
-    if (!address || !chainId || !isConnected) {
+    if (!address || !chainId) {
       setState(prev => ({
         ...prev,
         error: 'Please connect your wallet first',
       }));
       return false;
+    }
+    
+    // Sometimes isConnected lags behind address/chainId availability
+    if (!isConnected) {
+      console.log('Wallet not fully connected yet, waiting...');
+      // Wait a moment for connection state to update
+      await new Promise(resolve => setTimeout(resolve, 500));
+      
+      // Check again - if still not connected, fail
+      if (!isConnected) {
+        setState(prev => ({
+          ...prev,
+          error: 'Wallet connection incomplete',
+        }));
+        return false;
+      }
     }
 
     setState(prev => ({

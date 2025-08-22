@@ -4,8 +4,8 @@ import { walletConnect, injected, coinbaseWallet } from 'wagmi/connectors'
 import type { Config } from 'wagmi'
 import { QueryClient } from '@tanstack/react-query'
 
-// Define the chains your app will work with (allowlist for security)
-export const chains = [mainnet, sepolia] as const
+// Define the chains your app will work with (testnet only for now)
+export const chains = [sepolia] as const
 
 // React Query client for wagmi
 export const queryClient = new QueryClient({
@@ -40,7 +40,6 @@ function createServerConfig(): Config {
   return createConfig({
     chains,
     transports: {
-      [mainnet.id]: http(),
       [sepolia.id]: http(),
     },
     connectors: [
@@ -65,12 +64,11 @@ function createClientConfig(): Config {
       return createConfig({
         chains,
         transports: {
-          [mainnet.id]: http(),
           [sepolia.id]: http(),
         },
         connectors: [
           injected({ 
-            shimDisconnect: true,
+            shimDisconnect: false,
           }),
         ],
       })
@@ -79,13 +77,12 @@ function createClientConfig(): Config {
     return createConfig({
       chains,
       transports: {
-        [mainnet.id]: http(),
         [sepolia.id]: http(),
       },
       connectors: process.env.NODE_ENV === 'development' 
         ? [
             // Development mode - only basic wallet connections to avoid third-party auth errors
-            injected({ shimDisconnect: true }),
+            injected({ shimDisconnect: false }),
           ]
         : [
             // Production mode - full wallet support
@@ -99,7 +96,7 @@ function createClientConfig(): Config {
               },
             }),
             injected({ 
-              shimDisconnect: true,
+              shimDisconnect: false,
             }),
             coinbaseWallet({
               appName: 'Orenna DAO',

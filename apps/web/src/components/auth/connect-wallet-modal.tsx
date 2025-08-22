@@ -6,7 +6,7 @@ import { Button } from '@/components/ui/button';
 import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
 import { Input } from '@/components/ui/input';
 import { Label } from '@/components/ui/label';
-import { useConnect, useAccount } from 'wagmi';
+import { useConnect, useAccount, useDisconnect } from 'wagmi';
 import { useSiweAuth } from '@/hooks/use-siwe-auth';
 import { 
   Wallet, 
@@ -33,19 +33,45 @@ export function ConnectWalletModal({ isOpen, onClose }: ConnectWalletModalProps)
   
   const { connect, connectors, error: connectError, isPending } = useConnect();
   const { isConnected } = useAccount();
+  const { disconnect } = useDisconnect();
   const { signIn, isAuthenticating, error: authError } = useSiweAuth();
 
-  // Close modal when connected and authenticated
+  // Handle wallet connection with proper state management
   const handleConnect = async (connector: any) => {
     try {
+      // Always disconnect first to ensure clean state
+      if (isConnected) {
+        disconnect();
+        // Wait for disconnect to complete
+        await new Promise(resolve => setTimeout(resolve, 300));
+      }
+      
+      // Connect to the wallet
       await connect({ connector });
-      // After connection, trigger SIWE
+      
+      // Give wagmi time to update isConnected state
+      await new Promise(resolve => setTimeout(resolve, 200));
+      
+      // Trigger SIWE authentication
       const success = await signIn();
       if (success) {
         onClose();
       }
-    } catch (error) {
+    } catch (error: any) {
       console.error('Connection failed:', error);
+      
+      // Special handling for "already connected" errors
+      if (error?.message?.includes('already connected') || error?.message?.includes('Connector already connected')) {
+        console.log('Connector already connected, attempting SIWE directly...');
+        try {
+          const success = await signIn();
+          if (success) {
+            onClose();
+          }
+        } catch (siweError) {
+          console.error('Direct SIWE failed:', siweError);
+        }
+      }
     }
   };
 
@@ -96,21 +122,27 @@ export function ConnectWalletModal({ isOpen, onClose }: ConnectWalletModalProps)
             <div className="space-y-2">
               {connectors
                 .filter(connector => connector.type === 'injected')
-                .map((connector) => (
-                  <Button
-                    key={connector.id}
-                    variant="outline"
-                    className="w-full justify-start"
-                    onClick={() => handleConnect(connector)}
-                    disabled={isPending || isAuthenticating}
-                  >
-                    {isPending && (
-                      <Loader2 className="h-4 w-4 mr-2 animate-spin" />
-                    )}
-                    <Wallet className="h-4 w-4 mr-2" />
-                    {connector.name}
-                  </Button>
-                ))}
+                .map((connector) => {
+                  const isConnectorConnected = isConnected && connector.id === 'injected';
+                  return (
+                    <Button
+                      key={connector.id}
+                      variant={isConnectorConnected ? "default" : "outline"}
+                      className="w-full justify-start"
+                      onClick={() => handleConnect(connector)}
+                      disabled={isPending || isAuthenticating}
+                    >
+                      {(isPending || isAuthenticating) && (
+                        <Loader2 className="h-4 w-4 mr-2 animate-spin" />
+                      )}
+                      <Wallet className="h-4 w-4 mr-2" />
+                      {connector.name}
+                      {isConnectorConnected && (
+                        <span className="ml-auto text-xs opacity-70">Connected</span>
+                      )}
+                    </Button>
+                  );
+                })}
             </div>
           </TabsContent>
 
