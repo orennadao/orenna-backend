@@ -66,6 +66,12 @@ function createClientConfig(): Config {
       }),
     ]
     
+    console.error('🔧 CREATED CONNECTORS:', connectors.map(c => ({
+      name: c.name,
+      id: c.id,
+      type: c.type
+    })))
+    
     // Add WalletConnect if project ID is available
     const walletConnectProjectId = process.env.NEXT_PUBLIC_WALLET_CONNECT_PROJECT_ID?.trim()
     if (walletConnectProjectId && walletConnectProjectId !== 'your_project_id_here') {

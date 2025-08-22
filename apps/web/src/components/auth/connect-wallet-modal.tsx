@@ -54,21 +54,35 @@ export function ConnectWalletModal({ isOpen, onClose }: ConnectWalletModalProps)
     }
     
     console.error('🚨 MODAL HANDLE CONNECT CALLED!!! 🚨');
-    console.error('Connector:', connector.name, connector.id);
+    console.error('Connector details:', {
+      name: connector.name,
+      id: connector.id,
+      type: connector.type,
+      ready: connector.ready,
+      available: connector.available
+    });
+    
+    // Check if MetaMask is available
+    if (typeof window !== 'undefined' && !window.ethereum) {
+      console.error('❌ MetaMask not detected in browser');
+      // Note: Error will be handled by the catch block when connect fails
+      console.error('❌ MetaMask not available, connection will fail');
+    }
     
     setIsConnecting(true);
     try {
       // Always disconnect first to ensure clean state
       if (isConnected) {
+        console.error('🔄 DISCONNECTING EXISTING CONNECTION');
         disconnect();
         // Wait for disconnect to complete
         await new Promise(resolve => setTimeout(resolve, 300));
       }
       
       // Connect to the wallet
-      console.error('🔌 CONNECTING TO WALLET:', connector.name);
-      await connect({ connector });
-      console.error('✅ WALLET CONNECTED SUCCESSFULLY');
+      console.error('🔌 CALLING WAGMI CONNECT WITH:', connector.name);
+      const result = await connect({ connector });
+      console.error('✅ WAGMI CONNECT RESULT:', result);
       
       // Give wagmi time to update isConnected state
       await new Promise(resolve => setTimeout(resolve, 200));
@@ -112,6 +126,15 @@ export function ConnectWalletModal({ isOpen, onClose }: ConnectWalletModalProps)
   };
 
   const error = connectError || authError;
+  
+  // Debug logging for connectors and error state
+  console.error('🔍 AVAILABLE CONNECTORS:', connectors.map(c => ({
+    name: c.name,
+    id: c.id,
+    type: c.type,
+    ready: c.ready,
+    available: c.available
+  })));
   
   // Debug logging for error state
   if (error) {
@@ -168,7 +191,9 @@ export function ConnectWalletModal({ isOpen, onClose }: ConnectWalletModalProps)
                       variant={isConnectorConnected ? "default" : "outline"}
                       className="w-full justify-start"
                       onClick={() => {
-                        console.error('🚨 BUTTON CLICKED FOR:', connector.name);
+                        console.error('🚨 BUTTON CLICKED FOR:', connector.name, 'Type:', connector.type, 'ID:', connector.id);
+                        console.error('🚨 CONNECTOR OBJECT:', connector);
+                        console.error('🚨 CURRENT STATE - isPending:', isPending, 'isAuthenticating:', isAuthenticating, 'isConnecting:', isConnecting);
                         handleConnect(connector);
                       }}
                       disabled={isPending || isAuthenticating || isConnecting}

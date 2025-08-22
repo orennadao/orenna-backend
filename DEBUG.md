@@ -203,6 +203,10 @@ Requested resource not available. Details: Request of type 'wallet_requestPermis
 - ✅ **Removed injected connector** from web3-config.ts to prevent conflicts with MetaMask
 - ✅ **Added connection state checking** in connect-wallet-modal.tsx to prevent simultaneous requests
 - ✅ **Fixed 401 errors source**: Landing page 401s come from GuestSidebar → WalletConnectButton → useSiweAuth automatically checking sessions (expected behavior)
+- ✅ **Enhanced debugging**: Added detailed logging for connector state and connection flow
+
+**Latest Update**: Modal no longer shows "Connection failed" before clicking MetaMask, but still fails upon clicking MetaMask button.
+**Next**: Enhanced logging added to identify exact failure point in connection process.
 
 ### **✅ RESOLVED: ReferenceError - Function Initialization Order**
 ```
@@ -260,6 +264,9 @@ grep -r "useAuth" apps/web/src --exclude-dir=node_modules
 
 ### **🚧 REMAINING ISSUE**
 7. **Frontend Auth Flow Connection** - Connection fails during wallet connect phase ⏳
+
+### **📝 EXPECTED BEHAVIOR**
+- **Landing Page 401 Errors (5x)**: These are expected when `useSiweAuth` checks for existing sessions on unauthenticated pages. The hook automatically calls `/api/auth/session` to check if user is already logged in, which returns 401 for guest users. This is normal behavior.
 
 ### **🔧 COMPLETED ACTIONS**
 | Issue | Owner | Action Completed | Status |
