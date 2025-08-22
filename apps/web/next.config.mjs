@@ -68,47 +68,30 @@ const nextConfig = {
       }
     }
     
-    // AGGRESSIVE FIX for ReferenceError: Cannot access 'v' before initialization
-    // Force development-like module handling in production to prevent initialization issues
-    if (!dev) {
-      // Force development mode for module resolution
-      config.mode = 'development'
-      
-      // Disable ALL optimizations that can cause variable initialization order issues
+    // TARGETED FIX for ReferenceError: Cannot access 'v' before initialization
+    // Only apply to client-side builds to prevent SSR issues
+    if (!dev && !isServer) {
+      // Disable problematic optimizations that cause variable initialization order issues
       config.optimization = {
-        // Keep development-like optimization settings
+        ...config.optimization,
+        // Disable minification completely to prevent variable name mangling
         minimize: false,
+        // Disable module concatenation that can cause reference errors
         concatenateModules: false,
-        sideEffects: false,
-        usedExports: false,
-        providedExports: false,
-        removeAvailableModules: false,
-        removeEmptyChunks: false,
-        mergeDuplicateChunks: false,
-        mangleExports: false,
-        // Minimal chunk splitting to prevent initialization order issues
+        // Keep basic chunk splitting but without aggressive optimization
         splitChunks: {
           chunks: 'all',
-          minSize: 0,
-          maxSize: 0,
           cacheGroups: {
-            default: {
-              minChunks: 1,
-              priority: -20,
-              reuseExistingChunk: true
-            },
             vendor: {
               test: /[\\/]node_modules[\\/]/,
               name: 'vendor',
-              priority: -10,
+              chunks: 'all',
+              priority: 10,
               reuseExistingChunk: true
             }
           }
         }
       }
-      
-      // Force ES5 output to prevent modern JS initialization issues
-      config.target = ['web', 'es5']
     }
     
     return config
