@@ -5,7 +5,7 @@
   "scripts": {
     "dev": "dotenv -e ../../.env -- tsx src/server.ts",
     "build": "prisma generate && tsc",
-    "start": "node dist/server.js",
+    "start": "NODE_ENV=production tsx src/server.ts",
     "typecheck": "tsc --noEmit",
     "test": "vitest run",
     "postinstall": "prisma generate"
