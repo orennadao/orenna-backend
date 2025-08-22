@@ -57,10 +57,13 @@ export function ConnectWalletModal({ isOpen, onClose }: ConnectWalletModalProps)
       }
       
       // Connect to the wallet
+      console.error('🔌 CONNECTING TO WALLET:', connector.name);
       await connect({ connector });
+      console.error('✅ WALLET CONNECTED SUCCESSFULLY');
       
       // Give wagmi time to update isConnected state
       await new Promise(resolve => setTimeout(resolve, 200));
+      console.error('⏰ FINISHED WAITING, isConnected:', isConnected);
       
       // Trigger SIWE authentication
       console.error('🚨 CALLING SIGN-IN FUNCTION!!! 🚨');
@@ -157,7 +160,10 @@ export function ConnectWalletModal({ isOpen, onClose }: ConnectWalletModalProps)
                       key={connector.id}
                       variant={isConnectorConnected ? "default" : "outline"}
                       className="w-full justify-start"
-                      onClick={() => handleConnect(connector)}
+                      onClick={() => {
+                        console.error('🚨 BUTTON CLICKED FOR:', connector.name);
+                        handleConnect(connector);
+                      }}
                       disabled={isPending || isAuthenticating}
                     >
                       {(isPending || isAuthenticating) && (
@@ -191,7 +197,10 @@ export function ConnectWalletModal({ isOpen, onClose }: ConnectWalletModalProps)
                     key={connector.id}
                     variant="outline"
                     className="w-full justify-start"
-                    onClick={() => handleConnect(connector)}
+                    onClick={() => {
+                      console.error('🚨 MOBILE BUTTON CLICKED FOR:', connector.name);
+                      handleConnect(connector);
+                    }}
                     disabled={isPending || isAuthenticating}
                   >
                     {isPending && (
