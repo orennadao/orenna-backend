@@ -317,7 +317,53 @@ export function ConnectWalletModal({ isOpen, onClose }: ConnectWalletModalProps)
         
         // Now call the actual signIn
         addDebugMessage('🔐 Step 2: Calling signIn function...');
+        
+        // Check the values that SIWE hook will see
+        addDebugMessage(`SIWE hook will see: addr=${finalAddress}, chain=${finalChainId}, connected=${finalConnected}`);
+        
+        // Add a listener for MetaMask signing to see if user accepts/rejects
+        let signingSeen = false;
+        const originalRequest = window.ethereum?.request;
+        if (originalRequest) {
+          window.ethereum.request = function(args) {
+            if (args.method === 'personal_sign' || args.method === 'eth_sign') {
+              signingSeen = true;
+              addDebugMessage('✍️ MetaMask signing popup appeared');
+            }
+            return originalRequest.call(this, args);
+          };
+        }
+        
+        // Monitor network requests during signIn
+        const originalFetch = window.fetch;
+        const requestsSeen = [];
+        window.fetch = function(url, options) {
+          if (typeof url === 'string' && url.includes('auth')) {
+            requestsSeen.push(`${options?.method || 'GET'} ${url}`);
+            addDebugMessage(`📡 API call: ${options?.method || 'GET'} ${url.split('/').pop()}`);
+          }
+          return originalFetch.call(this, url, options);
+        };
+        
         const success = await signIn();
+        
+        // Restore original methods
+        if (originalRequest) {
+          window.ethereum.request = originalRequest;
+        }
+        window.fetch = originalFetch;
+        
+        if (!signingSeen) {
+          addDebugMessage('⚠️ No signing popup detected - may have failed before signing');
+        }
+        
+        addDebugMessage(`API calls made: ${requestsSeen.length > 0 ? requestsSeen.join(', ') : 'none'}`);
+        
+        // Check if the issue might be SIWE hook validation
+        if (!signingSeen && requestsSeen.length === 0) {
+          addDebugMessage('🔍 Likely issue: SIWE hook validation failed before API calls');
+        }
+        
         addDebugMessage('🚨 SIWE RESULT: ' + success);
         console.error('🚨 SIGN-IN RESULT:', success);
         if (success) {
