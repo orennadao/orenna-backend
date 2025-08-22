@@ -52,32 +52,7 @@ export function useSiweAuth() {
     setMounted(true);
   }, []);
 
-  // Check existing session only after mount
-  useEffect(() => {
-    if (mounted) {
-      checkSession();
-    }
-  }, [mounted, checkSession]);
-
-  // Sync auth state with wallet connection state (only after mount)
-  useEffect(() => {
-    if (!mounted) return;
-    
-    if (!isConnected && state.isAuthenticated) {
-      // Wallet disconnected but user still appears authenticated - clear auth state
-      setState(prev => ({
-        ...prev,
-        user: null,
-        isAuthenticated: false,
-        error: null,
-      }));
-    } else if (isConnected && !state.isAuthenticated && !state.isAuthenticating && !state.isLoading) {
-      // Wallet connected but no auth - this might be from a previous session
-      // Check if we have a valid session
-      checkSession();
-    }
-  }, [mounted, isConnected, state.isAuthenticated, state.isAuthenticating, state.isLoading, checkSession]);
-
+  // Define checkSession function BEFORE using it in useEffect dependencies
   const checkSession = useCallback(async () => {
     try {
       const response = await fetch(API_ENDPOINTS.SESSION, {
@@ -106,6 +81,32 @@ export function useSiweAuth() {
       }));
     }
   }, []);
+
+  // Check existing session only after mount
+  useEffect(() => {
+    if (mounted) {
+      checkSession();
+    }
+  }, [mounted, checkSession]);
+
+  // Sync auth state with wallet connection state (only after mount)
+  useEffect(() => {
+    if (!mounted) return;
+    
+    if (!isConnected && state.isAuthenticated) {
+      // Wallet disconnected but user still appears authenticated - clear auth state
+      setState(prev => ({
+        ...prev,
+        user: null,
+        isAuthenticated: false,
+        error: null,
+      }));
+    } else if (isConnected && !state.isAuthenticated && !state.isAuthenticating && !state.isLoading) {
+      // Wallet connected but no auth - this might be from a previous session
+      // Check if we have a valid session
+      checkSession();
+    }
+  }, [mounted, isConnected, state.isAuthenticated, state.isAuthenticating, state.isLoading, checkSession]);
 
   const signIn = useCallback(async () => {
     if (!address || !chainId) {
