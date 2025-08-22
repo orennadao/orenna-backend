@@ -38,6 +38,8 @@ export function ConnectWalletModal({ isOpen, onClose }: ConnectWalletModalProps)
 
   // Handle wallet connection with proper state management
   const handleConnect = async (connector: any) => {
+    console.error('🚨 MODAL HANDLE CONNECT CALLED!!! 🚨');
+    console.error('Connector:', connector.name, connector.id);
     try {
       // Always disconnect first to ensure clean state
       if (isConnected) {
@@ -53,7 +55,9 @@ export function ConnectWalletModal({ isOpen, onClose }: ConnectWalletModalProps)
       await new Promise(resolve => setTimeout(resolve, 200));
       
       // Trigger SIWE authentication
+      console.error('🚨 CALLING SIGN-IN FUNCTION!!! 🚨');
       const success = await signIn();
+      console.error('🚨 SIGN-IN RESULT:', success);
       if (success) {
         onClose();
       }

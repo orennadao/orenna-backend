@@ -113,7 +113,11 @@ export function useSiweAuth() {
   }, [mounted, isConnected, state.isAuthenticated, state.isAuthenticating, state.isLoading, checkSession]);
 
   const signIn = useCallback(async () => {
+    console.error('🚨 SIWE SIGN-IN FUNCTION CALLED!!! 🚨');
+    console.error('Address:', address, 'ChainId:', chainId);
+    
     if (!address || !chainId) {
+      console.error('❌ Missing address or chainId');
       setState(prev => ({
         ...prev,
         error: 'Please connect your wallet first',
@@ -145,18 +149,19 @@ export function useSiweAuth() {
 
     try {
       // Step 1: Get nonce from server
-      console.log('🔑 Fetching nonce from:', API_ENDPOINTS.NONCE);
+      console.error('🔑 FETCHING NONCE FROM:', API_ENDPOINTS.NONCE);
       const nonceResponse = await fetch(API_ENDPOINTS.NONCE, {
         method: 'GET',
         credentials: 'include',
       });
 
+      console.error('📡 Nonce response status:', nonceResponse.status);
       if (!nonceResponse.ok) {
         throw new Error('Failed to get nonce');
       }
 
       const { nonce } = await nonceResponse.json();
-      console.log('✅ Nonce received:', nonce);
+      console.error('✅ NONCE RECEIVED:', nonce);
 
       // Step 2: Create SIWE message
       console.log('📝 Creating SIWE message...');
