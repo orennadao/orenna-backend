@@ -167,6 +167,25 @@ export function ConnectWalletModal({ isOpen, onClose }: ConnectWalletModalProps)
                 // Wait a bit more for wagmi to catch up
                 await new Promise(resolve => setTimeout(resolve, 1000));
                 addDebugMessage(`Final isConnected after MetaMask: ${isConnected}`);
+                
+                // If wagmi still doesn't show connected, get chain directly from MetaMask
+                if (!isConnected || !chainId) {
+                  addDebugMessage('⚠️ Wagmi state incomplete, checking MetaMask directly');
+                  try {
+                    const mmChainId = await window.ethereum.request({ method: 'eth_chainId' });
+                    const chainIdDecimal = parseInt(mmChainId, 16);
+                    addDebugMessage(`MetaMask chainId: ${chainIdDecimal} (${mmChainId})`);
+                    
+                    // Store for later use since wagmi values aren't available
+                    (window as any).metaMaskState = {
+                      address: accounts[0],
+                      chainId: chainIdDecimal,
+                      isConnected: true
+                    };
+                  } catch (chainError) {
+                    addDebugMessage('❌ Could not get chain from MetaMask: ' + chainError.message);
+                  }
+                }
               } else {
                 throw new Error('No accounts available after request');
               }
@@ -187,13 +206,24 @@ export function ConnectWalletModal({ isOpen, onClose }: ConnectWalletModalProps)
       
       // Check if we're on the correct chain (Sepolia = 11155111)
       const expectedChainId = 11155111; // Sepolia
-      if (chainId !== expectedChainId) {
-        addDebugMessage(`❌ Wrong chain: ${chainId}, need: ${expectedChainId}`);
+      
+      // Use wagmi chainId if available, otherwise use MetaMask direct
+      let currentChainId = chainId;
+      let currentAddress = address;
+      
+      if (!currentChainId && (window as any).metaMaskState) {
+        currentChainId = (window as any).metaMaskState.chainId;
+        currentAddress = (window as any).metaMaskState.address;
+        addDebugMessage(`Using MetaMask state: chain=${currentChainId}, addr=${currentAddress?.slice(0,8)}`);
+      }
+      
+      if (currentChainId !== expectedChainId) {
+        addDebugMessage(`❌ Wrong chain: ${currentChainId}, need: ${expectedChainId}`);
         addDebugMessage('🔄 Requesting chain switch to Sepolia...');
         
         try {
           // Try wagmi switchChain first, fallback to direct MetaMask
-          if (switchChain) {
+          if (switchChain && chainId) {
             addDebugMessage('🔄 Using wagmi switchChain...');
             await switchChain({ chainId: expectedChainId });
           } else {
@@ -204,12 +234,21 @@ export function ConnectWalletModal({ isOpen, onClose }: ConnectWalletModalProps)
             });
           }
           
-          // Wait for chain switch
+          // Wait for chain switch and check result
           await new Promise(resolve => setTimeout(resolve, 1000));
-          addDebugMessage(`Chain after switch: ${chainId}`);
           
-          if (chainId !== expectedChainId) {
-            throw new Error('Chain switch failed or incomplete');
+          // Re-check chain after switch
+          const newChainId = await window.ethereum.request({ method: 'eth_chainId' });
+          const newChainIdDecimal = parseInt(newChainId, 16);
+          addDebugMessage(`Chain after switch: ${newChainIdDecimal} (wagmi: ${chainId})`);
+          
+          // Update stored state
+          if ((window as any).metaMaskState) {
+            (window as any).metaMaskState.chainId = newChainIdDecimal;
+          }
+          
+          if (newChainIdDecimal !== expectedChainId) {
+            throw new Error('Chain switch failed - still on wrong network');
           }
           
         } catch (switchError) {
@@ -221,11 +260,16 @@ export function ConnectWalletModal({ isOpen, onClose }: ConnectWalletModalProps)
       // Trigger SIWE authentication
       addDebugMessage('🚨 CALLING SIWE SIGN-IN');
       
-      // Debug wagmi state before SIWE (using values from component scope)
-      addDebugMessage(`Pre-SIWE state: addr=${address?.slice(0,8)}, chain=${chainId}, connected=${isConnected}`);
+      // Debug state before SIWE (use MetaMask fallback if wagmi unavailable)
+      const finalAddress = address || currentAddress;
+      const finalChainId = chainId || currentChainId;
+      const finalConnected = isConnected || !!(window as any).metaMaskState?.isConnected;
+      
+      addDebugMessage(`Pre-SIWE state: addr=${finalAddress?.slice(0,8)}, chain=${finalChainId}, connected=${finalConnected}`);
+      addDebugMessage(`Wagmi vs MetaMask: wagmi(${chainId}) mm(${(window as any).metaMaskState?.chainId})`);
       
       console.error('🚨 CALLING SIGN-IN FUNCTION!!! 🚨');
-      console.error('Current wagmi state:', { address, chainId, isConnected });
+      console.error('Final state for SIWE:', { address: finalAddress, chainId: finalChainId, isConnected: finalConnected });
       
       try {
         const success = await signIn();
