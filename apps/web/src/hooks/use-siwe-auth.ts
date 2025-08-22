@@ -145,6 +145,7 @@ export function useSiweAuth() {
 
     try {
       // Step 1: Get nonce from server
+      console.log('🔑 Fetching nonce from:', API_ENDPOINTS.NONCE);
       const nonceResponse = await fetch(API_ENDPOINTS.NONCE, {
         method: 'GET',
         credentials: 'include',
@@ -155,8 +156,10 @@ export function useSiweAuth() {
       }
 
       const { nonce } = await nonceResponse.json();
+      console.log('✅ Nonce received:', nonce);
 
       // Step 2: Create SIWE message
+      console.log('📝 Creating SIWE message...');
       const message = new SiweMessage({
         domain: SIWE_CONFIG.domain,
         address,
@@ -169,6 +172,7 @@ export function useSiweAuth() {
       });
 
       const messageString = message.prepareMessage();
+      console.log('📄 SIWE message created:', messageString.slice(0, 100) + '...');
 
       // Step 3: Sign the message
       console.log('🖊️ Requesting signature from MetaMask...');
