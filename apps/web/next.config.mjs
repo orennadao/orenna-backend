@@ -97,11 +97,11 @@ const nextConfig = {
     return config
   },
   
-  // API proxy rewrites - keep NextAuth local, proxy everything else
+  // API proxy rewrites - keep NextAuth local, proxy everything else  
   async rewrites() {
     return [
-      { source: "/api/auth/:path*", destination: "/api/auth/:path*" }, // let Next handle NextAuth
-      { source: "/api/:path*", destination: `${process.env.NEXT_PUBLIC_API_URL || 'http://localhost:3001'}/api/:path*` },
+      { source: "/api/auth/:path*", destination: "/api/auth/:path*" }, // Keep NextAuth local
+      { source: "/api/:path*", destination: `${process.env.NEXT_PUBLIC_API_URL}/api/:path*` }, // Proxy to backend
     ]
   },
 
