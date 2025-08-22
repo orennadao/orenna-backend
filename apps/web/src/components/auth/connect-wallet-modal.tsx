@@ -102,9 +102,18 @@ export function ConnectWalletModal({ isOpen, onClose }: ConnectWalletModalProps)
       }
       
       // Connect to the wallet
+      addDebugMessage('🔌 CALLING WAGMI CONNECT');
       console.error('🔌 CALLING WAGMI CONNECT WITH:', connector.name);
-      const result = await connect({ connector });
-      console.error('✅ WAGMI CONNECT RESULT:', result);
+      
+      try {
+        const result = await connect({ connector });
+        addDebugMessage('✅ WAGMI CONNECT SUCCESS');
+        console.error('✅ WAGMI CONNECT RESULT:', result);
+      } catch (connectError) {
+        addDebugMessage('❌ WAGMI CONNECT FAILED: ' + connectError.message);
+        console.error('❌ WAGMI CONNECT ERROR:', connectError);
+        throw connectError; // Re-throw to be caught by outer catch
+      }
       
       // Give wagmi time to update isConnected state
       await new Promise(resolve => setTimeout(resolve, 200));
@@ -136,6 +145,7 @@ export function ConnectWalletModal({ isOpen, onClose }: ConnectWalletModalProps)
         setIsConnecting(false);
       }
     } catch (outerError) {
+      addDebugMessage('🚨 OUTER ERROR: ' + outerError.message);
       console.error('🚨 OUTER CATCH - HANDLE CONNECT ERROR:', outerError);
       console.error('🚨 OUTER CATCH - ERROR STACK:', outerError.stack);
       setIsConnecting(false);
@@ -213,9 +223,15 @@ export function ConnectWalletModal({ isOpen, onClose }: ConnectWalletModalProps)
             
             <div className="space-y-2">
               {connectors
-                .filter(connector => 
-                  connector.type === 'injected'
-                )
+                .filter((connector, index, array) => {
+                  // Only show one injected connector to avoid duplicates
+                  const injectedConnectors = array.filter(c => c.type === 'injected');
+                  if (connector.type === 'injected' && injectedConnectors.length > 1) {
+                    // Keep only the first injected connector
+                    return array.findIndex(c => c.type === 'injected') === index;
+                  }
+                  return connector.type === 'injected';
+                })
                 .map((connector) => {
                   const isConnectorConnected = isConnected && (
                     connector.id === 'metaMask' || 
