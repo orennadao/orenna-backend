@@ -122,22 +122,78 @@ Chain allowlist enforced in:
 
 ## 🐛 **Known Issues & Workarounds**
 
-### **🚨 CURRENT: Persistent ReferenceError in Bundled Code**
+### **🚨 CRITICAL: Cross-Origin Authentication Failure**
 ```
+GET https://orenna-backend-production.up.railway.app/api/auth/session 401 (Unauthorized)
+```
+**Status**: **BACKEND CONFIGURATION REQUIRED**  
+**Root Cause**: Session cookies cannot work across different domains  
+**Technical Details**:
+- **Frontend**: `https://alpha.orennadao.com`
+- **Backend**: `https://orenna-backend-production.up.railway.app` 
+- **Issue**: Backend sets cookies with `sameSite: 'strict'` which blocks cross-origin requests
+- **CORS**: ✅ Properly configured and working
+- **API Endpoints**: ✅ Pointing to correct backend
+
+**Impact**: Users cannot authenticate - SIWE flow fails after MetaMask signature  
+**Solution Required**: Backend cookie configuration change:
+```typescript
+// Current (blocking):
+sameSite: 'strict'
+
+// Required (cross-origin):
+sameSite: 'none',
+secure: true
+```
+**Alternative Solutions**:
+1. Use Authorization headers instead of cookies
+2. Deploy backend to same domain (`alpha.orennadao.com/api/*`)
+3. Implement token-based auth without session cookies
+
+### **🚨 CRITICAL: Safari MetaMask Connection Missing**
+**Status**: **CONNECTOR CONFIGURATION ISSUE**  
+**Root Cause**: Only `injected` connector configured, Safari detection issues  
+**Evidence**:
+- Wagmi config only includes `injected({ shimDisconnect: false })`
+- Modal filters `connector.type === 'injected'`
+- Safari (especially mobile) doesn't reliably detect MetaMask as injected wallet
+
+**Impact**: Safari users cannot connect MetaMask wallet  
+**Solution Required**: Enhanced connector configuration:
+```typescript
+connectors: [
+  injected({ 
+    target: 'metaMask',
+    shimDisconnect: false 
+  }),
+  // Add explicit MetaMask connector for Safari
+  metaMask({ 
+    dappMetadata: { name: 'Orenna DAO' }
+  }),
+  // Add WalletConnect as fallback
+  walletConnect({ 
+    projectId: WALLET_CONNECT_PROJECT_ID 
+  })
+]
+```
+
+### **✅ RESOLVED: ReferenceError - Function Initialization Order**
+```
+// Original error:
 (index):20 ReferenceError: Cannot access 'v' before initialization
-at d (common-a17767a3fa9f5b72.js)
-at f (page-e13e9a3b41f28a89.js) 
-at React render pipeline...
+
+// Evolved to show function names:
+(index):20 ReferenceError: Cannot access 'checkSession' before initialization
+    at useSiweAuth (layout-d1dbd4d5411b7766.js:737:9)
 ```
-**Status**: **ISOLATED TO PRODUCTION BUILD/BUNDLING**  
-**Root Cause**: Development works perfectly, production build fails  
+**Status**: **FIXED - Function Definition Order Issue**  
+**Root Cause**: Temporal dead zone in useSiweAuth hook - `checkSession` referenced before definition  
 **Evidence**: 
-- ✅ Minimal app (271 modules): Works in dev
-- ✅ + Web3Provider (3,657 modules): Works in dev
-- ✅ + GovernanceProvider (7,524 modules): Works in dev  
-- ✅ Full app (7,808 modules): **Works perfectly in development**
-- ❌ Production build/deployment: ReferenceError
-**Conclusion**: Issue is in webpack bundling/minification, NOT component logic
+- ✅ Initial: Variable 'v' before initialization (webpack minified names)
+- ✅ After webpack optimization disabling: Function names became visible 
+- ✅ Root cause: `useEffect` dependencies referencing `checkSession` before `useCallback` definition
+- ✅ **FIXED**: Moved `checkSession` definition before `useEffect` usage (use-siwe-auth.ts:55-83)
+**Solution**: Function declaration order corrected + webpack optimization targeting
 
 ### **Legacy Auth Hook Usage** 
 **Issue**: Some components still using old patterns  
@@ -162,6 +218,24 @@ grep -r "useAuth" apps/web/src --exclude-dir=node_modules
 - 🔄 Role-based access control implementation
 - 🔄 Privy embedded wallet integration
 - 🔄 Advanced session management features
+
+## 📋 **Current Status Summary**
+
+### **🚨 BLOCKING ISSUES (Require Backend/Infrastructure Changes)**
+1. **Cross-Origin Authentication** - Session cookies blocked between domains
+2. **Safari MetaMask Support** - Wallet connector configuration insufficient
+
+### **✅ RESOLVED ISSUES**
+1. **ReferenceError in Production** - Function initialization order fixed
+2. **API Endpoint Configuration** - Now pointing to correct backend
+3. **Webpack Bundling Issues** - Optimization conflicts resolved
+
+### **🔧 REQUIRED ACTIONS**
+| Issue | Owner | Action Required | Priority |
+|-------|-------|----------------|----------|
+| Cross-Origin Auth | Backend | Change `sameSite: 'strict'` → `'none'` | **CRITICAL** |
+| Safari MetaMask | Frontend | Add MetaMask + WalletConnect connectors | **HIGH** |
+| WalletConnect Project ID | DevOps | Set real project ID in env vars | **MEDIUM** |
 
 ## 🚨 **Critical Development Notes**
 
