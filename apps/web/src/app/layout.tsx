@@ -1,6 +1,6 @@
 import type { Metadata } from "next";
 import "./globals.css";
-import { AppProviders } from "@/components/providers/app-providers";
+import Providers from "./providers";
 
 // Force dynamic rendering globally to prevent SSG issues with Web3 providers
 export const dynamic = 'force-dynamic'
@@ -53,9 +53,9 @@ export default function RootLayout({
         />
       </head>
       <body className="min-h-screen bg-background text-foreground antialiased" suppressHydrationWarning>
-        <AppProviders>
+        <Providers>
           {children}
-        </AppProviders>
+        </Providers>
       </body>
     </html>
   );

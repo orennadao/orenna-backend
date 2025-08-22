@@ -5,7 +5,7 @@ import Link from 'next/link';
 import { usePathname } from 'next/navigation';
 import { cn } from '@/lib/utils';
 import { Button } from '@/components/ui/button';
-import { WalletConnectButton } from '@/components/auth/wallet-connect-button';
+import { RainbowConnect } from '@/components/auth/rainbow-connect';
 import { 
   Home,
   FolderOpen,
@@ -186,7 +186,7 @@ export function GuestSidebar({ onHelpClick }: GuestSidebarProps) {
 
         {/* Connect Wallet Section */}
         <div className="border-t border-gray-200 p-4">
-          <WalletConnectButton className="w-full" />
+          <RainbowConnect />
         </div>
       </aside>
 
@@ -223,9 +223,7 @@ export function GuestSidebar({ onHelpClick }: GuestSidebarProps) {
           })}
           {/* Connect Wallet in mobile */}
           <div className="flex-1 flex flex-col items-center justify-center py-1 px-1">
-            <WalletConnectButton size="sm" className="text-xs px-2 py-1">
-              Connect
-            </WalletConnectButton>
+            <RainbowConnect />
           </div>
         </nav>
       </div>
