@@ -29,7 +29,7 @@ export function AppProviders({ children }: { children: React.ReactNode }) {
   );
 
   return (
-    <NoSSR fallback={children}>
+    <NoSSR fallback={<div>Loading...</div>}>
       <QueryClientProvider client={queryClient}>
         <Web3Provider>
           <WebSocketProvider>

@@ -21,18 +21,13 @@ const wagmiQueryClient = new QueryClient({
 
 export function Web3Provider({ children }: Web3ProviderProps) {
   const [isClient, setIsClient] = useState(false)
+  const config = getOrCreateConfig()
 
   useEffect(() => {
     setIsClient(true)
   }, [])
 
-  // During SSG/SSR, render children without Wagmi context to prevent errors
-  if (!isClient) {
-    return <>{children}</>
-  }
-
-  const config = getOrCreateConfig()
-
+  // Always render with WagmiProvider but handle SSR properly
   return (
     <WagmiProvider config={config}>
       <QueryClientProvider client={wagmiQueryClient}>
