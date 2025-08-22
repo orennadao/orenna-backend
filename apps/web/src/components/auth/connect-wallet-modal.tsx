@@ -51,11 +51,24 @@ export function ConnectWalletModal({ isOpen, onClose }: ConnectWalletModalProps)
       // Add DOM debugging since console isn't working
       const addDebugMessage = (message: string) => {
         if (typeof window !== 'undefined') {
-          const debugDiv = document.createElement('div');
-          debugDiv.style.cssText = 'position:fixed;top:50px;right:0;background:blue;color:white;padding:5px;z-index:9999;font-size:12px;max-width:250px;margin-bottom:2px;';
-          debugDiv.innerHTML = `${new Date().toLocaleTimeString()}: ${message}`;
-          document.body.appendChild(debugDiv);
-          setTimeout(() => debugDiv.remove(), 5000);
+          // Create or find existing debug container
+          let container = document.getElementById('debug-container');
+          if (!container) {
+            container = document.createElement('div');
+            container.id = 'debug-container';
+            container.style.cssText = 'position:fixed;top:10px;left:10px;background:rgba(0,0,0,0.9);color:white;padding:10px;z-index:9999;font-size:11px;max-width:400px;max-height:300px;overflow-y:auto;font-family:monospace;';
+            document.body.appendChild(container);
+          }
+          
+          const debugLine = document.createElement('div');
+          debugLine.style.cssText = 'margin-bottom:2px;padding:2px;border-bottom:1px solid #333;';
+          debugLine.innerHTML = `${new Date().toLocaleTimeString()}: ${message}`;
+          container.appendChild(debugLine);
+          
+          // Keep only last 10 messages
+          while (container.children.length > 10) {
+            container.removeChild(container.firstChild!);
+          }
         }
       };
       
@@ -105,10 +118,12 @@ export function ConnectWalletModal({ isOpen, onClose }: ConnectWalletModalProps)
       addDebugMessage('🔌 CALLING WAGMI CONNECT');
       console.error('🔌 CALLING WAGMI CONNECT WITH:', connector.name);
       
+      let connectResult;
       try {
-        const result = await connect({ connector });
+        connectResult = await connect({ connector });
         addDebugMessage('✅ WAGMI CONNECT SUCCESS');
-        console.error('✅ WAGMI CONNECT RESULT:', result);
+        addDebugMessage(`Connected to: ${connectResult.accounts?.[0] || 'unknown'}`);
+        console.error('✅ WAGMI CONNECT RESULT:', connectResult);
       } catch (connectError) {
         addDebugMessage('❌ WAGMI CONNECT FAILED: ' + connectError.message);
         console.error('❌ WAGMI CONNECT ERROR:', connectError);
@@ -116,20 +131,17 @@ export function ConnectWalletModal({ isOpen, onClose }: ConnectWalletModalProps)
       }
       
       // Give wagmi time to update isConnected state
-      await new Promise(resolve => setTimeout(resolve, 200));
+      await new Promise(resolve => setTimeout(resolve, 500));
       addDebugMessage(`⏰ WAIT DONE - isConnected: ${isConnected}`);
       console.error('⏰ FINISHED WAITING, isConnected:', isConnected);
       
-      // Check if wallet is actually connected before SIWE
-      if (!isConnected) {
-        addDebugMessage('⚠️ WALLET NOT CONNECTED YET - WAITING MORE');
-        await new Promise(resolve => setTimeout(resolve, 1000));
-        addDebugMessage(`⏰ EXTRA WAIT - isConnected: ${isConnected}`);
-        
-        if (!isConnected) {
-          addDebugMessage('❌ WALLET STILL NOT CONNECTED');
-          throw new Error('Wallet connection incomplete');
-        }
+      // Use connect result to verify connection instead of isConnected state
+      const hasAccount = connectResult?.accounts?.[0];
+      addDebugMessage(`Account from connect: ${hasAccount || 'none'}`);
+      
+      if (!hasAccount && !isConnected) {
+        addDebugMessage('❌ NO ACCOUNT AND NOT CONNECTED');
+        throw new Error('Wallet connection incomplete - no account');
       }
       
       // Trigger SIWE authentication
@@ -141,10 +153,11 @@ export function ConnectWalletModal({ isOpen, onClose }: ConnectWalletModalProps)
         addDebugMessage('🚨 SIWE RESULT: ' + success);
         console.error('🚨 SIGN-IN RESULT:', success);
         if (success) {
-          addDebugMessage('✅ SIWE SUCCESS - CLOSING MODAL');
-          onClose();
+          addDebugMessage('✅ SIWE SUCCESS - SHOULD REDIRECT');
+          // Don't close modal immediately, let SIWE handle redirect
+          // onClose();
         } else {
-          addDebugMessage('❌ SIWE FAILED');
+          addDebugMessage('❌ SIWE FAILED - NO SUCCESS');
         }
       } catch (siweError) {
         addDebugMessage('❌ SIWE ERROR: ' + siweError.message);
