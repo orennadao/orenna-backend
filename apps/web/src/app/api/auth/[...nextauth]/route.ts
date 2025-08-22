@@ -2,6 +2,10 @@ import NextAuth from "next-auth";
 import CredentialsProvider from "next-auth/providers/credentials";
 import { SiweMessage } from "siwe";
 
+// Prevent caching of auth routes
+export const dynamic = "force-dynamic";
+export const revalidate = 0;
+
 const handler = NextAuth({
   session: { strategy: "jwt" },
   providers: [
@@ -10,7 +14,8 @@ const handler = NextAuth({
       name: "Ethereum",
       credentials: {
         message: { label: "Message", type: "text" },
-        signature: { label: "Signature", type: "text" }
+        signature: { label: "Signature", type: "text" },
+        csrfToken: { label: "CSRF Token", type: "text" }
       },
       async authorize(credentials, req) {
         try {
@@ -24,12 +29,37 @@ const handler = NextAuth({
           const expectedDomain = Array.isArray(host) ? host[0] : host.split(",")[0]?.trim();
           if (!expectedDomain) return null;
 
-          // Get nonce from NextAuth CSRF cookie
-          const csrfToken = req.headers?.cookie
-            ?.split(";")
-            ?.find(c => c.trim().startsWith("next-auth.csrf-token=") || c.trim().startsWith("__Host-next-auth.csrf-token="))
-            ?.split("=")[1];
-          const expectedNonce = csrfToken?.split("%7C")[0] ?? csrfToken?.split("|")[0] ?? "";
+          // Helper function to read CSRF token from cookies or body
+          function readCsrf(req: any) {
+            const cookieNames = [
+              "next-auth.csrf-token",
+              "__Host-next-auth.csrf-token",
+              "authjs.csrf-token",
+              "__Host-authjs.csrf-token",
+            ];
+            
+            // Try to read from cookies first
+            const cookieToken = cookieNames
+              .map(name => req.headers?.cookie
+                ?.split(";")
+                ?.find(c => c.trim().startsWith(`${name}=`))
+                ?.split("=")[1]
+              )
+              .find(Boolean);
+            
+            if (cookieToken) {
+              return cookieToken.split("%7C")[0] ?? cookieToken.split("|")[0] ?? "";
+            }
+            
+            // Fallback to body parameter
+            return String(credentials?.csrfToken ?? "");
+          }
+
+          const expectedNonce = readCsrf(req);
+          if (!expectedNonce) {
+            console.error("No CSRF token found in cookies or body");
+            return null;
+          }
 
           // SIWE verification (EIP-4361)
           const result = await message.verify({
