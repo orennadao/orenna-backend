@@ -48,6 +48,18 @@ export function ConnectWalletModal({ isOpen, onClose }: ConnectWalletModalProps)
   // Handle wallet connection with proper state management and request deduplication
   const handleConnect = async (connector: any) => {
     try {
+      // Add DOM debugging since console isn't working
+      const addDebugMessage = (message: string) => {
+        if (typeof window !== 'undefined') {
+          const debugDiv = document.createElement('div');
+          debugDiv.style.cssText = 'position:fixed;top:50px;right:0;background:blue;color:white;padding:5px;z-index:9999;font-size:12px;max-width:250px;margin-bottom:2px;';
+          debugDiv.innerHTML = `${new Date().toLocaleTimeString()}: ${message}`;
+          document.body.appendChild(debugDiv);
+          setTimeout(() => debugDiv.remove(), 5000);
+        }
+      };
+      
+      addDebugMessage('🟢 HANDLE CONNECT ENTERED!!!');
       console.log('🟢 HANDLE CONNECT FUNCTION ENTERED!!!');
       console.warn('🟢 HANDLE CONNECT FUNCTION ENTERED!!!');
       console.error('🟢 HANDLE CONNECT FUNCTION ENTERED!!!');
@@ -55,10 +67,12 @@ export function ConnectWalletModal({ isOpen, onClose }: ConnectWalletModalProps)
       
       // Prevent simultaneous connection attempts
       if (isConnecting || isPending || isAuthenticating) {
+        addDebugMessage('🟡 Connection already in progress, ignoring');
         console.error('🟡 Connection already in progress, ignoring request');
         return;
       }
       
+      addDebugMessage('🚨 STARTING CONNECTION PROCESS');
       console.error('🚨 MODAL HANDLE CONNECT CALLED!!! 🚨');
       console.error('Connector details:', {
         name: connector.name,
@@ -236,8 +250,35 @@ export function ConnectWalletModal({ isOpen, onClose }: ConnectWalletModalProps)
                               isPending,
                               isAuthenticating, 
                               isConnecting,
-                              timestamp: new Date().toISOString()
+                              timestamp: new Date().toISOString(),
+                              logs: []
                             };
+                            
+                            // Test if console methods work at all
+                            try {
+                              console.log('TESTING CONSOLE LOG');
+                              (window as any).debugInfo.logs.push('console.log attempted');
+                            } catch (e) {
+                              (window as any).debugInfo.logs.push('console.log failed: ' + e.message);
+                            }
+                            
+                            // Add to DOM as visual debugging
+                            const debugDiv = document.createElement('div');
+                            debugDiv.id = 'debug-output';
+                            debugDiv.style.cssText = 'position:fixed;top:0;right:0;background:red;color:white;padding:10px;z-index:9999;max-width:300px;';
+                            debugDiv.innerHTML = `
+                              <strong>DEBUG:</strong><br>
+                              Button clicked: ${connector.name}<br>
+                              Time: ${new Date().toLocaleTimeString()}<br>
+                              States: P=${isPending}, A=${isAuthenticating}, C=${isConnecting}
+                            `;
+                            document.body.appendChild(debugDiv);
+                            
+                            // Remove after 10 seconds
+                            setTimeout(() => {
+                              const elem = document.getElementById('debug-output');
+                              if (elem) elem.remove();
+                            }, 10000);
                           }
                           
                           alert(`BUTTON CLICKED FOR: ${connector.name}
