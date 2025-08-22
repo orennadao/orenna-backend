@@ -117,14 +117,39 @@ export function ConnectWalletModal({ isOpen, onClose }: ConnectWalletModalProps)
       
       // Give wagmi time to update isConnected state
       await new Promise(resolve => setTimeout(resolve, 200));
+      addDebugMessage(`⏰ WAIT DONE - isConnected: ${isConnected}`);
       console.error('⏰ FINISHED WAITING, isConnected:', isConnected);
       
+      // Check if wallet is actually connected before SIWE
+      if (!isConnected) {
+        addDebugMessage('⚠️ WALLET NOT CONNECTED YET - WAITING MORE');
+        await new Promise(resolve => setTimeout(resolve, 1000));
+        addDebugMessage(`⏰ EXTRA WAIT - isConnected: ${isConnected}`);
+        
+        if (!isConnected) {
+          addDebugMessage('❌ WALLET STILL NOT CONNECTED');
+          throw new Error('Wallet connection incomplete');
+        }
+      }
+      
       // Trigger SIWE authentication
+      addDebugMessage('🚨 CALLING SIWE SIGN-IN');
       console.error('🚨 CALLING SIGN-IN FUNCTION!!! 🚨');
-      const success = await signIn();
-      console.error('🚨 SIGN-IN RESULT:', success);
-      if (success) {
-        onClose();
+      
+      try {
+        const success = await signIn();
+        addDebugMessage('🚨 SIWE RESULT: ' + success);
+        console.error('🚨 SIGN-IN RESULT:', success);
+        if (success) {
+          addDebugMessage('✅ SIWE SUCCESS - CLOSING MODAL');
+          onClose();
+        } else {
+          addDebugMessage('❌ SIWE FAILED');
+        }
+      } catch (siweError) {
+        addDebugMessage('❌ SIWE ERROR: ' + siweError.message);
+        console.error('❌ SIWE ERROR:', siweError);
+        throw siweError;
       }
     } catch (error: any) {
       console.error('Connection failed:', error);
