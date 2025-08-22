@@ -90,6 +90,15 @@ export function ConnectWalletModal({ isOpen, onClose }: ConnectWalletModalProps)
   };
 
   const error = connectError || authError;
+  
+  // Debug logging for error state
+  if (error) {
+    console.error('🚨 MODAL ERROR STATE:', {
+      connectError: connectError?.message,
+      authError: authError?.message,
+      finalError: error.message
+    });
+  }
 
   return (
     <Dialog open={isOpen} onOpenChange={onClose}>
