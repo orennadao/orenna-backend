@@ -8,6 +8,16 @@ export const revalidate = 0;
 
 const handler = NextAuth({
   session: { strategy: "jwt" },
+  cookies: {
+    csrfToken: {
+      name: '__Host-authjs.csrf-token',
+      options: { path: '/', sameSite: 'lax', secure: true }, // no domain for host-only
+    },
+    sessionToken: {
+      name: '__Host-authjs.session-token',
+      options: { path: '/', sameSite: 'lax', secure: true }, // no domain for host-only
+    },
+  },
   providers: [
     CredentialsProvider({
       id: "siwe",
@@ -32,10 +42,10 @@ const handler = NextAuth({
           // Helper function to read CSRF token from cookies or body
           function readCsrf(req: any) {
             const cookieNames = [
+              "__Host-authjs.csrf-token", // Our configured name (highest priority)
               "next-auth.csrf-token",
-              "__Host-next-auth.csrf-token",
+              "__Host-next-auth.csrf-token", 
               "authjs.csrf-token",
-              "__Host-authjs.csrf-token",
             ];
             
             // Try to read from cookies first
