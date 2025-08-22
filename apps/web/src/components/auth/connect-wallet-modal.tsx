@@ -118,46 +118,58 @@ export function ConnectWalletModal({ isOpen, onClose }: ConnectWalletModalProps)
       addDebugMessage('🔌 CALLING WAGMI CONNECT');
       console.error('🔌 CALLING WAGMI CONNECT WITH:', connector.name);
       
-      let connectResult;
       try {
-        connectResult = await connect({ connector });
-        addDebugMessage('✅ WAGMI CONNECT SUCCESS');
+        // Call connect but don't rely on its return value
+        const connectPromise = connect({ connector });
+        addDebugMessage('🔄 CONNECT CALLED - WAITING FOR STATE CHANGE');
         
-        // Log the full result structure to understand what we get
-        addDebugMessage(`Connect result type: ${typeof connectResult}`);
-        addDebugMessage(`Connect result keys: ${connectResult ? Object.keys(connectResult).join(', ') : 'null'}`);
+        // Wait for the connect call to complete
+        await connectPromise;
+        addDebugMessage('✅ CONNECT PROMISE RESOLVED');
         
-        console.error('✅ WAGMI CONNECT RESULT:', connectResult);
+        // Poll for connection state change with timeout
+        let attempts = 0;
+        const maxAttempts = 20; // 10 seconds max
         
-        // Try different ways to access account info
-        let accountAddress = null;
-        if (connectResult) {
-          if (connectResult.accounts?.[0]) {
-            accountAddress = connectResult.accounts[0];
-          } else if (connectResult.account) {
-            accountAddress = connectResult.account;
-          } else if (typeof connectResult === 'string') {
-            accountAddress = connectResult;
+        while (attempts < maxAttempts && !isConnected) {
+          await new Promise(resolve => setTimeout(resolve, 500));
+          attempts++;
+          addDebugMessage(`⏳ Polling attempt ${attempts} - isConnected: ${isConnected}`);
+          
+          // Force re-render to get latest state
+          if (isConnected) {
+            break;
           }
         }
         
-        addDebugMessage(`Connected account: ${accountAddress || 'none found'}`);
+        addDebugMessage(`🔍 Final state - isConnected: ${isConnected}, attempts: ${attempts}`);
+        
+        if (!isConnected) {
+          addDebugMessage('❌ CONNECTION TIMEOUT - TRYING ALTERNATIVE');
+          // Sometimes wagmi state lags, but MetaMask might be connected
+          // Check if window.ethereum shows connected accounts
+          if (typeof window !== 'undefined' && window.ethereum) {
+            try {
+              const accounts = await window.ethereum.request({ method: 'eth_accounts' });
+              addDebugMessage(`MetaMask accounts: ${accounts.length > 0 ? accounts[0] : 'none'}`);
+              if (accounts.length > 0) {
+                addDebugMessage('✅ MetaMask has accounts - proceeding');
+              } else {
+                throw new Error('No accounts available');
+              }
+            } catch (ethError) {
+              addDebugMessage('❌ MetaMask check failed: ' + ethError.message);
+              throw new Error('Wallet connection failed');
+            }
+          } else {
+            throw new Error('Wallet connection timeout');
+          }
+        }
         
       } catch (connectError) {
-        addDebugMessage('❌ WAGMI CONNECT FAILED: ' + connectError.message);
+        addDebugMessage('❌ CONNECT FAILED: ' + connectError.message);
         console.error('❌ WAGMI CONNECT ERROR:', connectError);
-        throw connectError; // Re-throw to be caught by outer catch
-      }
-      
-      // Give wagmi time to update isConnected state
-      await new Promise(resolve => setTimeout(resolve, 500));
-      addDebugMessage(`⏰ WAIT DONE - isConnected: ${isConnected}`);
-      console.error('⏰ FINISHED WAITING, isConnected:', isConnected);
-      
-      // Just check if we have isConnected or if the connect succeeded
-      if (!isConnected && !connectResult) {
-        addDebugMessage('❌ NO CONNECTION STATE');
-        throw new Error('Wallet connection incomplete');
+        throw connectError;
       }
       
       // Trigger SIWE authentication
