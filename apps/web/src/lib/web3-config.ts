@@ -119,14 +119,9 @@ export function getConfig(): Config {
   return createClientConfig()
 }
 
-// Create the config lazily
-let config: Config | null = null
-
+// Create the config directly without global state
 export function getOrCreateConfig(): Config {
-  if (!config) {
-    config = getConfig()
-  }
-  return config
+  return getConfig()
 }
 
 declare module 'wagmi' {

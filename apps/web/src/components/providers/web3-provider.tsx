@@ -21,10 +21,12 @@ const wagmiQueryClient = new QueryClient({
 
 export function Web3Provider({ children }: Web3ProviderProps) {
   const [isClient, setIsClient] = useState(false)
-  const config = getOrCreateConfig()
+  const [config, setConfig] = useState(() => getOrCreateConfig())
 
   useEffect(() => {
     setIsClient(true)
+    // Ensure config is properly initialized on client side
+    setConfig(getOrCreateConfig())
   }, [])
 
   // Always render with WagmiProvider but handle SSR properly
