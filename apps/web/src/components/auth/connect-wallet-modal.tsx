@@ -33,7 +33,7 @@ export function ConnectWalletModal({ isOpen, onClose }: ConnectWalletModalProps)
   const [isConnecting, setIsConnecting] = useState(false);
   
   const { connect, connectors, error: connectError, isPending } = useConnect();
-  const { isConnected } = useAccount();
+  const { isConnected, address, chainId } = useAccount();
   const { disconnect } = useDisconnect();
   const { signIn, isAuthenticating, error: authError } = useSiweAuth();
   
@@ -186,7 +186,12 @@ export function ConnectWalletModal({ isOpen, onClose }: ConnectWalletModalProps)
       
       // Trigger SIWE authentication
       addDebugMessage('🚨 CALLING SIWE SIGN-IN');
+      
+      // Debug wagmi state before SIWE (using values from component scope)
+      addDebugMessage(`Pre-SIWE state: addr=${address?.slice(0,8)}, chain=${chainId}, connected=${isConnected}`);
+      
       console.error('🚨 CALLING SIGN-IN FUNCTION!!! 🚨');
+      console.error('Current wagmi state:', { address, chainId, isConnected });
       
       try {
         const success = await signIn();
@@ -402,7 +407,7 @@ Also check window.debugInfo in console`);
                         <Loader2 className="h-4 w-4 mr-2 animate-spin" />
                       )}
                       <Wallet className="h-4 w-4 mr-2" />
-                      {connector.name}
+                      {connector.name === 'Injected' ? 'MetaMask' : connector.name}
                       {isConnectorConnected && (
                         <span className="ml-auto text-xs opacity-70">Connected</span>
                       )}
