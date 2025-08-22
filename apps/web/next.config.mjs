@@ -109,18 +109,6 @@ const nextConfig = {
       
       // Force ES5 output to prevent modern JS initialization issues
       config.target = ['web', 'es5']
-      
-      // Add specific module loading order for problematic modules
-      config.entry = async () => {
-        const entries = await config.entry()
-        return {
-          ...entries,
-          // Ensure React loads first
-          'react-vendor': ['react', 'react-dom'],
-          // Ensure wagmi loads after React
-          'web3-vendor': ['wagmi', 'viem', '@tanstack/react-query']
-        }
-      }
     }
     
     return config
