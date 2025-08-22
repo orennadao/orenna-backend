@@ -57,19 +57,41 @@ export function ConnectWalletModal({ isOpen, onClose }: ConnectWalletModalProps)
           if (!container) {
             container = document.createElement('div');
             container.id = 'debug-container';
-            container.style.cssText = 'position:fixed;top:10px;left:10px;background:rgba(0,0,0,0.9);color:white;padding:10px;z-index:9999;font-size:11px;max-width:400px;max-height:300px;overflow-y:auto;font-family:monospace;';
+            container.style.cssText = 'position:fixed;top:10px;left:10px;background:rgba(0,0,0,0.95);color:white;padding:15px;z-index:9999;font-size:10px;width:500px;max-height:80vh;overflow-y:auto;font-family:monospace;border:1px solid #444;border-radius:8px;';
             document.body.appendChild(container);
+            
+            // Add a close button
+            const closeBtn = document.createElement('button');
+            closeBtn.innerHTML = '✕';
+            closeBtn.style.cssText = 'position:absolute;top:5px;right:5px;background:red;color:white;border:none;width:20px;height:20px;cursor:pointer;border-radius:3px;font-size:12px;';
+            closeBtn.onclick = () => container.remove();
+            container.appendChild(closeBtn);
+            
+            // Add a clear button
+            const clearBtn = document.createElement('button');
+            clearBtn.innerHTML = 'Clear';
+            clearBtn.style.cssText = 'position:absolute;top:5px;right:30px;background:#333;color:white;border:none;padding:2px 6px;cursor:pointer;border-radius:3px;font-size:10px;';
+            clearBtn.onclick = () => {
+              const lines = container.querySelectorAll('.debug-line');
+              lines.forEach(line => line.remove());
+            };
+            container.appendChild(clearBtn);
           }
           
           const debugLine = document.createElement('div');
-          debugLine.style.cssText = 'margin-bottom:2px;padding:2px;border-bottom:1px solid #333;';
+          debugLine.className = 'debug-line';
+          debugLine.style.cssText = 'margin-bottom:2px;padding:2px;border-bottom:1px solid #333;word-break:break-word;';
           debugLine.innerHTML = `${new Date().toLocaleTimeString()}: ${message}`;
           container.appendChild(debugLine);
           
-          // Keep only last 10 messages
-          while (container.children.length > 10) {
-            container.removeChild(container.firstChild!);
+          // Keep only last 25 messages (instead of 10)
+          const lines = container.querySelectorAll('.debug-line');
+          while (lines.length > 25) {
+            lines[0].remove();
           }
+          
+          // Auto-scroll to bottom
+          container.scrollTop = container.scrollHeight;
         }
       };
       
