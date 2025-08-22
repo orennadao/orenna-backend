@@ -1,7 +1,7 @@
 # Debug Guide - Orenna DAO Web3 Authentication System
 
 **Last Updated**: August 22, 2025  
-**Status**: Web3 Authentication System Implemented & Fixed  
+**Status**: Web3 Authentication System Implemented & Fixed - Debugging ReferenceError  
 **Branch**: `main`
 
 ## 🎯 Current State
@@ -17,9 +17,12 @@
 - **Guest mode** with right-aligned banner
 
 ### 🚧 **Recently Fixed**
-- **wagmi connector configuration issues** causing `Cannot read properties of undefined (reading 'length')`
-- **Governance page runtime errors** from problematic connector setup
-- **Guest sidebar Connect Wallet button** now functional
+- **wagmi connector "already connected" error** by disabling shimDisconnect
+- **Dashboard ReferenceError** by replacing mock auth with real SIWE auth
+- **Environment configuration** for alpha.orennadao.com deployment
+- **Auth hook conflicts** causing variable initialization errors
+- **Development port** changed to 3001 for consistency
+- **Sepolia testnet only** configuration (removed mainnet)
 
 ## 🏗️ **Architecture Overview**
 
@@ -49,7 +52,8 @@ Fastify API
 apps/web/src/
 ├── hooks/
 │   ├── use-siwe-auth.ts          # Main SIWE authentication hook
-│   └── use-auth.ts               # Legacy auth hook (still used in some components)
+│   ├── use-auth.ts               # Compatibility layer - re-exports SIWE auth
+│   └── use-mock-auth.ts          # Renamed mock auth hook (not used)
 ├── components/auth/
 │   ├── connect-wallet-modal.tsx  # 3-tab wallet connection modal
 │   ├── wallet-connect-button.tsx # Updated to use new modal system
@@ -71,21 +75,30 @@ apps/api/src/routes/
 
 ### **Environment Variables Required**
 ```bash
-# Frontend (.env.local)
-NEXT_PUBLIC_SIWE_DOMAIN=localhost:3000
-NEXT_PUBLIC_SIWE_ORIGIN=http://localhost:3000
-NEXT_PUBLIC_WALLET_CONNECT_PROJECT_ID=your_project_id  # Optional but recommended
+# Frontend (.env.local) - Development
+NEXT_PUBLIC_API_URL=https://orenna-backend-production.up.railway.app
+NEXT_PUBLIC_SIWE_DOMAIN=localhost:3001
+NEXT_PUBLIC_SIWE_ORIGIN=http://localhost:3001
+NODE_ENV=development
+NEXT_PUBLIC_WALLET_CONNECT_PROJECT_ID=your_project_id_here
+
+# Frontend (.env.alpha) - Alpha Deployment  
+NEXT_PUBLIC_API_URL=https://orenna-backend-production.up.railway.app
+NEXT_PUBLIC_SIWE_DOMAIN=alpha.orennadao.com
+NEXT_PUBLIC_SIWE_ORIGIN=https://alpha.orennadao.com
+NODE_ENV=production
 
 # Backend (.env)
-SIWE_DOMAIN=localhost:3000
-SIWE_ORIGIN=http://localhost:3000
+SIWE_DOMAIN=alpha.orennadao.com
+SIWE_ORIGIN=https://alpha.orennadao.com
 SIWE_SESSION_TTL=86400  # 24 hours
 ```
 
 ### **Chain Configuration**
 Currently supports:
-- **Mainnet** (chainId: 1)
-- **Sepolia** (chainId: 11155111)
+- **Sepolia Testnet Only** (chainId: 11155111)
+
+*Note: Mainnet removed for testing phase*
 
 Chain allowlist enforced in:
 - `apps/web/src/lib/web3-config.ts`
@@ -109,17 +122,19 @@ Chain allowlist enforced in:
 
 ## 🐛 **Known Issues & Workarounds**
 
-### **404/500 Page Build Errors**
+### **🚨 CURRENT: ReferenceError on Index Page**
 ```
-Error: <Html> should not be imported outside of pages/_document
+(index):20 ReferenceError: Cannot access 'h' before initialization
 ```
-**Status**: Non-critical, doesn't affect functionality  
-**Workaround**: Errors only occur on error pages, main app works fine
+**Status**: Active debugging  
+**Location**: Landing page (index)
+**Impact**: Prevents proper page loading
+**Suspected**: React/wagmi initialization order issue
 
-### **Legacy Auth Hook Usage**
-**Issue**: Many components still use `useAuth` instead of `useSiweAuth`  
-**Impact**: Components work but use mock authentication  
-**Files affected**: 23 files (see grep results in commit history)
+### **Legacy Auth Hook Usage** 
+**Issue**: Some components still using old patterns  
+**Status**: Partially resolved with compatibility layer  
+**Impact**: Minimal - compatibility layer handles most cases
 
 ```bash
 # To find files still using legacy auth:
@@ -144,7 +159,10 @@ grep -r "useAuth" apps/web/src --exclude-dir=node_modules
 
 ### **Connector Configuration**
 ```typescript
-// ✅ WORKING - Simple configuration
+// ✅ FIXED - Prevents stale connection state
+injected({ shimDisconnect: false })
+
+// ❌ BROKEN - Causes "already connected" errors
 injected({ shimDisconnect: true })
 
 // ❌ BROKEN - Causes undefined array errors
@@ -174,14 +192,17 @@ injected({ shimDisconnect: true, target: 'metaMask' })
 
 ### **Testing**
 ```bash
-# Frontend build test
-cd apps/web && npm run build
+# Frontend development (port 3001)
+npx pnpm --filter @orenna/web dev
 
-# Frontend development
-cd apps/web && npm run dev
+# Frontend build test
+npx pnpm --filter @orenna/web build
 
 # Backend development  
-cd apps/api && npm run dev
+npx pnpm --filter @orenna/api dev
+
+# Full stack development
+npx pnpm dev:all
 ```
 
 ### **Database**

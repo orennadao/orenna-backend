@@ -27,9 +27,17 @@ interface SiweAuthState {
 
 export function useSiweAuth() {
   const router = useRouter();
-  const { address, chainId, isConnected } = useAccount();
+  const [mounted, setMounted] = useState(false);
+  
+  // Only access wagmi hooks after mount to avoid SSR issues
+  const wagmiAccount = useAccount();
   const { signMessageAsync } = useSignMessage();
   const { disconnect } = useDisconnect();
+  
+  // Safe access to wagmi state
+  const address = mounted ? wagmiAccount.address : undefined;
+  const chainId = mounted ? wagmiAccount.chainId : undefined;
+  const isConnected = mounted ? wagmiAccount.isConnected : false;
 
   const [state, setState] = useState<SiweAuthState>({
     user: null,
@@ -38,14 +46,23 @@ export function useSiweAuth() {
     isLoading: true,
     error: null,
   });
-
-  // Check existing session on mount
+  
+  // Handle mounting to prevent SSR issues
   useEffect(() => {
-    checkSession();
+    setMounted(true);
   }, []);
 
-  // Sync auth state with wallet connection state
+  // Check existing session only after mount
   useEffect(() => {
+    if (mounted) {
+      checkSession();
+    }
+  }, [mounted, checkSession]);
+
+  // Sync auth state with wallet connection state (only after mount)
+  useEffect(() => {
+    if (!mounted) return;
+    
     if (!isConnected && state.isAuthenticated) {
       // Wallet disconnected but user still appears authenticated - clear auth state
       setState(prev => ({
@@ -59,7 +76,7 @@ export function useSiweAuth() {
       // Check if we have a valid session
       checkSession();
     }
-  }, [isConnected, state.isAuthenticated, state.isAuthenticating, state.isLoading, checkSession]);
+  }, [mounted, isConnected, state.isAuthenticated, state.isAuthenticating, state.isLoading, checkSession]);
 
   const checkSession = useCallback(async () => {
     try {
@@ -221,6 +238,20 @@ export function useSiweAuth() {
       disconnect();
     }
   }, [disconnect]);
+
+  // Return safe state until mounted
+  if (!mounted) {
+    return {
+      user: null,
+      isAuthenticated: false,
+      isAuthenticating: false,
+      isLoading: true,
+      error: null,
+      signIn,
+      signOut,
+      refetch: checkSession,
+    };
+  }
 
   return {
     ...state,

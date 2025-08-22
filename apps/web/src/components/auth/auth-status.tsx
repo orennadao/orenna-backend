@@ -12,16 +12,7 @@ export function AuthStatus() {
     setMounted(true)
   }, [])
 
-  if (!mounted) {
-    return (
-      <div className="flex items-center space-x-2 text-sm text-gray-500">
-        <div className="w-2 h-2 bg-gray-400 rounded-full animate-pulse" />
-        <span>Loading...</span>
-      </div>
-    )
-  }
-
-  if (isLoading) {
+  if (!mounted || isLoading) {
     return (
       <div className="flex items-center space-x-2 text-sm text-gray-500">
         <div className="w-2 h-2 bg-gray-400 rounded-full animate-pulse" />
