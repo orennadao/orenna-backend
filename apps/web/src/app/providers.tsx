@@ -31,7 +31,9 @@ export default function Providers({ children }: { children: React.ReactNode }) {
         refetchOnWindowFocus={false}
       >
         <QueryClientProvider client={queryClient}>
-          <RainbowKitSiweNextAuthProvider>
+          <RainbowKitSiweNextAuthProvider
+            signInOptions={{ provider: "siwe", redirect: false, callbackUrl: "/" }}
+          >
             <RainbowKitProvider>{children}</RainbowKitProvider>
           </RainbowKitSiweNextAuthProvider>
         </QueryClientProvider>

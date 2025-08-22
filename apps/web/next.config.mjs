@@ -97,15 +97,13 @@ const nextConfig = {
     return config
   },
   
-  // API proxy rewrites - disabled since frontend calls API directly
-  // async rewrites() {
-  //   return [
-  //     {
-  //       source: '/api/:path*',
-  //       destination: `${process.env.NEXT_PUBLIC_API_URL || 'http://localhost:3001'}/api/:path*`,
-  //     },
-  //   ]
-  // },
+  // API proxy rewrites - keep NextAuth local, proxy everything else
+  async rewrites() {
+    return [
+      { source: "/api/auth/:path*", destination: "/api/auth/:path*" }, // let Next handle NextAuth
+      { source: "/api/:path*", destination: `${process.env.NEXT_PUBLIC_API_URL || 'http://localhost:3001'}/api/:path*` },
+    ]
+  },
 
   // Headers for caching
   async headers() {
