@@ -122,14 +122,17 @@ Chain allowlist enforced in:
 
 ## 🐛 **Known Issues & Workarounds**
 
-### **🚨 CURRENT: ReferenceError on Index Page**
+### **🚨 CURRENT: Persistent ReferenceError in Bundled Code**
 ```
-(index):20 ReferenceError: Cannot access 'h' before initialization
+(index):20 ReferenceError: Cannot access 'v' before initialization
+at d (common-a17767a3fa9f5b72.js)
+at f (page-e13e9a3b41f28a89.js) 
+at React render pipeline...
 ```
-**Status**: Active debugging  
-**Location**: Landing page (index)
-**Impact**: Prevents proper page loading
-**Suspected**: React/wagmi initialization order issue
+**Status**: **ISOLATED TO WEB3 STACK**  
+**Root Cause**: Confirmed to be in wagmi/auth system (not React/Next.js)  
+**Evidence**: Minimal app (271 modules) works fine, full app (3816+ modules) fails  
+**Next Step**: Systematic component reintroduction to find exact culprit
 
 ### **Legacy Auth Hook Usage** 
 **Issue**: Some components still using old patterns  
