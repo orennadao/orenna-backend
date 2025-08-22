@@ -46,7 +46,6 @@ function createServerConfig(): Config {
     connectors: [
       injected({ 
         shimDisconnect: true,
-        target: 'metaMask', // Enable EIP-6963 discovery
       }),
     ],
     ssr: true,
@@ -72,7 +71,6 @@ function createClientConfig(): Config {
         connectors: [
           injected({ 
             shimDisconnect: true,
-            target: 'metaMask', // Enable EIP-6963 discovery
           }),
         ],
       })
@@ -102,7 +100,6 @@ function createClientConfig(): Config {
             }),
             injected({ 
               shimDisconnect: true,
-              target: 'metaMask', // Enable EIP-6963 discovery
             }),
             coinbaseWallet({
               appName: 'Orenna DAO',
