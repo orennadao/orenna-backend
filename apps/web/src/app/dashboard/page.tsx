@@ -1,7 +1,7 @@
 'use client';
 
 import { MainLayout } from "@/components/layout/main-layout";
-import { useAuth } from "@/hooks/use-auth";
+import { useSiweAuth } from "@/hooks/use-siwe-auth";
 import { TermsRequiredWrapper } from "@/components/auth/terms-required-wrapper";
 import { Button } from "@/components/ui/button";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
@@ -21,7 +21,7 @@ import {
 import Link from "next/link";
 
 export default function DashboardPage() {
-  const { user, isAuthenticated, isLoading } = useAuth();
+  const { user, isAuthenticated, isLoading } = useSiweAuth();
   
   if (isLoading) {
     return (
@@ -128,7 +128,7 @@ export default function DashboardPage() {
         <div className="flex items-center justify-between">
           <div>
             <h1 className="text-3xl font-bold text-gray-900">
-              Welcome back, {user?.displayName || 'Member'}
+              Welcome back, {user?.ensName || user?.address?.slice(0, 6) + '...' + user?.address?.slice(-4) || 'Member'}
             </h1>
             <p className="text-gray-600 mt-1">
               Here's what's happening in your regenerative journey
