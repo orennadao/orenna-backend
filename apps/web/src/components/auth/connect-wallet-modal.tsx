@@ -127,7 +127,11 @@ export function ConnectWalletModal({ isOpen, onClose }: ConnectWalletModalProps)
 
   const error = connectError || authError;
   
-  // Debug logging for connectors and error state
+  // Debug logging for modal render and connectors
+  if (isOpen) {
+    console.error('🚨 MODAL IS OPEN AND RENDERING!!! 🚨');
+  }
+  
   console.error('🔍 AVAILABLE CONNECTORS:', connectors.map(c => ({
     name: c.name,
     id: c.id,
@@ -185,18 +189,36 @@ export function ConnectWalletModal({ isOpen, onClose }: ConnectWalletModalProps)
                 )
                 .map((connector) => {
                   const isConnectorConnected = isConnected && connector.id === 'metaMask';
+                  const isDisabled = isPending || isAuthenticating || isConnecting;
+                  
+                  console.error('🔍 RENDERING BUTTON FOR:', connector.name, {
+                    isDisabled,
+                    isPending,
+                    isAuthenticating,
+                    isConnecting,
+                    isConnectorConnected
+                  });
+                  
                   return (
                     <Button
                       key={connector.id}
                       variant={isConnectorConnected ? "default" : "outline"}
                       className="w-full justify-start"
-                      onClick={() => {
+                      onClick={(e) => {
+                        console.error('🚨🚨🚨 BUTTON CLICK DETECTED!!! 🚨🚨🚨');
+                        alert('BUTTON CLICKED - CHECK CONSOLE');
+                        console.error('Event:', e);
+                        console.error('Target:', e.target);
                         console.error('🚨 BUTTON CLICKED FOR:', connector.name, 'Type:', connector.type, 'ID:', connector.id);
                         console.error('🚨 CONNECTOR OBJECT:', connector);
                         console.error('🚨 CURRENT STATE - isPending:', isPending, 'isAuthenticating:', isAuthenticating, 'isConnecting:', isConnecting);
-                        handleConnect(connector);
+                        try {
+                          handleConnect(connector);
+                        } catch (error) {
+                          console.error('🚨 ERROR IN HANDLE CONNECT:', error);
+                        }
                       }}
-                      disabled={isPending || isAuthenticating || isConnecting}
+                      disabled={isDisabled}
                     >
                       {(isPending || isAuthenticating) && (
                         <Loader2 className="h-4 w-4 mr-2 animate-spin" />
