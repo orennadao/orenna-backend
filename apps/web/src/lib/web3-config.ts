@@ -71,8 +71,9 @@ function createClientConfig(): Config {
     ]
     
     // Add WalletConnect if project ID is available
-    const walletConnectProjectId = process.env.NEXT_PUBLIC_WALLET_CONNECT_PROJECT_ID
+    const walletConnectProjectId = process.env.NEXT_PUBLIC_WALLET_CONNECT_PROJECT_ID?.trim()
     if (walletConnectProjectId && walletConnectProjectId !== 'your_project_id_here') {
+      console.log('WalletConnect Project ID:', JSON.stringify(walletConnectProjectId))
       connectors.push(
         walletConnect({ 
           projectId: walletConnectProjectId,
