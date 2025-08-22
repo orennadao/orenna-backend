@@ -26,7 +26,7 @@ import {
 import { useRouter } from 'next/navigation';
 import Link from 'next/link';
 import { useAuth } from '@/hooks/use-auth';
-import { WalletConnectButton } from '@/components/auth/wallet-connect-button';
+import { RainbowConnect } from '@/components/auth/rainbow-connect';
 import { apiClient } from '@/lib/api';
 
 const PROJECT_STEPS = [
@@ -284,13 +284,13 @@ export function ProjectCreationWizard() {
                   <CheckCircle className="w-3 h-3 mr-1" />
                   Connected
                 </Badge>
-                <WalletConnectButton />
+                <RainbowConnect />
               </div>
             </div>
           ) : (
             <div className="space-y-2">
               <p className="text-sm text-gray-600">Connect your wallet to continue</p>
-              <WalletConnectButton />
+              <RainbowConnect />
             </div>
           )}
         </div>

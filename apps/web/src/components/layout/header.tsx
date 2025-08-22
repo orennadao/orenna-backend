@@ -2,7 +2,7 @@
 
 import Link from 'next/link'
 import { Button } from "@/components/ui/button";
-import { WalletConnectButton } from "@/components/auth/wallet-connect-button";
+import { RainbowConnect } from "@/components/auth/rainbow-connect";
 import { AuthStatus } from "@/components/auth/auth-status";
 import { useAuth } from "@/hooks/use-auth";
 
@@ -29,7 +29,7 @@ export function Header() {
               </Link>
             )}
             {isAuthenticated && <AuthStatus />}
-            <WalletConnectButton />
+            <RainbowConnect />
           </div>
         </div>
       </div>

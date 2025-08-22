@@ -6,7 +6,7 @@ import { cn } from '@/lib/utils';
 import { Sidebar } from './sidebar';
 import { GuestSidebar } from './guest-sidebar';
 import { Breadcrumbs, generateBreadcrumbs, BREADCRUMB_LABELS, type BreadcrumbItem } from './breadcrumbs';
-import { WalletConnectButton } from '@/components/auth/wallet-connect-button';
+import { RainbowConnect } from '@/components/auth/rainbow-connect';
 import { GlobalSearch } from '@/components/search/global-search';
 import { useAuth, type FinanceRole, type SystemRoleType } from '@/hooks/use-auth';
 import { Button } from '@/components/ui/button';
@@ -151,7 +151,7 @@ export function MainLayout({
               <div className="flex items-center space-x-3">
                 {actions}
                 <div className="hidden lg:block">
-                  <WalletConnectButton />
+                  <RainbowConnect />
                 </div>
               </div>
             </div>
@@ -180,7 +180,7 @@ export function MainLayout({
               <div className="flex items-center space-x-3">
                 {actions}
                 <div className="hidden lg:block">
-                  <WalletConnectButton />
+                  <RainbowConnect />
                 </div>
               </div>
             </div>
