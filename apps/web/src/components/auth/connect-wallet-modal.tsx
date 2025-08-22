@@ -128,9 +128,9 @@ export function ConnectWalletModal({ isOpen, onClose }: ConnectWalletModalProps)
         await connectPromise;
         addDebugMessage('✅ CONNECT PROMISE RESOLVED');
         
-        // Poll for connection state change with timeout
+        // Poll for connection state change with timeout (longer for MetaMask password entry)
         let attempts = 0;
-        const maxAttempts = 20; // 10 seconds max
+        const maxAttempts = 40; // 20 seconds max to allow password entry
         
         while (attempts < maxAttempts && !isConnected) {
           await new Promise(resolve => setTimeout(resolve, 500));
