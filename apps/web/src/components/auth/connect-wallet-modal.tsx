@@ -1,6 +1,6 @@
 'use client';
 
-import { useState } from 'react';
+import { useState, useEffect } from 'react';
 import { Dialog, DialogContent, DialogHeader, DialogTitle } from '@/components/ui/dialog';
 import { Button } from '@/components/ui/button';
 import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
@@ -35,6 +35,14 @@ export function ConnectWalletModal({ isOpen, onClose }: ConnectWalletModalProps)
   const { isConnected } = useAccount();
   const { disconnect } = useDisconnect();
   const { signIn, isAuthenticating, error: authError } = useSiweAuth();
+  
+  // Clear any auth errors when modal opens
+  useEffect(() => {
+    if (isOpen && authError) {
+      console.error('🚨 CLEARING AUTH ERROR ON MODAL OPEN');
+      // The error will be cleared when signIn is called
+    }
+  }, [isOpen, authError]);
 
   // Handle wallet connection with proper state management
   const handleConnect = async (connector: any) => {

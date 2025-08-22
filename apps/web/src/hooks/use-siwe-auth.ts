@@ -141,6 +141,7 @@ export function useSiweAuth() {
       }
     }
 
+    // Clear any previous errors when starting authentication
     setState(prev => ({
       ...prev,
       isAuthenticating: true,
