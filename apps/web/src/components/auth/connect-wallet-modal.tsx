@@ -200,9 +200,7 @@ export function ConnectWalletModal({ isOpen, onClose }: ConnectWalletModalProps)
             <div className="space-y-2">
               {connectors
                 .filter(connector => 
-                  connector.type === 'injected' ||
-                  connector.id === 'metaMask' ||
-                  connector.name?.toLowerCase().includes('metamask')
+                  connector.type === 'injected'
                 )
                 .map((connector) => {
                   const isConnectorConnected = isConnected && (
