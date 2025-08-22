@@ -171,11 +171,14 @@ export function useSiweAuth() {
       const messageString = message.prepareMessage();
 
       // Step 3: Sign the message
+      console.log('🖊️ Requesting signature from MetaMask...');
       const signature = await signMessageAsync({
         message: messageString,
       });
+      console.log('✅ MetaMask signature received:', signature?.slice(0, 10) + '...');
 
       // Step 4: Verify signature with server
+      console.log('📡 Sending verify request to:', API_ENDPOINTS.VERIFY);
       const verifyResponse = await fetch(API_ENDPOINTS.VERIFY, {
         method: 'POST',
         headers: {
@@ -187,6 +190,7 @@ export function useSiweAuth() {
           signature,
         }),
       });
+      console.log('📡 Verify response status:', verifyResponse.status);
 
       if (!verifyResponse.ok) {
         const errorData = await verifyResponse.json().catch(() => ({}));
@@ -212,7 +216,8 @@ export function useSiweAuth() {
 
       return true;
     } catch (error: any) {
-      console.error('SIWE authentication failed:', error);
+      console.error('❌ SIWE authentication failed:', error);
+      console.error('❌ Error details:', error.message, error.stack);
       setState(prev => ({
         ...prev,
         isAuthenticating: false,
