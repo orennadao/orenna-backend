@@ -294,6 +294,29 @@ export function ConnectWalletModal({ isOpen, onClose }: ConnectWalletModalProps)
       console.error('Final state for SIWE:', { address: finalAddress, chainId: finalChainId, isConnected: finalConnected });
       
       try {
+        // Add manual debugging of SIWE steps since internal logs may not be showing
+        addDebugMessage('📡 Step 1: Getting nonce from server...');
+        
+        // Manually test nonce endpoint
+        try {
+          const nonceResponse = await fetch('https://orenna-backend-production.up.railway.app/api/auth/siwe/nonce', {
+            method: 'GET',
+            credentials: 'include',
+          });
+          addDebugMessage(`Nonce response: ${nonceResponse.status} ${nonceResponse.statusText}`);
+          
+          if (nonceResponse.ok) {
+            const nonceData = await nonceResponse.json();
+            addDebugMessage(`Nonce received: ${nonceData.nonce?.slice(0, 8)}...`);
+          } else {
+            addDebugMessage(`❌ Nonce failed: ${nonceResponse.status}`);
+          }
+        } catch (nonceError) {
+          addDebugMessage(`❌ Nonce error: ${nonceError.message}`);
+        }
+        
+        // Now call the actual signIn
+        addDebugMessage('🔐 Step 2: Calling signIn function...');
         const success = await signIn();
         addDebugMessage('🚨 SIWE RESULT: ' + success);
         console.error('🚨 SIGN-IN RESULT:', success);
