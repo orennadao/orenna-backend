@@ -14,5 +14,7 @@ export function middleware(req: NextRequest) {
 }
 
 export const config = {
-  matcher: ["/api/:path*"], // Apply to all API routes, but early return skips /api/auth/*
+  matcher: [
+    '/((?!_next/static|_next/image|favicon.ico|robots.txt|sitemap.xml|images|api/auth|api/siwe|api/webhooks|.*\\.(?:js|css|map|json|png|jpg|jpeg|svg|gif|ico)$).*)',
+  ],
 };
