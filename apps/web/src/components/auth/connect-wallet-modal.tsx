@@ -150,16 +150,28 @@ export function ConnectWalletModal({ isOpen, onClose }: ConnectWalletModalProps)
           // Check if window.ethereum shows connected accounts
           if (typeof window !== 'undefined' && window.ethereum) {
             try {
-              const accounts = await window.ethereum.request({ method: 'eth_accounts' });
-              addDebugMessage(`MetaMask accounts: ${accounts.length > 0 ? accounts[0] : 'none'}`);
+              // First check existing accounts
+              let accounts = await window.ethereum.request({ method: 'eth_accounts' });
+              addDebugMessage(`Existing MetaMask accounts: ${accounts.length > 0 ? accounts[0] : 'none'}`);
+              
+              // If no accounts, try to request connection
+              if (accounts.length === 0) {
+                addDebugMessage('🔐 Requesting MetaMask account access...');
+                accounts = await window.ethereum.request({ method: 'eth_requestAccounts' });
+                addDebugMessage(`Requested accounts: ${accounts.length > 0 ? accounts[0] : 'none'}`);
+              }
+              
               if (accounts.length > 0) {
                 addDebugMessage('✅ MetaMask has accounts - proceeding');
+                // Wait a bit more for wagmi to catch up
+                await new Promise(resolve => setTimeout(resolve, 1000));
+                addDebugMessage(`Final isConnected after MetaMask: ${isConnected}`);
               } else {
-                throw new Error('No accounts available');
+                throw new Error('No accounts available after request');
               }
             } catch (ethError) {
-              addDebugMessage('❌ MetaMask check failed: ' + ethError.message);
-              throw new Error('Wallet connection failed');
+              addDebugMessage('❌ MetaMask request failed: ' + ethError.message);
+              throw new Error('MetaMask connection denied or failed');
             }
           } else {
             throw new Error('Wallet connection timeout');

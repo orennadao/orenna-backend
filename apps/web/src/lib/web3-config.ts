@@ -47,7 +47,6 @@ function createServerConfig(): Config {
     },
     connectors: [
       injected({ 
-        target: 'metaMask',
         shimDisconnect: false,
       }),
     ],
@@ -61,9 +60,8 @@ function createClientConfig(): Config {
     console.log('Creating wagmi config with NODE_ENV:', process.env.NODE_ENV);
     
     const connectors = [
-      // Use injected connector targeting MetaMask specifically to avoid SDK issues
+      // Use basic injected connector without target specification
       injected({ 
-        target: 'metaMask',
         shimDisconnect: false,
       }),
     ]
