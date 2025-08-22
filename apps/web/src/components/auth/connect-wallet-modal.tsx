@@ -122,8 +122,27 @@ export function ConnectWalletModal({ isOpen, onClose }: ConnectWalletModalProps)
       try {
         connectResult = await connect({ connector });
         addDebugMessage('✅ WAGMI CONNECT SUCCESS');
-        addDebugMessage(`Connected to: ${connectResult.accounts?.[0] || 'unknown'}`);
+        
+        // Log the full result structure to understand what we get
+        addDebugMessage(`Connect result type: ${typeof connectResult}`);
+        addDebugMessage(`Connect result keys: ${connectResult ? Object.keys(connectResult).join(', ') : 'null'}`);
+        
         console.error('✅ WAGMI CONNECT RESULT:', connectResult);
+        
+        // Try different ways to access account info
+        let accountAddress = null;
+        if (connectResult) {
+          if (connectResult.accounts?.[0]) {
+            accountAddress = connectResult.accounts[0];
+          } else if (connectResult.account) {
+            accountAddress = connectResult.account;
+          } else if (typeof connectResult === 'string') {
+            accountAddress = connectResult;
+          }
+        }
+        
+        addDebugMessage(`Connected account: ${accountAddress || 'none found'}`);
+        
       } catch (connectError) {
         addDebugMessage('❌ WAGMI CONNECT FAILED: ' + connectError.message);
         console.error('❌ WAGMI CONNECT ERROR:', connectError);
@@ -135,13 +154,10 @@ export function ConnectWalletModal({ isOpen, onClose }: ConnectWalletModalProps)
       addDebugMessage(`⏰ WAIT DONE - isConnected: ${isConnected}`);
       console.error('⏰ FINISHED WAITING, isConnected:', isConnected);
       
-      // Use connect result to verify connection instead of isConnected state
-      const hasAccount = connectResult?.accounts?.[0];
-      addDebugMessage(`Account from connect: ${hasAccount || 'none'}`);
-      
-      if (!hasAccount && !isConnected) {
-        addDebugMessage('❌ NO ACCOUNT AND NOT CONNECTED');
-        throw new Error('Wallet connection incomplete - no account');
+      // Just check if we have isConnected or if the connect succeeded
+      if (!isConnected && !connectResult) {
+        addDebugMessage('❌ NO CONNECTION STATE');
+        throw new Error('Wallet connection incomplete');
       }
       
       // Trigger SIWE authentication
