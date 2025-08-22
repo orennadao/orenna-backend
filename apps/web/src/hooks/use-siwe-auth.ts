@@ -68,6 +68,10 @@ export function useSiweAuth() {
           isLoading: false,
         }));
       } else {
+        // 401 Unauthorized is expected when no session exists - don't log as error
+        if (response.status !== 401) {
+          console.warn(`Session check returned ${response.status}: ${response.statusText}`);
+        }
         setState(prev => ({
           ...prev,
           isLoading: false,
