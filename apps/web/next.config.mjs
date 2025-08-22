@@ -68,68 +68,58 @@ const nextConfig = {
       }
     }
     
-    // Production optimizations
+    // AGGRESSIVE FIX for ReferenceError: Cannot access 'v' before initialization
+    // Force development-like module handling in production to prevent initialization issues
     if (!dev) {
-      // Fix for ReferenceError: Cannot access 'v' before initialization
-      // Disable problematic optimizations that can cause variable hoisting issues
+      // Force development mode for module resolution
+      config.mode = 'development'
+      
+      // Disable ALL optimizations that can cause variable initialization order issues
       config.optimization = {
-        ...config.optimization,
-        minimize: true,
-        // Disable concatenateModules to prevent variable initialization order issues
+        // Keep development-like optimization settings
+        minimize: false,
         concatenateModules: false,
-        // Disable mangling that can cause variable reference issues
-        minimizer: config.optimization.minimizer.map(minimizer => {
-          if (minimizer.constructor.name === 'TerserPlugin') {
-            return {
-              ...minimizer,
-              options: {
-                ...minimizer.options,
-                terserOptions: {
-                  ...minimizer.options?.terserOptions,
-                  mangle: {
-                    ...minimizer.options?.terserOptions?.mangle,
-                    // Disable variable name mangling that can cause reference errors
-                    keep_fnames: true,
-                    reserved: ['v', 'variables', 'context']
-                  },
-                  compress: {
-                    ...minimizer.options?.terserOptions?.compress,
-                    // Disable dead code elimination that might affect initialization order
-                    dead_code: false,
-                    // Disable variable hoisting
-                    hoist_vars: false,
-                    // Keep function names to prevent reference errors
-                    keep_fnames: true
-                  }
-                }
-              }
-            }
-          }
-          return minimizer
-        }),
+        sideEffects: false,
+        usedExports: false,
+        providedExports: false,
+        removeAvailableModules: false,
+        removeEmptyChunks: false,
+        mergeDuplicateChunks: false,
+        mangleExports: false,
+        // Minimal chunk splitting to prevent initialization order issues
         splitChunks: {
           chunks: 'all',
+          minSize: 0,
+          maxSize: 0,
           cacheGroups: {
-            default: false,
-            vendors: false,
-            // Vendor chunk for external libraries
+            default: {
+              minChunks: 1,
+              priority: -20,
+              reuseExistingChunk: true
+            },
             vendor: {
+              test: /[\\/]node_modules[\\/]/,
               name: 'vendor',
-              chunks: 'all',
-              test: /node_modules/,
-              priority: 20,
-            },
-            // Common chunk for shared code
-            common: {
-              name: 'common',
-              minChunks: 2,
-              chunks: 'all',
-              priority: 10,
-              reuseExistingChunk: true,
-              enforce: true,
-            },
-          },
-        },
+              priority: -10,
+              reuseExistingChunk: true
+            }
+          }
+        }
+      }
+      
+      // Force ES5 output to prevent modern JS initialization issues
+      config.target = ['web', 'es5']
+      
+      // Add specific module loading order for problematic modules
+      config.entry = async () => {
+        const entries = await config.entry()
+        return {
+          ...entries,
+          // Ensure React loads first
+          'react-vendor': ['react', 'react-dom'],
+          // Ensure wagmi loads after React
+          'web3-vendor': ['wagmi', 'viem', '@tanstack/react-query']
+        }
       }
     }
     
