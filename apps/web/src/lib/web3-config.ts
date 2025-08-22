@@ -51,59 +51,22 @@ function createServerConfig(): Config {
   })
 }
 
-// Client config with full wallet support
+// Simplified client config - disable WalletConnect for now to avoid initialization issues
 function createClientConfig(): Config {
   try {
-    // Get environment variables and clean them
-    const projectId = process.env.NEXT_PUBLIC_WALLET_CONNECT_PROJECT_ID?.trim()
-
-    if (!projectId) {
-      console.warn('NEXT_PUBLIC_WALLET_CONNECT_PROJECT_ID is not set. WalletConnect and Coinbase Wallet will be disabled.')
-      console.warn('To enable these features, get a project ID from https://cloud.walletconnect.com/')
-      // Return basic config without WalletConnect
-      return createConfig({
-        chains,
-        transports: {
-          [sepolia.id]: http(),
-        },
-        connectors: [
-          injected({ 
-            shimDisconnect: false,
-          }),
-        ],
-      })
-    }
-
+    console.log('Creating wagmi config with NODE_ENV:', process.env.NODE_ENV);
+    
+    // Always use simple config to avoid WalletConnect initialization issues
     return createConfig({
       chains,
       transports: {
         [sepolia.id]: http(),
       },
-      connectors: process.env.NODE_ENV === 'development' 
-        ? [
-            // Development mode - only basic wallet connections to avoid third-party auth errors
-            injected({ shimDisconnect: false }),
-          ]
-        : [
-            // Production mode - full wallet support
-            walletConnect({
-              projectId,
-              metadata: {
-                name: 'Orenna DAO',
-                description: 'Regenerative finance platform',
-                url: typeof window !== 'undefined' ? window.location.origin : 'https://orenna.org',
-                icons: ['https://orenna.org/logo.png'],
-              },
-            }),
-            injected({ 
-              shimDisconnect: false,
-            }),
-            coinbaseWallet({
-              appName: 'Orenna DAO',
-              appLogoUrl: 'https://orenna.org/logo.png',
-              preference: 'smartWalletOnly', // Reduce 401 metric errors
-            }),
-          ],
+      connectors: [
+        injected({ 
+          shimDisconnect: false,
+        }),
+      ],
     })
   } catch (error) {
     console.error('Failed to create wagmi config:', error)

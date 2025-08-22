@@ -6,6 +6,7 @@ import { GovernanceProvider } from './governance-provider';
 import { Web3Provider } from './web3-provider';
 import { WebSocketProvider } from './websocket-provider';
 import { NoSSR } from './no-ssr';
+import { ErrorBoundary } from '../error-boundary';
 import { useState } from 'react';
 
 export function AppProviders({ children }: { children: React.ReactNode }) {
@@ -29,17 +30,19 @@ export function AppProviders({ children }: { children: React.ReactNode }) {
   );
 
   return (
-    <NoSSR fallback={<div>Loading...</div>}>
-      <QueryClientProvider client={queryClient}>
-        <Web3Provider>
-          <WebSocketProvider>
-            <GovernanceProvider>
-              {children}
-            </GovernanceProvider>
-          </WebSocketProvider>
-        </Web3Provider>
-        <ReactQueryDevtools initialIsOpen={false} />
-      </QueryClientProvider>
-    </NoSSR>
+    <ErrorBoundary>
+      <NoSSR fallback={<div>Loading...</div>}>
+        <QueryClientProvider client={queryClient}>
+          <Web3Provider>
+            <WebSocketProvider>
+              <GovernanceProvider>
+                {children}
+              </GovernanceProvider>
+            </WebSocketProvider>
+          </Web3Provider>
+          <ReactQueryDevtools initialIsOpen={false} />
+        </QueryClientProvider>
+      </NoSSR>
+    </ErrorBoundary>
   );
 }
