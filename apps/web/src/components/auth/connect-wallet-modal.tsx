@@ -121,9 +121,16 @@ export function ConnectWalletModal({ isOpen, onClose }: ConnectWalletModalProps)
             
             <div className="space-y-2">
               {connectors
-                .filter(connector => connector.type === 'injected')
+                .filter(connector => 
+                  connector.type === 'injected' || 
+                  connector.type === 'metaMask' ||
+                  connector.id === 'metaMask'
+                )
                 .map((connector) => {
-                  const isConnectorConnected = isConnected && connector.id === 'injected';
+                  const isConnectorConnected = isConnected && (
+                    connector.id === 'injected' || 
+                    connector.id === 'metaMask'
+                  );
                   return (
                     <Button
                       key={connector.id}

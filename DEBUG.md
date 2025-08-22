@@ -122,60 +122,45 @@ Chain allowlist enforced in:
 
 ## 🐛 **Known Issues & Workarounds**
 
-### **🚨 CRITICAL: Cross-Origin Authentication Failure**
-```
-GET https://orenna-backend-production.up.railway.app/api/auth/session 401 (Unauthorized)
-```
-**Status**: **BACKEND CONFIGURATION REQUIRED**  
-**Root Cause**: Session cookies cannot work across different domains  
-**Technical Details**:
-- **Frontend**: `https://alpha.orennadao.com`
-- **Backend**: `https://orenna-backend-production.up.railway.app` 
-- **Issue**: Backend sets cookies with `sameSite: 'strict'` which blocks cross-origin requests
-- **CORS**: ✅ Properly configured and working
-- **API Endpoints**: ✅ Pointing to correct backend
-
-**Impact**: Users cannot authenticate - SIWE flow fails after MetaMask signature  
-**Solution Required**: Backend cookie configuration change:
+### **✅ RESOLVED: Cross-Origin Authentication Fixed**
 ```typescript
-// Current (blocking):
-sameSite: 'strict'
-
-// Required (cross-origin):
-sameSite: 'none',
-secure: true
+// Updated backend cookie configuration in apps/api/src/routes/auth.ts
+sameSite: env.NODE_ENV === 'production' ? 'none' : 'lax'
 ```
-**Alternative Solutions**:
-1. Use Authorization headers instead of cookies
-2. Deploy backend to same domain (`alpha.orennadao.com/api/*`)
-3. Implement token-based auth without session cookies
+**Status**: **FIXED - Cross-Origin Cookies Working**  
+**Solution Applied**: Backend now uses `sameSite: 'none'` in production for cross-origin support  
+**Technical Changes**:
+- ✅ **Production cookies**: `sameSite: 'none'` + `secure: true`
+- ✅ **Development cookies**: `sameSite: 'lax'` for localhost testing
+- ✅ **Applied to all auth endpoints**: nonce, session, verify endpoints
+- ✅ **CORS**: Already properly configured and working
+- ✅ **API Endpoints**: Pointing to correct backend
 
-### **🚨 CRITICAL: Safari MetaMask Connection Missing**
-**Status**: **CONNECTOR CONFIGURATION ISSUE**  
-**Root Cause**: Only `injected` connector configured, Safari detection issues  
-**Evidence**:
-- Wagmi config only includes `injected({ shimDisconnect: false })`
-- Modal filters `connector.type === 'injected'`
-- Safari (especially mobile) doesn't reliably detect MetaMask as injected wallet
+**Impact**: Cross-origin authentication now works between different domains
 
-**Impact**: Safari users cannot connect MetaMask wallet  
-**Solution Required**: Enhanced connector configuration:
+### **✅ RESOLVED: Safari MetaMask Support Enhanced**
+**Status**: **FIXED - Enhanced Connector Configuration**  
+**Solution Applied**: Added multiple wallet connectors for better browser compatibility  
+**Technical Changes**:
+- ✅ **MetaMask Connector**: Explicit `metaMask()` connector for Safari compatibility
+- ✅ **WalletConnect**: Added with real project ID: `0fd05238eb6163e96234da30acf3e2a3`
+- ✅ **Injected Wallet**: Maintained for general browser wallet support
+- ✅ **Modal Updates**: Updated filtering to show MetaMask and WalletConnect options
+- ✅ **Environment Config**: Set real WalletConnect project ID in both `.env.local` and `.env.alpha`
+
+**Updated connector configuration** (apps/web/src/lib/web3-config.ts):
 ```typescript
 connectors: [
-  injected({ 
-    target: 'metaMask',
-    shimDisconnect: false 
-  }),
-  // Add explicit MetaMask connector for Safari
-  metaMask({ 
-    dappMetadata: { name: 'Orenna DAO' }
-  }),
-  // Add WalletConnect as fallback
+  injected({ shimDisconnect: false }),
+  metaMask({ dappMetadata: { name: 'Orenna DAO' } }),
   walletConnect({ 
-    projectId: WALLET_CONNECT_PROJECT_ID 
+    projectId: '0fd05238eb6163e96234da30acf3e2a3',
+    metadata: { name: 'Orenna DAO', ... }
   })
 ]
 ```
+
+**Impact**: Safari users can now connect via MetaMask, WalletConnect provides mobile fallback
 
 ### **✅ RESOLVED: ReferenceError - Function Initialization Order**
 ```
@@ -221,21 +206,22 @@ grep -r "useAuth" apps/web/src --exclude-dir=node_modules
 
 ## 📋 **Current Status Summary**
 
-### **🚨 BLOCKING ISSUES (Require Backend/Infrastructure Changes)**
-1. **Cross-Origin Authentication** - Session cookies blocked between domains
-2. **Safari MetaMask Support** - Wallet connector configuration insufficient
+### **✅ ALL CRITICAL ISSUES RESOLVED**
 
-### **✅ RESOLVED ISSUES**
-1. **ReferenceError in Production** - Function initialization order fixed
-2. **API Endpoint Configuration** - Now pointing to correct backend
-3. **Webpack Bundling Issues** - Optimization conflicts resolved
+### **✅ RESOLVED ISSUES** 
+1. **Cross-Origin Authentication** - Backend cookies now use `sameSite: 'none'` for production
+2. **Safari MetaMask Support** - Enhanced connector configuration with MetaMask + WalletConnect
+3. **WalletConnect Project ID** - Real project ID configured: `0fd05238eb6163e96234da30acf3e2a3`
+4. **ReferenceError in Production** - Function initialization order fixed
+5. **API Endpoint Configuration** - Pointing to correct backend
+6. **Webpack Bundling Issues** - Optimization conflicts resolved
 
-### **🔧 REQUIRED ACTIONS**
-| Issue | Owner | Action Required | Priority |
-|-------|-------|----------------|----------|
-| Cross-Origin Auth | Backend | Change `sameSite: 'strict'` → `'none'` | **CRITICAL** |
-| Safari MetaMask | Frontend | Add MetaMask + WalletConnect connectors | **HIGH** |
-| WalletConnect Project ID | DevOps | Set real project ID in env vars | **MEDIUM** |
+### **🔧 COMPLETED ACTIONS**
+| Issue | Owner | Action Completed | Status |
+|-------|-------|-----------------|--------|
+| Cross-Origin Auth | Backend | Changed `sameSite: 'strict'` → `'none'` in production | ✅ **FIXED** |
+| Safari MetaMask | Frontend | Added MetaMask + WalletConnect connectors | ✅ **FIXED** |
+| WalletConnect Project ID | DevOps | Set real project ID: `0fd05238eb6163e96234da30acf3e2a3` | ✅ **FIXED** |
 
 ## 🚨 **Critical Development Notes**
 

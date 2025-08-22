@@ -13,7 +13,7 @@ export default async function authRoutes(app: FastifyInstance) {
       path: "/", 
       httpOnly: true,
       secure: env.NODE_ENV === 'production',
-      sameSite: 'strict'
+      sameSite: env.NODE_ENV === 'production' ? 'none' : 'lax'
     });
     return { nonce };
   });
@@ -26,7 +26,7 @@ export default async function authRoutes(app: FastifyInstance) {
       path: "/", 
       httpOnly: true,
       secure: env.NODE_ENV === 'production',
-      sameSite: 'strict'
+      sameSite: env.NODE_ENV === 'production' ? 'none' : 'lax'
     });
     return { nonce };
   });
@@ -119,7 +119,7 @@ export default async function authRoutes(app: FastifyInstance) {
       path: "/", 
       httpOnly: true,
       secure: env.NODE_ENV === 'production',
-      sameSite: 'strict',
+      sameSite: env.NODE_ENV === 'production' ? 'none' : 'lax',
       maxAge: parseInt(env.SIWE_SESSION_TTL) * 1000
     });
     
@@ -209,7 +209,7 @@ export default async function authRoutes(app: FastifyInstance) {
       path: "/", 
       httpOnly: true,
       secure: env.NODE_ENV === 'production',
-      sameSite: 'strict',
+      sameSite: env.NODE_ENV === 'production' ? 'none' : 'lax',
       maxAge: parseInt(env.SIWE_SESSION_TTL) * 1000
     });
     

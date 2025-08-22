@@ -1,6 +1,6 @@
 import { http, createConfig } from 'wagmi'
 import { mainnet, sepolia } from 'wagmi/chains'
-import { walletConnect, injected, coinbaseWallet } from 'wagmi/connectors'
+import { walletConnect, injected, metaMask } from 'wagmi/connectors'
 import type { Config } from 'wagmi'
 import { QueryClient } from '@tanstack/react-query'
 
@@ -54,22 +54,44 @@ function createServerConfig(): Config {
   })
 }
 
-// Simplified client config - disable WalletConnect for now to avoid initialization issues
+// Enhanced client config with multiple connectors for better browser support
 function createClientConfig(): Config {
   try {
     console.log('Creating wagmi config with NODE_ENV:', process.env.NODE_ENV);
     
-    // Always use simple config to avoid WalletConnect initialization issues
+    const connectors = [
+      // Primary injected connector for basic browser wallet support
+      injected({ 
+        shimDisconnect: false,
+      }),
+      // Explicit MetaMask connector for Safari and better compatibility
+      metaMask({ 
+        dappMetadata: { name: 'Orenna DAO' }
+      }),
+    ]
+    
+    // Add WalletConnect if project ID is available
+    const walletConnectProjectId = process.env.NEXT_PUBLIC_WALLET_CONNECT_PROJECT_ID
+    if (walletConnectProjectId && walletConnectProjectId !== 'your_project_id_here') {
+      connectors.push(
+        walletConnect({ 
+          projectId: walletConnectProjectId,
+          metadata: {
+            name: 'Orenna DAO',
+            description: 'Regenerative Finance & Ecological Restoration',
+            url: 'https://alpha.orennadao.com',
+            icons: ['https://alpha.orennadao.com/favicon.ico']
+          }
+        })
+      )
+    }
+    
     return createConfig({
       chains,
       transports: {
         [sepolia.id]: http(),
       },
-      connectors: [
-        injected({ 
-          shimDisconnect: false,
-        }),
-      ],
+      connectors,
     })
   } catch (error) {
     console.error('Failed to create wagmi config:', error)
