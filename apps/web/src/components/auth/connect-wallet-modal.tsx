@@ -200,11 +200,15 @@ export function ConnectWalletModal({ isOpen, onClose }: ConnectWalletModalProps)
             <div className="space-y-2">
               {connectors
                 .filter(connector => 
-                  connector.type === 'metaMask' ||
-                  connector.id === 'metaMask'
+                  connector.type === 'injected' ||
+                  connector.id === 'metaMask' ||
+                  connector.name?.toLowerCase().includes('metamask')
                 )
                 .map((connector) => {
-                  const isConnectorConnected = isConnected && connector.id === 'metaMask';
+                  const isConnectorConnected = isConnected && (
+                    connector.id === 'metaMask' || 
+                    connector.type === 'injected'
+                  );
                   const isDisabled = isPending || isAuthenticating || isConnecting;
                   
                   console.error('🔍 RENDERING BUTTON FOR:', connector.name, {

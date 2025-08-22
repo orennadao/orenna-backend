@@ -46,8 +46,9 @@ function createServerConfig(): Config {
       [sepolia.id]: http(),
     },
     connectors: [
-      metaMask({ 
-        dappMetadata: { name: 'Orenna DAO' }
+      injected({ 
+        target: 'metaMask',
+        shimDisconnect: false,
       }),
     ],
     ssr: true,
@@ -60,9 +61,10 @@ function createClientConfig(): Config {
     console.log('Creating wagmi config with NODE_ENV:', process.env.NODE_ENV);
     
     const connectors = [
-      // MetaMask connector for better compatibility (removed injected to prevent conflicts)
-      metaMask({ 
-        dappMetadata: { name: 'Orenna DAO' }
+      // Use injected connector targeting MetaMask specifically to avoid SDK issues
+      injected({ 
+        target: 'metaMask',
+        shimDisconnect: false,
       }),
     ]
     

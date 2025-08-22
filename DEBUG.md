@@ -206,7 +206,8 @@ Requested resource not available. Details: Request of type 'wallet_requestPermis
 - ✅ **Enhanced debugging**: Added detailed logging for connector state and connection flow
 
 **Latest Update**: Modal no longer shows "Connection failed" before clicking MetaMask, but still fails upon clicking MetaMask button.
-**Next**: Enhanced logging added to identify exact failure point in connection process.
+**Root Cause Discovered**: MetaMask SDK API error - "Cannot GET /evt from https://metamask-sdk.api.cx.metamask.io/evt"
+**Fix Applied**: Switched from `metaMask()` connector to `injected({ target: 'metaMask' })` to avoid SDK dependency.
 
 ### **✅ RESOLVED: ReferenceError - Function Initialization Order**
 ```
