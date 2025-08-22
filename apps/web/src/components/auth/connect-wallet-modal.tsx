@@ -6,7 +6,7 @@ import { Button } from '@/components/ui/button';
 import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
 import { Input } from '@/components/ui/input';
 import { Label } from '@/components/ui/label';
-import { useConnect, useAccount, useDisconnect } from 'wagmi';
+import { useConnect, useAccount, useDisconnect, useSwitchChain } from 'wagmi';
 import { useSiweAuth } from '@/hooks/use-siwe-auth';
 import { 
   Wallet, 
@@ -35,6 +35,7 @@ export function ConnectWalletModal({ isOpen, onClose }: ConnectWalletModalProps)
   const { connect, connectors, error: connectError, isPending } = useConnect();
   const { isConnected, address, chainId } = useAccount();
   const { disconnect } = useDisconnect();
+  const { switchChain } = useSwitchChain();
   const { signIn, isAuthenticating, error: authError } = useSiweAuth();
   
   // Clear any auth errors when modal opens
@@ -182,6 +183,39 @@ export function ConnectWalletModal({ isOpen, onClose }: ConnectWalletModalProps)
         addDebugMessage('❌ CONNECT FAILED: ' + connectError.message);
         console.error('❌ WAGMI CONNECT ERROR:', connectError);
         throw connectError;
+      }
+      
+      // Check if we're on the correct chain (Sepolia = 11155111)
+      const expectedChainId = 11155111; // Sepolia
+      if (chainId !== expectedChainId) {
+        addDebugMessage(`❌ Wrong chain: ${chainId}, need: ${expectedChainId}`);
+        addDebugMessage('🔄 Requesting chain switch to Sepolia...');
+        
+        try {
+          // Try wagmi switchChain first, fallback to direct MetaMask
+          if (switchChain) {
+            addDebugMessage('🔄 Using wagmi switchChain...');
+            await switchChain({ chainId: expectedChainId });
+          } else {
+            addDebugMessage('🔄 Using direct MetaMask switch...');
+            await window.ethereum.request({
+              method: 'wallet_switchEthereumChain',
+              params: [{ chainId: '0xaa36a7' }], // Sepolia in hex
+            });
+          }
+          
+          // Wait for chain switch
+          await new Promise(resolve => setTimeout(resolve, 1000));
+          addDebugMessage(`Chain after switch: ${chainId}`);
+          
+          if (chainId !== expectedChainId) {
+            throw new Error('Chain switch failed or incomplete');
+          }
+          
+        } catch (switchError) {
+          addDebugMessage('❌ Chain switch failed: ' + switchError.message);
+          throw new Error('Please switch to Sepolia testnet in MetaMask');
+        }
       }
       
       // Trigger SIWE authentication
