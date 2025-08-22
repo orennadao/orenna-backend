@@ -47,30 +47,36 @@ export function ConnectWalletModal({ isOpen, onClose }: ConnectWalletModalProps)
 
   // Handle wallet connection with proper state management and request deduplication
   const handleConnect = async (connector: any) => {
-    // Prevent simultaneous connection attempts
-    if (isConnecting || isPending || isAuthenticating) {
-      console.log('Connection already in progress, ignoring request');
-      return;
-    }
-    
-    console.error('🚨 MODAL HANDLE CONNECT CALLED!!! 🚨');
-    console.error('Connector details:', {
-      name: connector.name,
-      id: connector.id,
-      type: connector.type,
-      ready: connector.ready,
-      available: connector.available
-    });
-    
-    // Check if MetaMask is available
-    if (typeof window !== 'undefined' && !window.ethereum) {
-      console.error('❌ MetaMask not detected in browser');
-      // Note: Error will be handled by the catch block when connect fails
-      console.error('❌ MetaMask not available, connection will fail');
-    }
-    
-    setIsConnecting(true);
     try {
+      console.error('🟢 HANDLE CONNECT FUNCTION ENTERED!!!');
+      console.error('🟢 Function parameters:', { connector, isConnecting, isPending, isAuthenticating });
+      
+      // Prevent simultaneous connection attempts
+      if (isConnecting || isPending || isAuthenticating) {
+        console.error('🟡 Connection already in progress, ignoring request');
+        return;
+      }
+      
+      console.error('🚨 MODAL HANDLE CONNECT CALLED!!! 🚨');
+      console.error('Connector details:', {
+        name: connector.name,
+        id: connector.id,
+        type: connector.type,
+        ready: connector.ready,
+        available: connector.available
+      });
+      
+      // Check if MetaMask is available
+      if (typeof window !== 'undefined' && !window.ethereum) {
+        console.error('❌ MetaMask not detected in browser');
+        // Note: Error will be handled by the catch block when connect fails
+        console.error('❌ MetaMask not available, connection will fail');
+      }
+      
+      setIsConnecting(true);
+      console.error('🔥 SET IS CONNECTING TO TRUE');
+      
+      try {
       // Always disconnect first to ensure clean state
       if (isConnected) {
         console.error('🔄 DISCONNECTING EXISTING CONNECTION');
@@ -110,7 +116,12 @@ export function ConnectWalletModal({ isOpen, onClose }: ConnectWalletModalProps)
           console.error('Direct SIWE failed:', siweError);
         }
       }
-    } finally {
+      } finally {
+        setIsConnecting(false);
+      }
+    } catch (outerError) {
+      console.error('🚨 OUTER CATCH - HANDLE CONNECT ERROR:', outerError);
+      console.error('🚨 OUTER CATCH - ERROR STACK:', outerError.stack);
       setIsConnecting(false);
     }
   };
@@ -205,17 +216,20 @@ export function ConnectWalletModal({ isOpen, onClose }: ConnectWalletModalProps)
                       variant={isConnectorConnected ? "default" : "outline"}
                       className="w-full justify-start"
                       onClick={(e) => {
-                        console.error('🚨🚨🚨 BUTTON CLICK DETECTED!!! 🚨🚨🚨');
-                        alert('BUTTON CLICKED - CHECK CONSOLE');
-                        console.error('Event:', e);
-                        console.error('Target:', e.target);
-                        console.error('🚨 BUTTON CLICKED FOR:', connector.name, 'Type:', connector.type, 'ID:', connector.id);
-                        console.error('🚨 CONNECTOR OBJECT:', connector);
-                        console.error('🚨 CURRENT STATE - isPending:', isPending, 'isAuthenticating:', isAuthenticating, 'isConnecting:', isConnecting);
                         try {
+                          console.error('🚨🚨🚨 BUTTON CLICK DETECTED!!! 🚨🚨🚨');
+                          alert('BUTTON CLICKED - CHECK CONSOLE');
+                          console.error('Event:', e);
+                          console.error('Target:', e.target);
+                          console.error('🚨 BUTTON CLICKED FOR:', connector.name, 'Type:', connector.type, 'ID:', connector.id);
+                          console.error('🚨 CONNECTOR OBJECT:', connector);
+                          console.error('🚨 CURRENT STATE - isPending:', isPending, 'isAuthenticating:', isAuthenticating, 'isConnecting:', isConnecting);
+                          console.error('🔥 ABOUT TO CALL HANDLE CONNECT!!!');
                           handleConnect(connector);
+                          console.error('🔥 HANDLE CONNECT CALL COMPLETED!!!');
                         } catch (error) {
-                          console.error('🚨 ERROR IN HANDLE CONNECT:', error);
+                          console.error('🚨 ERROR IN CLICK HANDLER:', error);
+                          console.error('🚨 ERROR STACK:', error.stack);
                         }
                       }}
                       disabled={isDisabled}
