@@ -1,1 +1,3 @@
-export { handlers as GET, handlers as POST } from "../../../../../auth";
+import NextAuth from "../../../../../auth";
+
+export { NextAuth as default, NextAuth as GET, NextAuth as POST };
