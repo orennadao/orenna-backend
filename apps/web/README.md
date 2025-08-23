@@ -88,6 +88,7 @@ src/
 
 - `NEXT_PUBLIC_API_URL` - Backend API URL (default: http://localhost:3000)
 - `NEXT_PUBLIC_WALLET_CONNECT_PROJECT_ID` - WalletConnect project ID (get from https://cloud.walletconnect.com/)
+- `NEXT_PUBLIC_SEPOLIA_RPC_URL` - Sepolia testnet RPC URL (e.g., Infura, Alchemy, or Ankr endpoint)
 
 ## Authentication Flow
 
