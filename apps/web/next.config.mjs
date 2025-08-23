@@ -103,9 +103,14 @@ const nextConfig = {
     
     return [
       {
-        // ✅ Only proxy these specific backend sections
+        // ✅ Proxy backend sections with sub-paths
         source: '/api/:section(analytics|audit|blockchain|contracts|cost-tracking|echo|example|finance-integrity|finance-loop|finance-payments|governance|health|indexer|invoices|lift-tokens|mint-requests|payments|projects|reconciliation|roles|vendors|websocket|white-label)/:path*',
         destination: `${BACKEND}/api/:section/:path*`,
+      },
+      {
+        // ✅ Proxy backend sections without sub-paths (base routes)
+        source: '/api/:section(analytics|audit|blockchain|contracts|cost-tracking|echo|example|finance-integrity|finance-loop|finance-payments|governance|health|indexer|invoices|lift-tokens|mint-requests|payments|projects|reconciliation|roles|vendors|websocket|white-label)',
+        destination: `${BACKEND}/api/:section`,
       },
       // ⛔️ No catch-all /api/:path* — would grab /api/auth/*
     ]
