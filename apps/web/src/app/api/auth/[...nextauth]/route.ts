@@ -2,6 +2,8 @@ import NextAuth from "next-auth";
 import CredentialsProvider from "next-auth/providers/credentials";
 import { SiweMessage } from "siwe";
 
+// Force NextAuth to run on Node.js runtime (important for SIWE)
+export const runtime = 'nodejs';
 // Prevent caching of auth routes
 export const dynamic = "force-dynamic";
 export const revalidate = 0;
