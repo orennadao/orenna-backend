@@ -6,7 +6,7 @@
     "dev": "dotenv -e ../../.env -- tsx src/server.ts",
     "build": "prisma generate",
     "start": "NODE_ENV=production tsx src/server.ts",
-    "prisma:resolve-baseline": "npx prisma migrate resolve --applied 20250823_initial_baseline || true",
+    "prisma:sync-db": "npx prisma db push --skip-generate --accept-data-loss",
     "prisma:deploy": "prisma migrate deploy && prisma generate",
     "start:migrate": "prisma migrate deploy && prisma generate && NODE_ENV=production tsx src/server.ts",
     "typecheck": "tsc --noEmit",
