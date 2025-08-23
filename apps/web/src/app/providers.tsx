@@ -4,10 +4,7 @@ import "@rainbow-me/rainbowkit/styles.css";
 import {
   RainbowKitProvider,
 } from "@rainbow-me/rainbowkit";
-import {
-  RainbowKitSiweNextAuthProvider,
-  GetSiweMessageOptions,
-} from "@rainbow-me/rainbowkit-siwe-next-auth";
+// RainbowKit SIWE provider removed - using custom SIWE implementation
 import { WagmiProvider } from "wagmi";
 import { QueryClient, QueryClientProvider } from "@tanstack/react-query";
 import { SessionProvider } from "next-auth/react";
@@ -25,10 +22,7 @@ export default function Providers({ children }: { children: React.ReactNode }) {
     },
   }));
 
-  // Custom SIWE message configuration with explicit credentials
-  const getSiweMessageOptions = (): GetSiweMessageOptions => ({
-    statement: "Sign in to Orenna DAO to access regenerative finance projects, governance, and ecological restoration.",
-  });
+  // Using custom SIWE implementation - no RainbowKit SIWE provider needed
 
   return (
     <WagmiProvider config={config}>
@@ -37,16 +31,7 @@ export default function Providers({ children }: { children: React.ReactNode }) {
         refetchOnWindowFocus={false}
       >
         <QueryClientProvider client={queryClient}>
-          <RainbowKitSiweNextAuthProvider
-            getSiweMessageOptions={getSiweMessageOptions}
-            signInOptions={{ 
-              provider: "siwe", 
-              redirect: false, 
-              callbackUrl: "/dashboard"
-            }}
-          >
-            <RainbowKitProvider>{children}</RainbowKitProvider>
-          </RainbowKitSiweNextAuthProvider>
+          <RainbowKitProvider>{children}</RainbowKitProvider>
         </QueryClientProvider>
       </SessionProvider>
     </WagmiProvider>
