@@ -7,6 +7,7 @@ export const runtime = 'nodejs';
 // Prevent caching of auth routes
 export const dynamic = "force-dynamic";
 export const revalidate = 0;
+// Force rebuild trigger
 
 const isProd = process.env.NODE_ENV === 'production';
 
