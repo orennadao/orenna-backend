@@ -15,7 +15,7 @@ if (!sepoliaRpcUrl) {
 
 export const config = getDefaultConfig({
   appName: "Orenna DAO",
-  projectId: projectId || "2f5a2b4c1d8e3f9a6b7c8d9e0f1a2b3c", // Fallback ID - replace with valid one
+  projectId: projectId || "68b984bfdc6c2049e01d3cca4938e468", // Your actual WalletConnect project ID
   chains: [sepolia], // Start with Sepolia only as per current setup
   ssr: true,
   transports: {
