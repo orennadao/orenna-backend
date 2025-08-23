@@ -1,131 +1,50 @@
 import NextAuth from "next-auth";
-import CredentialsProvider from "next-auth/providers/credentials";
+import Credentials from "next-auth/providers/credentials";
 import { SiweMessage } from "siwe";
 
-// Force NextAuth to run on Node.js runtime (important for SIWE)
-export const runtime = 'nodejs';
-// Prevent caching of auth routes
+export const runtime = "nodejs";     // ensure Node runtime (not Edge)
 export const dynamic = "force-dynamic";
 export const revalidate = 0;
-// Force rebuild trigger
 
-const isProd = process.env.NODE_ENV === 'production';
-
-const handler = NextAuth({
-  session: { strategy: "jwt" },
-  cookies: {
-    csrfToken: {
-      name: isProd ? '__Host-authjs.csrf-token' : 'authjs.csrf-token',
-      options: {
-        path: '/',
-        sameSite: 'lax',
-        secure: isProd,
-        httpOnly: true,
-      },
-    },
-    sessionToken: {
-      name: isProd ? '__Host-authjs.session-token' : 'authjs.session-token',
-      options: {
-        path: '/',
-        sameSite: 'lax',
-        secure: isProd,
-        httpOnly: true,
-      },
-    },
-  },
+export const authOptions = {
+  trustHost: true,                   // Vercel behind proxy
+  session: { strategy: "jwt" as const },
   providers: [
-    CredentialsProvider({
-      id: "siwe",
-      name: "Ethereum",
+    Credentials({
+      name: "siwe",
       credentials: {
         message: { label: "Message", type: "text" },
         signature: { label: "Signature", type: "text" },
-        csrfToken: { label: "CSRF Token", type: "text" }
       },
       async authorize(credentials, req) {
-        try {
-          const message = new SiweMessage(
-            JSON.parse(String(credentials?.message ?? "{}"))
-          );
-          const signature = String(credentials?.signature ?? "");
+        const { message, signature } = credentials as { message: string; signature: string };
+        const siwe = new SiweMessage(JSON.parse(message));
 
-          // Get domain from request headers
-          const host = req.headers?.["x-forwarded-host"] ?? req.headers?.host ?? "";
-          const expectedDomain = Array.isArray(host) ? host[0] : host.split(",")[0]?.trim();
-          if (!expectedDomain) return null;
+        // CSRF nonce from NextAuth (must match your client's /api/auth/csrf)
+        const nonce = (req.headers.get("x-nextauth-csrf-token") ?? "").split("|")[0];
 
-          // Helper function to read CSRF token from cookies or body
-          function readCsrf(req: any) {
-            const cookieNames = [
-              "__Host-authjs.csrf-token", // Our configured name (highest priority)
-              "next-auth.csrf-token",
-              "__Host-next-auth.csrf-token", 
-              "authjs.csrf-token",
-            ];
-            
-            // Try to read from cookies first
-            const cookieToken = cookieNames
-              .map(name => req.headers?.cookie
-                ?.split(";")
-                ?.find(c => c.trim().startsWith(`${name}=`))
-                ?.split("=")[1]
-              )
-              .find(Boolean);
-            
-            if (cookieToken) {
-              return cookieToken.split("%7C")[0] ?? cookieToken.split("|")[0] ?? "";
-            }
-            
-            // Fallback to body parameter
-            return String(credentials?.csrfToken ?? "");
-          }
+        // Keep domain/origin single-sourced (same as your /api/siwe/config)
+        const res = await fetch(new URL("/api/siwe/config", process.env.NEXTAUTH_URL));
+        const { domain } = await res.json();
 
-          const expectedNonce = readCsrf(req);
-          if (!expectedNonce) {
-            console.error("No CSRF token found in cookies or body");
-            return null;
-          }
+        const result = await siwe.verify({ signature, domain, nonce });
+        if (!result.success) return null;
 
-          // SIWE verification (EIP-4361)
-          const result = await message.verify({
-            signature,
-            domain: expectedDomain,
-            nonce: expectedNonce,
-          });
-
-          if (!result.success) return null;
-
-          // Return a "user" object
-          return { 
-            id: message.address, 
-            address: message.address,
-            name: message.address 
-          };
-        } catch (error) {
-          console.error("SIWE verification error:", error);
-          return null;
-        }
+        return { id: siwe.address, address: siwe.address };
       },
     }),
   ],
   callbacks: {
     async jwt({ token, user }) {
-      if (user && 'address' in user) {
-        token.address = user.address;
-        token.sub = user.address;
-      }
+      if (user?.address) token.address = (user as any).address;
       return token;
     },
     async session({ session, token }) {
-      if (token?.address) {
-        (session as any).address = token.address;
-        if (session.user) {
-          (session.user as any).id = token.address;
-        }
-      }
+      (session as any).address = token.address;
       return session;
     },
   },
-});
+};
 
-export { handler as GET, handler as POST };
+const handler = NextAuth(authOptions);
+export { handler as GET, handler as POST };   // CSRF uses GET
