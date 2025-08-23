@@ -6,12 +6,8 @@
   "framework": "nextjs",
   "rewrites": [
     {
-      "source": "/api/(analytics|audit|blockchain|contracts|cost-tracking|echo|example|finance-integrity|finance-loop|finance-payments|governance|health|indexer|invoices|lift-tokens|mint-requests|payments|projects|reconciliation|roles|vendors|websocket|white-label)/:path*",
-      "destination": "https://orenna-backend-production.up.railway.app/api/$1/$2"
-    },
-    {
-      "source": "/api/(analytics|audit|blockchain|contracts|cost-tracking|echo|example|finance-integrity|finance-loop|finance-payments|governance|health|indexer|invoices|lift-tokens|mint-requests|payments|projects|reconciliation|roles|vendors|websocket|white-label)",
-      "destination": "https://orenna-backend-production.up.railway.app/api/$1"
+      "source": "/api/:section(analytics|audit|blockchain|contracts|cost-tracking|echo|example|finance-integrity|finance-loop|finance-payments|governance|health|indexer|invoices|lift-tokens|mint-requests|payments|projects|reconciliation|roles|vendors|websocket|white-label)/:path*",
+      "destination": "https://orenna-backend-production.up.railway.app/api/:section/:path*"
     }
   ]
 }

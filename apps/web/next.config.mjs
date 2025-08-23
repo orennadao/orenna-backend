@@ -99,26 +99,15 @@ const nextConfig = {
   
   // API proxy rewrites - proxy specific backend routes (excluding auth)
   async rewrites() {
-    const apiUrl = process.env.NEXT_PUBLIC_API_URL?.trim() || 'https://orenna-backend-production.up.railway.app';
-    
-    const backendRoutes = [
-      'analytics', 'audit', 'blockchain', 'contracts', 'cost-tracking', 'echo', 'example',
-      'finance-integrity', 'finance-loop', 'finance-payments', 'governance', 'health',
-      'indexer', 'invoices', 'lift-tokens', 'mint-requests', 'payments', 'projects',
-      'reconciliation', 'roles', 'vendors', 'websocket', 'white-label'
-    ];
+    const BACKEND = process.env.NEXT_PUBLIC_API_URL?.trim() || 'https://orenna-backend-production.up.railway.app';
     
     return [
-      // Proxy specific backend routes with sub-paths
-      { 
-        source: `/api/(${backendRoutes.join('|')})/:path*`, 
-        destination: `${apiUrl}/api/$1/$2` 
+      {
+        // ✅ Only proxy these specific backend sections
+        source: '/api/:section(analytics|audit|blockchain|contracts|cost-tracking|echo|example|finance-integrity|finance-loop|finance-payments|governance|health|indexer|invoices|lift-tokens|mint-requests|payments|projects|reconciliation|roles|vendors|websocket|white-label)/:path*',
+        destination: `${BACKEND}/api/:section/:path*`,
       },
-      // Proxy specific backend routes without sub-paths
-      { 
-        source: `/api/(${backendRoutes.join('|')})`, 
-        destination: `${apiUrl}/api/$1` 
-      },
+      // ⛔️ No catch-all /api/:path* — would grab /api/auth/*
     ]
   },
 
