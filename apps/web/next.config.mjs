@@ -97,13 +97,13 @@ const nextConfig = {
     return config
   },
   
-  // API proxy rewrites - keep NextAuth local, proxy everything else  
+  // API proxy rewrites - proxy non-auth API routes to backend
   async rewrites() {
     const apiUrl = process.env.NEXT_PUBLIC_API_URL?.trim() || 'https://orenna-backend-production.up.railway.app';
     
     return [
-      { source: "/api/auth/:path*", destination: "/api/auth/:path*" }, // Keep NextAuth local
-      { source: "/api/:path*", destination: `${apiUrl}/api/:path*` }, // Proxy to backend
+      // Only proxy non-auth API routes - let /api/auth/* be handled directly by NextAuth
+      { source: "/api/((?!auth).*)", destination: `${apiUrl}/api/$1` }, // Proxy to backend (excluding auth)
     ]
   },
 
