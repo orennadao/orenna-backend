@@ -2,10 +2,10 @@
 builder = "NIXPACKS"
 
 [deploy]
-startCommand = "pnpm start"
+startCommand = "pnpm --filter @orenna/api run start:migrate"
 restartPolicyType = "ON_FAILURE"
 restartPolicyMaxRetries = 10
 
 [environments.production]
 buildCommand = "pnpm run build"
-startCommand = "pnpm start"
+startCommand = "pnpm --filter @orenna/api run start:migrate"

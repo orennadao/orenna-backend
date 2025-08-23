@@ -6,6 +6,8 @@
     "dev": "dotenv -e ../../.env -- tsx src/server.ts",
     "build": "prisma generate",
     "start": "NODE_ENV=production tsx src/server.ts",
+    "prisma:deploy": "prisma migrate deploy && prisma generate",
+    "start:migrate": "prisma migrate deploy && prisma generate && NODE_ENV=production tsx src/server.ts",
     "typecheck": "tsc --noEmit",
     "test": "vitest run",
     "postinstall": "prisma generate"
