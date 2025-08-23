@@ -97,13 +97,28 @@ const nextConfig = {
     return config
   },
   
-  // API proxy rewrites - proxy non-auth API routes to backend
+  // API proxy rewrites - proxy specific backend routes (excluding auth)
   async rewrites() {
     const apiUrl = process.env.NEXT_PUBLIC_API_URL?.trim() || 'https://orenna-backend-production.up.railway.app';
     
+    const backendRoutes = [
+      'analytics', 'audit', 'blockchain', 'contracts', 'cost-tracking', 'echo', 'example',
+      'finance-integrity', 'finance-loop', 'finance-payments', 'governance', 'health',
+      'indexer', 'invoices', 'lift-tokens', 'mint-requests', 'payments', 'projects',
+      'reconciliation', 'roles', 'vendors', 'websocket', 'white-label'
+    ];
+    
     return [
-      // Only proxy non-auth API routes - let /api/auth/* be handled directly by NextAuth
-      { source: "/api/((?!auth).*)", destination: `${apiUrl}/api/$1` }, // Proxy to backend (excluding auth)
+      // Proxy specific backend routes with sub-paths
+      { 
+        source: `/api/(${backendRoutes.join('|')})/:path*`, 
+        destination: `${apiUrl}/api/$1/$2` 
+      },
+      // Proxy specific backend routes without sub-paths
+      { 
+        source: `/api/(${backendRoutes.join('|')})`, 
+        destination: `${apiUrl}/api/$1` 
+      },
     ]
   },
 
