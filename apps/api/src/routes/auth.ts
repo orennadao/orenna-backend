@@ -9,12 +9,13 @@ export default async function authRoutes(app: FastifyInstance) {
   app.get("/auth/siwe/nonce", async (_req, reply) => {
     const nonce = generateNonce();
     const token = await reply.jwtSign({ nonce }, { expiresIn: "5m" });
-    reply.setCookie("nonce", token, { 
-      path: "/", 
+    reply.setCookie("nonce", token, {
+      path: "/",
       httpOnly: true,
       secure: env.NODE_ENV === 'production',
       sameSite: env.NODE_ENV === 'production' ? 'none' : 'lax'
     });
+    app.log.info({ nonce }, "Issued SIWE nonce");
     return { nonce };
   });
 
@@ -38,35 +39,59 @@ export default async function authRoutes(app: FastifyInstance) {
     if (!body?.message || !body?.signature) {
       return reply.code(400).send({ error: "Missing message or signature" });
     }
-    
+
     const { message, signature } = body;
     const nonceToken = req.cookies["nonce"];
-    
+    app.log.info(
+      {
+        hasNonceCookie: Boolean(nonceToken),
+        signature: typeof signature === "string" ? signature.slice(0, 10) : undefined,
+      },
+      "Received SIWE verify request"
+    );
+
     if (!nonceToken) {
+      app.log.warn({ cookies: req.cookies }, "SIWE verify missing nonce");
       return reply.code(401).send({ error: "Missing nonce" });
     }
 
     let decoded: any;
     try {
       decoded = await app.jwt.verify<{ nonce: string }>(nonceToken);
-    } catch {
+    } catch (err) {
+      app.log.warn({ err }, "Failed to verify nonce token");
       return reply.code(401).send({ error: "Invalid or expired nonce" });
     }
 
     const msg = new SiweMessage(message);
+    app.log.info(
+      {
+        address: msg.address,
+        chainId: msg.chainId,
+        domain: msg.domain,
+        uri: msg.uri,
+        nonce: msg.nonce,
+        issuedAt: msg.issuedAt,
+        decodedNonce: decoded.nonce,
+      },
+      "Parsed SIWE message"
+    );
     
     // Chain allowlist validation
     const allowedChains = [1, 11155111]; // Mainnet, Sepolia
     if (msg.chainId && !allowedChains.includes(msg.chainId)) {
+      app.log.warn({ chainId: msg.chainId, allowedChains }, "SIWE chain not allowed");
       return reply.code(401).send({ error: "Chain not allowed" });
     }
-    
+
     // Validate domain and origin
     if (msg.domain !== env.SIWE_DOMAIN) {
+      app.log.warn({ expected: env.SIWE_DOMAIN, received: msg.domain }, "SIWE domain mismatch");
       return reply.code(401).send({ error: "Invalid domain" });
     }
-    
+
     if (msg.uri !== env.SIWE_ORIGIN) {
+      app.log.warn({ expected: env.SIWE_ORIGIN, received: msg.uri }, "SIWE origin mismatch");
       return reply.code(401).send({ error: "Invalid origin" });
     }
 
@@ -74,6 +99,7 @@ export default async function authRoutes(app: FastifyInstance) {
     const messageTime = new Date(msg.issuedAt || Date.now()).getTime();
     const now = Date.now();
     if (now - messageTime > 5 * 60 * 1000) {
+      app.log.warn({ issuedAt: msg.issuedAt, now }, "SIWE message too old");
       return reply.code(401).send({ error: "Message too old" });
     }
 
@@ -146,29 +172,50 @@ export default async function authRoutes(app: FastifyInstance) {
     if (!body?.message || !body?.signature) {
       return reply.code(400).send({ error: "Missing message or signature" });
     }
-    
+
     const { message, signature } = body; // Only declare these ONCE
     const nonceToken = req.cookies["nonce"];
-    
+    app.log.info(
+      {
+        hasNonceCookie: Boolean(nonceToken),
+        signature: typeof signature === "string" ? signature.slice(0, 10) : undefined,
+      },
+      "Received legacy SIWE verify request",
+    );
+
     if (!nonceToken) {
+      app.log.warn({ cookies: req.cookies }, "Legacy SIWE verify missing nonce");
       return reply.code(401).send({ error: "Missing nonce" });
     }
 
     let decoded: any;
     try {
       decoded = await app.jwt.verify<{ nonce: string }>(nonceToken);
-    } catch {
+    } catch (err) {
+      app.log.warn({ err }, "Failed to verify legacy nonce token");
       return reply.code(401).send({ error: "Invalid or expired nonce" });
     }
 
     const msg = new SiweMessage(message);
+    app.log.info(
+      {
+        address: msg.address,
+        domain: msg.domain,
+        uri: msg.uri,
+        nonce: msg.nonce,
+        decodedNonce: decoded.nonce,
+      },
+      "Parsed legacy SIWE message",
+    );
     
     // Validate domain and origin
     if (msg.domain !== env.SIWE_DOMAIN) {
+      app.log.warn({ expected: env.SIWE_DOMAIN, received: msg.domain }, "Legacy SIWE domain mismatch");
       return reply.code(401).send({ error: "Invalid domain" });
     }
-    
+
     if (msg.uri !== env.SIWE_ORIGIN) {
+      app.log.warn({ expected: env.SIWE_ORIGIN, received: msg.uri }, "Legacy SIWE origin mismatch");
       return reply.code(401).send({ error: "Invalid origin" });
     }
 
