@@ -27,16 +27,7 @@ export const SIWE_CONFIG = {
   sessionTTL: 24 * 60 * 60 * 1000, // 24 hours
 } as const
 
-// API endpoints - ensure they always point to the backend API
-// Force the use of external backend API URL for auth endpoints
-const API_BASE_URL = 'https://orenna-backend-production.up.railway.app'
-
-export const API_ENDPOINTS = {
-  NONCE: `${API_BASE_URL}/api/auth/siwe/nonce`,
-  VERIFY: `${API_BASE_URL}/api/auth/siwe/verify`, 
-  SESSION: `${API_BASE_URL}/api/auth/session`,
-  LOGOUT: `${API_BASE_URL}/api/auth/logout`,
-} as const
+// Note: Auth endpoints removed - now using NextAuth with relative paths
 
 // Server-safe basic config for SSR
 function createServerConfig(): Config {
