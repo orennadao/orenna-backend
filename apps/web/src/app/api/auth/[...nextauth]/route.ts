@@ -8,16 +8,28 @@ export const runtime = 'nodejs';
 export const dynamic = "force-dynamic";
 export const revalidate = 0;
 
+const isProd = process.env.NODE_ENV === 'production';
+
 const handler = NextAuth({
   session: { strategy: "jwt" },
   cookies: {
     csrfToken: {
-      name: '__Host-authjs.csrf-token',
-      options: { path: '/', sameSite: 'lax', secure: true }, // no domain for host-only
+      name: isProd ? '__Host-authjs.csrf-token' : 'authjs.csrf-token',
+      options: {
+        path: '/',
+        sameSite: 'lax',
+        secure: isProd,
+        httpOnly: true,
+      },
     },
     sessionToken: {
-      name: '__Host-authjs.session-token',
-      options: { path: '/', sameSite: 'lax', secure: true }, // no domain for host-only
+      name: isProd ? '__Host-authjs.session-token' : 'authjs.session-token',
+      options: {
+        path: '/',
+        sameSite: 'lax',
+        secure: isProd,
+        httpOnly: true,
+      },
     },
   },
   providers: [
