@@ -37,6 +37,7 @@ model Project {
   name            String
   slug            String   @unique
   description     String?
+  status          String   @default("pending")
   ownerAddress    String?
   chainId         Int?
   contractAddress String?
