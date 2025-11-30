@@ -13,6 +13,7 @@ const ListQuery = z.object({
   limit: z.coerce.number().int().min(1).max(100).default(20),
   offset: z.coerce.number().int().min(0).default(0),
   search: z.string().max(100).optional(),
+  status: z.enum(["pending", "active", "completed"]).optional(),
   sort: z.enum(["createdAt:desc", "createdAt:asc"]).default("createdAt:desc"),
 });
 
@@ -85,10 +86,10 @@ export default async function routes(app: FastifyInstance) {
       const parsed = ListQuery.safeParse(req.query);
       if (!parsed.success) return reply.code(400).send(parsed.error.flatten());
 
-      const { limit, offset, search, sort } = parsed.data;
+      const { limit, offset, search, sort, status } = parsed.data;
       const orderBy = { createdAt: sort === "createdAt:asc" ? "asc" : "desc" } as const;
 
-      const where = search?.trim()
+      let where = search?.trim()
         ? {
             OR: [
               { name: { contains: search } },
@@ -96,6 +97,12 @@ export default async function routes(app: FastifyInstance) {
             ],
           }
         : undefined;
+
+      if (status && typeof where === "object") {
+        (where as any).status = status;
+      } else if (status) {
+        where = { status } as any;
+      }
 
       const [rows, total] = await Promise.all([
         app.prisma.project.findMany({ where, orderBy, take: limit, skip: offset }),

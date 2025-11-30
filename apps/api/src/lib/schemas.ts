@@ -99,6 +99,7 @@ export const ProjectCreate = z.object({
   name: z.string().min(1),
   slug,
   description: z.string().max(2000).optional(),
+  status: z.enum(['pending', 'active', 'completed']).default('pending'),
   ownerAddress: ethAddress.optional(),
   chainId: z.number().int().optional(),
   meta: Meta.optional(),
