@@ -45,13 +45,17 @@ export function useProject(projectId: number) {
   const [error, setError] = useState<string | null>(null)
 
   const fetchProject = async () => {
-    if (!projectId) return
+    if (!projectId) {
+      setIsLoading(false)
+      return
+    }
 
     try {
       setIsLoading(true)
       setError(null)
-      const response = await apiClient.getProject(projectId) as Project
-      setProject(response)
+      const response = await apiClient.getProject(projectId) as any
+      const projectData = response?.data || response
+      setProject(projectData as Project)
     } catch (err) {
       setError(err instanceof Error ? err.message : 'Failed to fetch project')
     } finally {
