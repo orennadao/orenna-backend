@@ -1,121 +1,38 @@
 'use client';
 
 import { useParams, useRouter } from 'next/navigation';
-import { useEffect, useState } from 'react';
+import { useMemo } from 'react';
 import { Button } from "@/components/ui/button";
 import { Card } from "@/components/ui/card";
 import { Badge } from "@/components/ui/badge";
-import { 
-  ArrowLeft, 
-  AlertCircle, 
-  CheckCircle, 
-  Clock, 
-  MapPin, 
-  Calendar, 
-  DollarSign,
-  FileText,
+import {
+  ArrowLeft,
+  AlertCircle,
+  CheckCircle,
+  Clock,
   Building,
-  Droplets,
-  Leaf,
-  Zap,
   Activity
 } from 'lucide-react';
-import { apiClient } from '@/lib/api';
+import { useProject } from '@/hooks/use-projects';
+import type { Project as ApiProject } from '@/types/api';
 
-interface Project {
-  id: string;
-  name: string;
-  description?: string;
-  ownerAddress: string;
-  state: string;
+type Project = ApiProject & {
+  ownerAddress?: string;
+  state?: string;
   tokenUri?: string;
   registryDataUri?: string;
   dataHash?: string;
-  createdAt: string;
-  chainId?: number;
   schemaVersion?: number;
-}
+};
 
 export default function ProjectDetailPage() {
   const params = useParams();
   const router = useRouter();
   const projectId = params?.id as string;
-  
-  const [project, setProject] = useState<Project | null>(null);
-  const [isLoading, setIsLoading] = useState(true);
-  const [error, setError] = useState<string | null>(null);
+  const projectIdNumber = Number(projectId);
+  const { project, isLoading, error } = useProject(projectIdNumber);
 
-  useEffect(() => {
-    if (!projectId) return;
-
-    const fetchProject = async () => {
-      try {
-        try {
-          const data = await apiClient.request(`/projects/${projectId}`);
-          setProject(data);
-          return;
-        } catch (apiError: any) {
-          // For demo purposes, show a mock project if API project doesn't exist
-          if (apiError.message?.includes('404') || apiError.message?.includes('Not found')) {
-            const mockProjects = [
-              {
-                id: "1",
-                name: "Amazon Rainforest Conservation",
-                description: "Large-scale forest conservation project protecting 10,000 hectares of rainforest",
-                ownerAddress: "0x1234567890123456789012345678901234567890",
-                state: "DRAFT",
-                tokenUri: "https://example.com/metadata/1.json",
-                registryDataUri: "https://example.com/registry/1.json",
-                dataHash: "0xabcdef1234567890abcdef1234567890abcdef1234567890abcdef1234567890",
-                createdAt: "2024-01-15T00:00:00Z",
-                chainId: 8453,
-                schemaVersion: 1
-              },
-              {
-                id: "2", 
-                name: "Solar Energy Initiative",
-                description: "Community solar installation providing clean energy to 500 households",
-                ownerAddress: "0x2345678901234567890123456789012345678901",
-                state: "BASELINED",
-                tokenUri: "https://example.com/metadata/2.json",
-                registryDataUri: "https://example.com/registry/2.json", 
-                dataHash: "0xbcdef01234567890bcdef01234567890bcdef01234567890bcdef01234567890",
-                createdAt: "2024-02-01T00:00:00Z",
-                chainId: 8453,
-                schemaVersion: 1
-              },
-              {
-                id: "3",
-                name: "Watershed Restoration", 
-                description: "Restoring damaged watershed ecosystems and improving water quality",
-                ownerAddress: "0x3456789012345678901234567890123456789012",
-                state: "ACTIVE_FUNDRAISING",
-                tokenUri: "https://example.com/metadata/3.json",
-                registryDataUri: "https://example.com/registry/3.json",
-                dataHash: "0xcdef012345678901cdef012345678901cdef012345678901cdef012345678901", 
-                createdAt: "2023-12-01T00:00:00Z",
-                chainId: 8453,
-                schemaVersion: 1
-              }
-            ];
-            
-            const mockProject = mockProjects.find(p => p.id === projectId);
-            if (mockProject) {
-              setProject(mockProject);
-              return;
-            }
-          }
-          throw new Error('Project not found');
-        }
-      } catch (err) {
-        setError(err instanceof Error ? err.message : 'Failed to load project');
-      } finally {
-        setIsLoading(false);
-      }
-    };
-
-    fetchProject();
-  }, [projectId]);
+  const detailedProject = useMemo(() => project as Project | null, [project]);
 
   const handleBack = () => {
     router.push('/projects');
@@ -133,7 +50,7 @@ export default function ProjectDetailPage() {
     );
   }
 
-  if (error || !project) {
+  if (error || !detailedProject || Number.isNaN(projectIdNumber)) {
     return (
       <div className="container mx-auto py-6">
         <Card className="p-6">
@@ -206,13 +123,13 @@ export default function ProjectDetailPage() {
           <div>
             <div className="flex items-center space-x-3">
               {getProjectTypeIcon()}
-              <h1 className="text-3xl font-bold">{project.name}</h1>
-              <Badge className={getStateColor(project.state)}>
-                {project.state}
+              <h1 className="text-3xl font-bold">{detailedProject.name}</h1>
+              <Badge className={getStateColor(detailedProject.state || 'DRAFT')}>
+                {detailedProject.state || 'DRAFT'}
               </Badge>
             </div>
             <p className="text-gray-600 mt-1">
-              Project ID: {project.id} • Created {new Date(project.createdAt).toLocaleDateString()}
+              Project ID: {detailedProject.id} • Created {new Date(detailedProject.createdAt).toLocaleDateString()}
             </p>
           </div>
         </div>
@@ -226,7 +143,7 @@ export default function ProjectDetailPage() {
             <div>
               <h3 className="text-lg font-semibold text-green-800">Project Created Successfully!</h3>
               <p className="text-green-700 mt-1">
-                Your project has been created and is now in DRAFT state. Follow the next steps below to advance your project.
+                Your project has been created and is now in {(detailedProject.state || 'DRAFT').toUpperCase()} state. Follow the next steps below to advance your project.
               </p>
             </div>
           </div>
@@ -260,7 +177,7 @@ export default function ProjectDetailPage() {
             <div>
               <h4 className="font-medium mb-3 text-blue-900">Next Steps</h4>
               <div className="space-y-3">
-                {getNextSteps(project.state).map((step, index) => (
+                {getNextSteps(detailedProject.state || 'DRAFT').map((step, index) => (
                   <div key={index} className="flex items-center space-x-3">
                     <Clock className="h-5 w-5 text-yellow-600" />
                     <span className="text-sm">{step}</span>
@@ -280,20 +197,24 @@ export default function ProjectDetailPage() {
             <div>
               <p className="text-sm font-medium text-gray-600">Description</p>
               <p className="text-gray-900 mt-1">
-                {project.description || 'No description provided.'}
+                {detailedProject.description || 'No description provided.'}
               </p>
             </div>
             
             <div className="grid grid-cols-2 gap-4">
               <div>
                 <p className="text-sm font-medium text-gray-600">Owner Address</p>
-                <p className="text-xs font-mono bg-gray-100 px-2 py-1 rounded mt-1">
-                  {project.ownerAddress.slice(0, 6)}...{project.ownerAddress.slice(-4)}
-                </p>
+                {detailedProject.ownerAddress ? (
+                  <p className="text-xs font-mono bg-gray-100 px-2 py-1 rounded mt-1">
+                    {detailedProject.ownerAddress.slice(0, 6)}...{detailedProject.ownerAddress.slice(-4)}
+                  </p>
+                ) : (
+                  <p className="text-xs text-gray-500 mt-1">Not provided</p>
+                )}
               </div>
               <div>
                 <p className="text-sm font-medium text-gray-600">Chain ID</p>
-                <p className="text-sm mt-1">{project.chainId || 8453}</p>
+                <p className="text-sm mt-1">{detailedProject.chainId || 8453}</p>
               </div>
             </div>
           </div>
@@ -305,21 +226,21 @@ export default function ProjectDetailPage() {
             <div>
               <p className="text-sm font-medium text-gray-600">Token URI</p>
               <p className="text-xs font-mono bg-gray-100 px-2 py-1 rounded mt-1 break-all">
-                {project.tokenUri || 'Not set'}
+                {detailedProject.tokenUri || 'Not set'}
               </p>
             </div>
             
             <div>
               <p className="text-sm font-medium text-gray-600">Registry Data URI</p>
               <p className="text-xs font-mono bg-gray-100 px-2 py-1 rounded mt-1 break-all">
-                {project.registryDataUri || 'Not set'}
+                {detailedProject.registryDataUri || 'Not set'}
               </p>
             </div>
             
             <div>
               <p className="text-sm font-medium text-gray-600">Data Hash</p>
               <p className="text-xs font-mono bg-gray-100 px-2 py-1 rounded mt-1 break-all">
-                {project.dataHash || 'Not set'}
+                {detailedProject.dataHash || 'Not set'}
               </p>
             </div>
           </div>

@@ -5,7 +5,8 @@ import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Card } from "@/components/ui/card";
 import { Badge } from "@/components/ui/badge";
-import Link from 'next/link';
+import { useProjects } from '@/hooks/use-projects';
+import type { Project } from '@/types/api';
 import { 
   Plus,
   BarChart3,
@@ -30,11 +31,12 @@ interface ProjectDashboardProps {
   onEditProject?: (projectId: number) => void;
 }
 
-export function ProjectDashboard({ 
-  onCreateProject, 
-  onViewProject, 
-  onEditProject 
+export function ProjectDashboard({
+  onCreateProject,
+  onViewProject,
+  onEditProject
 }: ProjectDashboardProps) {
+  const { projects, isLoading, error, refetch } = useProjects();
   const [view, setView] = useState<'grid' | 'list'>('grid');
   const [filter, setFilter] = useState<'all' | 'active' | 'pending' | 'completed'>('all');
   const [searchTerm, setSearchTerm] = useState('');
@@ -45,47 +47,43 @@ export function ProjectDashboard({
     setIsClient(true);
   }, []);
 
-  // Mock projects data for demonstration
-  const projects = [
-    {
-      id: 1,
-      name: "Amazon Rainforest Conservation",
-      description: "Large-scale forest conservation project protecting 10,000 hectares of rainforest",
-      status: "active",
-      type: "carbon",
-      location: "Brazil",
-      createdAt: "2024-01-15T00:00:00Z",
-      progress: 65
-    },
-    {
-      id: 2,
-      name: "Solar Energy Initiative",
-      description: "Community solar installation providing clean energy to 500 households",
-      status: "pending",
-      type: "energy",
-      location: "California, USA",
-      createdAt: "2024-02-01T00:00:00Z",
-      progress: 25
-    },
-    {
-      id: 3,
-      name: "Watershed Restoration",
-      description: "Restoring damaged watershed ecosystems and improving water quality",
-      status: "completed",
-      type: "water",
-      location: "Oregon, USA",
-      createdAt: "2023-12-01T00:00:00Z",
-      progress: 100
-    }
-  ];
+  type ExtendedProject = Project & {
+    status?: string;
+    state?: string;
+    location?: string;
+    type?: string;
+    progress?: number;
+    metadata?: Record<string, any>;
+  };
+
+  const getDashboardStatus = (project: ExtendedProject) => {
+    const rawStatus = (project.status || project.state || '').toString().toLowerCase();
+
+    if (['draft', 'baselined', 'pending'].includes(rawStatus)) return 'pending';
+    if ([
+      'active',
+      'active_fundraising',
+      'implementation',
+      'monitoring',
+      'in_progress'
+    ].includes(rawStatus)) return 'active';
+    if (['completed', 'verified_round', 'archived'].includes(rawStatus)) return 'completed';
+
+    return 'active';
+  };
 
   // Calculate dashboard metrics
-  const metrics = {
-    total: projects.length,
-    active: projects.filter(p => p.status === 'active').length,
-    pending: projects.filter(p => p.status === 'pending').length,
-    completed: projects.filter(p => p.status === 'completed').length,
-  };
+  const metrics = projects.reduce(
+    (acc, project) => {
+      const status = getDashboardStatus(project as ExtendedProject);
+      acc.total += 1;
+      if (status === 'active') acc.active += 1;
+      if (status === 'pending') acc.pending += 1;
+      if (status === 'completed') acc.completed += 1;
+      return acc;
+    },
+    { total: 0, active: 0, pending: 0, completed: 0 }
+  );
 
   const getProjectTypeIcon = (type?: string) => {
     switch (type?.toLowerCase()) {
@@ -100,27 +98,56 @@ export function ProjectDashboard({
     }
   };
 
-  const getStatusColor = (status: string) => {
-    switch (status) {
+  const getStatusColor = (status?: string) => {
+    const normalized = status?.toLowerCase();
+    switch (normalized) {
       case 'active': return 'bg-green-100 text-green-800';
       case 'pending': return 'bg-yellow-100 text-yellow-800';
       case 'completed': return 'bg-blue-100 text-blue-800';
       case 'paused': return 'bg-gray-100 text-gray-800';
+      case 'archived': return 'bg-gray-100 text-gray-800';
       default: return 'bg-gray-100 text-gray-800';
     }
   };
 
-  const filteredProjects = projects.filter(project => {
-    const matchesFilter = filter === 'all' || project.status === filter;
-    const matchesSearch = !searchTerm || 
+  const filteredProjects = projects.filter((project) => {
+    const status = getDashboardStatus(project as ExtendedProject);
+    const matchesFilter = filter === 'all' || status === filter;
+    const matchesSearch = !searchTerm ||
       project.name.toLowerCase().includes(searchTerm.toLowerCase()) ||
-      project.description.toLowerCase().includes(searchTerm.toLowerCase());
+      (project.description?.toLowerCase().includes(searchTerm.toLowerCase()) ?? false);
     return matchesFilter && matchesSearch;
-  });
+  }) as ExtendedProject[];
 
   return (
     <div className="space-y-6">
       {/* Remove header since it's now handled by MainLayout */}
+
+      {isLoading && (
+        <Card className="p-6">
+          <div className="animate-pulse space-y-4">
+            <div className="h-6 bg-gray-200 rounded" />
+            <div className="h-4 bg-gray-200 rounded" />
+            <div className="grid grid-cols-1 md:grid-cols-3 gap-2">
+              <div className="h-32 bg-gray-200 rounded" />
+              <div className="h-32 bg-gray-200 rounded" />
+              <div className="h-32 bg-gray-200 rounded" />
+            </div>
+          </div>
+        </Card>
+      )}
+
+      {error && (
+        <Card className="p-6 bg-red-50 border-red-200 text-red-800">
+          <div className="flex justify-between items-center">
+            <div>
+              <h3 className="font-semibold">Unable to load projects</h3>
+              <p className="text-sm text-red-700">{error}</p>
+            </div>
+            <Button variant="outline" onClick={refetch}>Retry</Button>
+          </div>
+        </Card>
+      )}
 
       {/* Metrics Cards */}
       <div className="grid grid-cols-1 md:grid-cols-4 gap-4">
@@ -247,16 +274,16 @@ export function ProjectDashboard({
                 <div className="flex items-start justify-between mb-4">
                   <div className="flex-1 min-w-0 pr-2">
                     <div className="flex items-center space-x-2 mb-2">
-                      {getProjectTypeIcon(project.type)}
+                      {getProjectTypeIcon(project.type || project.metadata?.type)}
                       <h3 className="text-base font-semibold text-gray-900 truncate">{project.name}</h3>
                     </div>
                     <div className="flex items-center space-x-2">
-                      <Badge className={getStatusColor(project.status)}>
-                        {project.status}
+                      <Badge className={getStatusColor(getDashboardStatus(project))}>
+                        {project.status || project.state || getDashboardStatus(project)}
                       </Badge>
-                      {project.type && (
+                      {(project.type || project.metadata?.type) && (
                         <Badge variant="outline" className="text-xs">
-                          {project.type}
+                          {project.type || project.metadata?.type}
                         </Badge>
                       )}
                     </div>
@@ -272,11 +299,11 @@ export function ProjectDashboard({
                       {project.description}
                     </p>
                   )}
-                  
-                  {project.location && (
+
+                  {(project.location || project.metadata?.location) && (
                     <div className="flex items-center text-sm text-gray-600">
                       <MapPin className="h-3 w-3 mr-1" />
-                      {project.location}
+                      {project.location || project.metadata?.location}
                     </div>
                   )}
 
@@ -341,23 +368,23 @@ export function ProjectDashboard({
                 <div className="flex items-center justify-between">
                   <div className="flex items-center space-x-4 flex-1">
                     <div className="flex items-center space-x-2">
-                      {getProjectTypeIcon(project.type)}
+                      {getProjectTypeIcon(project.type || project.metadata?.type)}
                       <div className={`w-3 h-3 rounded-full ${
-                        project.status === 'active' ? 'bg-green-500' :
-                        project.status === 'pending' ? 'bg-yellow-500' :
-                        project.status === 'completed' ? 'bg-blue-500' : 'bg-gray-400'
+                        getDashboardStatus(project) === 'active' ? 'bg-green-500' :
+                        getDashboardStatus(project) === 'pending' ? 'bg-yellow-500' :
+                        getDashboardStatus(project) === 'completed' ? 'bg-blue-500' : 'bg-gray-400'
                       }`} />
                     </div>
                     
                     <div className="flex-1 min-w-0">
                       <div className="flex items-center space-x-2">
                         <h4 className="font-semibold truncate">{project.name}</h4>
-                        <Badge className={getStatusColor(project.status)}>
-                          {project.status}
+                        <Badge className={getStatusColor(getDashboardStatus(project))}>
+                          {project.status || project.state || getDashboardStatus(project)}
                         </Badge>
-                        {project.type && (
+                        {(project.type || project.metadata?.type) && (
                           <Badge variant="outline" className="text-xs">
-                            {project.type}
+                            {project.type || project.metadata?.type}
                           </Badge>
                         )}
                       </div>
@@ -367,10 +394,10 @@ export function ProjectDashboard({
                         </p>
                       )}
                       <div className="flex items-center space-x-4 text-xs text-gray-600 mt-1">
-                        {project.location && (
+                        {(project.location || project.metadata?.location) && (
                           <div className="flex items-center">
                             <MapPin className="h-3 w-3 mr-1" />
-                            {project.location}
+                            {project.location || project.metadata?.location}
                           </div>
                         )}
                         {project.createdAt && (
